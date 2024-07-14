@@ -23,10 +23,10 @@ type server struct {
 
 // Create user
 func (s *server) Create(ctx context.Context, req *desc.CreateRequest) (*desc.CreateResponse, error) {
-	log.Printf("User info: %v", req.GetInfo())
+	log.Printf("User info: %v, password: %v, password confirm: %v", req.GetInfo(), req.GetPassword(), req.GetPasswordConfirm())
 
 	return &desc.CreateResponse{
-		Id: gofakeit.Int64(),
+		Id: int64(gofakeit.Number(1, 1000)),
 	}, nil
 }
 
@@ -56,7 +56,7 @@ func (s *server) Get(ctx context.Context, req *desc.GetRequest) (*desc.GetRespon
 
 // Update user by id
 func (s *server) Update(ctx context.Context, req *desc.UpdateRequest) (*emptypb.Empty, error) {
-	log.Printf("User info: %#+v", req.GetInfo())
+	log.Printf("User info: %+v", req.GetInfo())
 
 	return nil, nil
 }
