@@ -38,8 +38,8 @@ func (s *server) Get(ctx context.Context, req *desc.GetRequest) (*desc.GetRespon
 		User: &desc.User{
 			Id: req.GetId(),
 			Info: &desc.UserInfo{
-				Name:  gofakeit.BeerName(),
-				Email: gofakeit.IPv4Address(),
+				Name:  gofakeit.Name(),
+				Email: gofakeit.Email(),
 				Role: func() desc.Role {
 					if gofakeit.Number(0, 1) == 0 {
 						return desc.Role_ADMIN
@@ -66,7 +66,6 @@ func (s *server) Delete(ctx context.Context, req *desc.DeleteRequest) (*emptypb.
 	log.Printf("User id: %d", req.GetId())
 
 	return nil, nil
-
 }
 
 func main() {
