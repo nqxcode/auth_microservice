@@ -3,13 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
-	"google.golang.org/protobuf/types/known/emptypb"
 	"log"
 	"net"
 
 	desc "github.com/nqxcode/auth_microservice/pkg/auth_v1"
 
 	"github.com/brianvoe/gofakeit"
+	"github.com/golang/protobuf/ptypes/empty"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -55,14 +55,14 @@ func (s *server) Get(_ context.Context, req *desc.GetRequest) (*desc.GetResponse
 }
 
 // Update user by id
-func (s *server) Update(_ context.Context, req *desc.UpdateRequest) (*emptypb.Empty, error) {
+func (s *server) Update(_ context.Context, req *desc.UpdateRequest) (*empty.Empty, error) {
 	log.Printf("User info: %+v", req.GetInfo())
 
 	return nil, nil
 }
 
 // Delete user by id
-func (s *server) Delete(_ context.Context, req *desc.DeleteRequest) (*emptypb.Empty, error) {
+func (s *server) Delete(_ context.Context, req *desc.DeleteRequest) (*empty.Empty, error) {
 	log.Printf("User id: %d", req.GetId())
 
 	return nil, nil
