@@ -190,8 +190,41 @@ func (s *server) Get(ctx context.Context, req *desc.GetRequest) (*desc.GetRespon
 }
 
 // Update user by id
-func (s *server) Update(_ context.Context, req *desc.UpdateRequest) (*empty.Empty, error) {
+func (s *server) Update(ctx context.Context, req *desc.UpdateRequest) (*empty.Empty, error) {
 	log.Printf("User info: %+v", req.GetInfo())
+
+	info := req.GetInfo()
+	if info == nil {
+		return nil, status.Error(codes.InvalidArgument, "info is required")
+	}
+
+	builderUpdate := sq.Update("\"user\"").
+		PlaceholderFormat(sq.Dollar)
+
+	if info.GetName() != nil {
+		builderUpdate = builderUpdate.Set("name", info.GetName().GetValue())
+	}
+
+	if info.GetRole() != 0 {
+		builderUpdate = builderUpdate.Set("role", info.GetRole().Number())
+	}
+
+	builderUpdate = builderUpdate.Set("updated_at", time.Now())
+	builderUpdate = builderUpdate.Where(sq.Eq{"user_id": req.GetId()})
+
+	query, args, err := builderUpdate.ToSql()
+	if err != nil {
+		log.Fatalf("failed to build query: %v", err)
+	}
+
+	res, err := s.pool.Exec(ctx, query, args...)
+	if err != nil {
+		log.Fatalf("failed to update note: %v", err)
+	}
+
+	log.Printf("updated %d rows", res.RowsAffected())
+
+	log.Printf("inserted user with id: %d", req.GetId())
 
 	return nil, nil
 }
