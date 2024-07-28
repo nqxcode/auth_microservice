@@ -48,3 +48,13 @@ docker-build-and-push:
 	docker buildx build --no-cache --platform linux/amd64 -t cr.selcloud.ru/nqxcode/auth-microservice:v0.0.1 .
 	docker login -u token -p CRgAAAAAKdXq01MqaP3-K1rqJ8seds9hr-Rq701c cr.selcloud.ru/nqxcode
 	docker push cr.selcloud.ru/nqxcode/auth-microservice:v0.0.1
+
+
+local-migration-status:
+	$(LOCAL_BIN)/goose -dir ${LOCAL_MIGRATION_DIR} postgres ${LOCAL_MIGRATION_DSN} status -v
+
+local-migration-up:
+	$(LOCAL_BIN)/goose -dir ${LOCAL_MIGRATION_DIR} postgres ${LOCAL_MIGRATION_DSN} up -v
+
+local-migration-down:
+	$(LOCAL_BIN)/goose -dir ${LOCAL_MIGRATION_DIR} postgres ${LOCAL_MIGRATION_DSN} down -v
