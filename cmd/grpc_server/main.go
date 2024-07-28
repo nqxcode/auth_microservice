@@ -219,19 +219,32 @@ func (s *server) Update(ctx context.Context, req *desc.UpdateRequest) (*empty.Em
 
 	res, err := s.pool.Exec(ctx, query, args...)
 	if err != nil {
-		log.Fatalf("failed to update note: %v", err)
+		log.Fatalf("failed to update user: %v", err)
 	}
 
 	log.Printf("updated %d rows", res.RowsAffected())
-
-	log.Printf("inserted user with id: %d", req.GetId())
 
 	return nil, nil
 }
 
 // Delete user by id
-func (s *server) Delete(_ context.Context, req *desc.DeleteRequest) (*empty.Empty, error) {
+func (s *server) Delete(ctx context.Context, req *desc.DeleteRequest) (*empty.Empty, error) {
 	log.Printf("User id: %d", req.GetId())
 
+	builderDelete := sq.Delete("\"user\"").
+		PlaceholderFormat(sq.Dollar).
+		Where(sq.Eq{"user_id": req.GetId()})
+
+	query, args, err := builderDelete.ToSql()
+	if err != nil {
+		log.Fatalf("failed to build query: %v", err)
+	}
+
+	res, err := s.pool.Exec(ctx, query, args...)
+	if err != nil {
+		log.Fatalf("failed to delete user: %v", err)
+	}
+
+	log.Printf("delete %d rows", res.RowsAffected())
 	return nil, nil
 }
