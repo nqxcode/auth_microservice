@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"flag"
 	"log"
 	"net"
@@ -13,6 +14,7 @@ import (
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/golang/protobuf/ptypes/empty"
+	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/nqxcode/auth_microservice/internal/config"
 	"google.golang.org/grpc"
@@ -148,28 +150,18 @@ func (s *server) Get(ctx context.Context, req *desc.GetRequest) (*desc.GetRespon
 		log.Fatalf("failed to build query: %v", err)
 	}
 
-	rows, err := s.pool.Query(ctx, query, args...)
-	if err != nil {
-		log.Fatalf("failed to select user: %v", err)
-	}
-
 	var id int64
 	var name, email string
 	var role int32
 	var createdAt time.Time
 	var updatedAt sql.NullTime
 
-	if rows.Next() {
-		err = rows.Scan(&id, &name, &email, &role, &createdAt, &updatedAt)
-		if err != nil {
-			log.Fatalf("failed to scan user: %v", err)
+	err = s.pool.QueryRow(ctx, query, args...).Scan(&id, &name, &email, &role, &createdAt, &updatedAt)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, status.Error(codes.NotFound, "user not found")
 		}
-
-		log.Printf("id: %d, name: %s, email: %s, role: %d, created_at: %v, updated_at: %v\n", id, name, email, role, createdAt, updatedAt)
-	} else {
-
-		log.Printf("user not found")
-		return nil, status.Error(codes.NotFound, "user not found")
+		log.Fatalf("failed to select users: %v", err)
 	}
 
 	var outUpdatedAt *timestamppb.Timestamp
@@ -248,5 +240,6 @@ func (s *server) Delete(ctx context.Context, req *desc.DeleteRequest) (*empty.Em
 	}
 
 	log.Printf("delete %d rows", res.RowsAffected())
+
 	return nil, nil
 }
