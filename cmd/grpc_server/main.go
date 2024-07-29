@@ -216,7 +216,11 @@ func (s *server) Update(ctx context.Context, req *desc.UpdateRequest) (*empty.Em
 		log.Fatalf("failed to update user: %v", err)
 	}
 
-	log.Printf("updated %d rows", res.RowsAffected())
+	log.Printf("updated %d rows in user", res.RowsAffected())
+
+	if res.RowsAffected() == 0 {
+		return nil, status.Errorf(codes.NotFound, "no user updated")
+	}
 
 	return nil, nil
 }
