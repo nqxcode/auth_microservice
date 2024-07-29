@@ -243,7 +243,11 @@ func (s *server) Delete(ctx context.Context, req *desc.DeleteRequest) (*empty.Em
 		log.Fatalf("failed to delete user: %v", err)
 	}
 
-	log.Printf("delete %d rows", res.RowsAffected())
+	log.Printf("updated %d rows in user", res.RowsAffected())
+
+	if res.RowsAffected() == 0 {
+		return nil, status.Errorf(codes.NotFound, "no user deleted")
+	}
 
 	return nil, nil
 }
