@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"flag"
 	"log"
 	"net"
@@ -10,7 +11,6 @@ import (
 	desc "github.com/nqxcode/auth_microservice/pkg/auth_v1"
 	"github.com/nqxcode/auth_microservice/pkg/hashing"
 
-	"database/sql"
 	sq "github.com/Masterminds/squirrel"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/jackc/pgx/v4/pgxpool"
