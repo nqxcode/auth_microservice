@@ -31,11 +31,8 @@ func init() {
 type server struct {
 	desc.UnimplementedAuthV1Server
 	pool *pgxpool.Pool
+	salt string
 }
-
-var (
-	salt = "c2d7eae6c9914b6b176fdf91bd89c193"
-)
 
 func main() {
 	flag.Parse()
@@ -44,6 +41,11 @@ func main() {
 	err := config.Load(configPath)
 	if err != nil {
 		log.Fatalf("failed to load config: %v", err)
+	}
+
+	hashingConfig, err := config.NewHashingConfig()
+	if err != nil {
+		log.Fatalf("failed to load hashing config: %v", err)
 	}
 
 	grpcConfig, err := config.NewGRPCConfig()
@@ -69,7 +71,7 @@ func main() {
 
 	s := grpc.NewServer()
 	reflection.Register(s)
-	desc.RegisterAuthV1Server(s, &server{pool: pool})
+	desc.RegisterAuthV1Server(s, &server{pool: pool, salt: hashingConfig.Salt()})
 
 	log.Printf("server listening at %v", lis.Addr())
 
@@ -102,7 +104,7 @@ func (s *server) Create(ctx context.Context, req *desc.CreateRequest) (*desc.Cre
 		return nil, status.Error(codes.InvalidArgument, "passwords do not match")
 	}
 
-	password, err := hashing.HashPasswordWithSalt(req.Password, salt)
+	password, err := hashing.HashPasswordWithSalt(req.Password, s.salt)
 	if err != nil {
 		return nil, status.Error(codes.Internal, "could not hash password")
 	}
