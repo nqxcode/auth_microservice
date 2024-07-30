@@ -42,7 +42,7 @@ func main() {
 
 	err := config.Load(configPath)
 	if err != nil {
-		log.Fatalf("failed to load config: %v", err)
+		log.Printf("No %s file found, using environment variables: %v", configPath, err)
 	}
 
 	hashingConfig, err := config.NewHashingConfig()

@@ -1,4 +1,11 @@
+ENV_FILE ?= .env
+
+include $(ENV_FILE)
+
 LOCAL_BIN:=$(CURDIR)/bin
+
+LOCAL_MIGRATION_DIR=$(MIGRATION_DIR)
+LOCAL_MIGRATION_DSN="host=localhost port=$(POSTGRES_PORT) dbname=$(POSTGRES_DB) user=$(POSTGRES_USER) password=$(POSTGRES_PASSWORD) sslmode=disable"
 
 install-golangci-lint:
 	GOBIN=$(LOCAL_BIN) go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.53.3
@@ -37,7 +44,7 @@ build-target:
 	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -a -o ./bin/$(TARGET) ./cmd/$(TARGET)
 
 copy-to-server:
-	scp ./bin/grpc_server root@45.145.65.125:/root/auth_grpc_server
+	scp ./bin/grpc_server root@${REGISTRY_HOST}:/root/auth_grpc_server
 
 install-docker-buildx:
 	mkdir -p ~/.docker/cli-plugins && \
@@ -45,8 +52,8 @@ install-docker-buildx:
     chmod +x ~/.docker/cli-plugins/docker-buildx
 
 docker-build-and-push:
-	docker buildx build --no-cache --platform linux/amd64 -t cr.selcloud.ru/nqxcode/auth-microservice:v0.0.1 .
-	docker login -u token -p CRgAAAAAKdXq01MqaP3-K1rqJ8seds9hr-Rq701c cr.selcloud.ru/nqxcode
+	docker buildx build --no-cache --platform linux/amd64 -t cr.selcloud.ru/nqxcode/auth-microservice:v0.0.2 .
+	docker login -u token -p ${REGISTRY_PASSWORD} cr.selcloud.ru/nqxcode
 	docker push cr.selcloud.ru/nqxcode/auth-microservice:v0.0.1
 
 
