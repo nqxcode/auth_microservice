@@ -51,6 +51,9 @@ login-to-server:
 copy-to-server:
 	scp ./bin/grpc_server root@${REGISTRY}:/root/auth_grpc_server
 
+show-git-sha:
+	@echo $(GIT_SHA)
+
 install-docker-buildx:
 	mkdir -p ~/.docker/cli-plugins && \
     curl -L https://github.com/docker/buildx/releases/download/v0.16.0/buildx-v0.16.0.linux-amd64 -o ~/.docker/cli-plugins/docker-buildx && \
