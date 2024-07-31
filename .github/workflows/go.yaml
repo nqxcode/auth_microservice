@@ -125,6 +125,7 @@ jobs:
             POSTGRES_VOLUME=${{ env.POSTGRES_VOLUME }}
             NETWORK=${{ env.NETWORK }}
             HASHING_SALT=${{ secrets.HASHING_SALT }}
+            GRPC_PORT=${{ env.GRPC_PORT }}
 
             # Login into Selectel Registry
             docker login -u ${{ secrets.REGISTRY_USERNAME }} -p ${{ secrets.REGISTRY_PASSWORD }} $REGISTRY
