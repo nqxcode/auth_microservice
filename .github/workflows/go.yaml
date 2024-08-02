@@ -128,7 +128,7 @@ jobs:
             GRPC_PORT=${{ env.GRPC_PORT }}
 
             # Login into Selectel Registry
-            docker login -u ${{ secrets.REGISTRY_USERNAME }} -p ${{ secrets.REGISTRY_PASSWORD }} $REGISTRY
+            docker login -u ${{ secrets.REGISTRY_USERNAME }} -p ${{ secrets.REGISTRY_PASSWORD }} ${{ env.REGISTRY }}
             
             docker network ls | grep $NETWORK || docker network create $NETWORK
             docker volume ls | grep $POSTGRES_VOLUME || docker volume create $POSTGRES_VOLUME
