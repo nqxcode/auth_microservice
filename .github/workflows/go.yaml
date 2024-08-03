@@ -172,7 +172,7 @@ jobs:
                   - postgres-auth
                 restart: on-failure
 
-              app:
+              app-chat:
                 image: ${REGISTRY}/${IMAGE_NAME}:${TAG_NAME}
                 container_name: ${CONTAINER_NAME}
                 environment:
