@@ -113,8 +113,11 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSHKEY }}
           script: |
-            # Set up variables
-            TAG_NAME=$(echo ${{ env.GITHUB_SHA }} | head -c7)  
+            # Login into Selectel Registry
+            docker login -u ${{ secrets.REGISTRY_USERNAME }} -p ${{ secrets.REGISTRY_PASSWORD }} ${{ env.REGISTRY }}
+            
+            cat <<EOF > .env.chat
+            TAG_NAME=$(echo ${{ env.GITHUB_SHA }} | head -c7)            
             REGISTRY=${{ env.REGISTRY }}
             IMAGE_NAME=${{ env.IMAGE_NAME }}
             CONTAINER_NAME=${{ env.CONTAINER_NAME }}
@@ -124,26 +127,68 @@ jobs:
             POSTGRES_CONTAINER_NAME=${{ env.POSTGRES_CONTAINER_NAME }}
             POSTGRES_VOLUME=${{ env.POSTGRES_VOLUME }}
             NETWORK=${{ env.NETWORK }}
-            HASHING_SALT=${{ secrets.HASHING_SALT }}
             GRPC_PORT=${{ env.GRPC_PORT }}
+            MIGRATION_DSN="${{ secrets.MIGRATION_DSN }}"
+            PG_DSN="${{ secrets.PG_DSN }}"
+            POSTGRES_USER=${{ secrets.POSTGRES_USER }}
+            POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+            POSTGRES_DB=${{ secrets.POSTGRES_DB }}
+            EOF
+            
+            source .env.chat
+            
+            cat <<EOF > docker-compose.chat.yaml
+            
+            version: '3'
+            volumes:
+              ${POSTGRES_VOLUME}:
+            
+            networks:
+              ${NETWORK}:
+                driver: bridge
 
-            # Login into Selectel Registry
-            docker login -u ${{ secrets.REGISTRY_USERNAME }} -p ${{ secrets.REGISTRY_PASSWORD }} ${{ env.REGISTRY }}
+            services:
+              postgres:
+                image: ${POSTGRES_IMAGE_NAME}
+                container_name: ${POSTGRES_CONTAINER_NAME}
+                environment:
+                  POSTGRES_USER: ${POSTGRES_USER}
+                  POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+                  POSTGRES_DB: ${POSTGRES_DB}
+                volumes:
+                  - ${POSTGRES_VOLUME}:/var/lib/postgresql/data
+                networks:
+                  - ${NETWORK}
+
+              migrator:
+                image: ${REGISTRY}/${MIGRATION_IMAGE_NAME}:${TAG_NAME}
+                container_name: ${MIGRATION_CONTAINER_NAME}
+                environment:
+                  MIGRATION_DIR: ./migrations
+                  MIGRATION_DSN: "${MIGRATION_DSN}"
+                networks:
+                  - ${NETWORK}
+                depends_on:
+                  - postgres
+                restart: on-failure
+
+              app:
+                image: ${REGISTRY}/${IMAGE_NAME}:${TAG_NAME}
+                container_name: ${CONTAINER_NAME}
+                environment:
+                  PG_DSN: "${PG_DSN}"
+                  GRPC_HOST: 0.0.0.0
+                  GRPC_PORT: ${GRPC_PORT}
+                  HASHING_SALT: ${{ secrets.HASHING_SALT }}
+                ports:
+                  - "${GRPC_PORT}:${GRPC_PORT}"
+                networks:
+                  - ${NETWORK}
+                depends_on:
+                  - postgres
+                  - migrator
+
+            EOF
             
-            docker network ls | grep $NETWORK || docker network create $NETWORK
-            docker volume ls | grep $POSTGRES_VOLUME || docker volume create $POSTGRES_VOLUME
-            
-            # Stop running containers
-            docker stop $POSTGRES_CONTAINER_NAME
-            docker stop $MIGRATION_CONTAINER_NAME
-            docker stop $CONTAINER_NAME
-            
-            # Remove old containers
-            docker rm $POSTGRES_CONTAINER_NAME
-            docker rm $MIGRATION_CONTAINER_NAME
-            docker rm $CONTAINER_NAME
-            
-            # Run a new containers from a new images
-            docker run -d --name $POSTGRES_CONTAINER_NAME --network $NETWORK -v $POSTGRES_VOLUME:/var/lib/postgresql/data -e POSTGRES_USER="${{ secrets.POSTGRES_USER }}" -e POSTGRES_PASSWORD="${{ secrets.POSTGRES_PASSWORD }}" -e POSTGRES_DB="${{ secrets.POSTGRES_DB }}" $POSTGRES_IMAGE_NAME
-            docker run -d --name $MIGRATION_CONTAINER_NAME --network $NETWORK -e MIGRATION_DIR=./migrations -e MIGRATION_DSN="${{ secrets.MIGRATION_DSN }}" -t $REGISTRY/$MIGRATION_IMAGE_NAME:$TAG_NAME
-            docker run -d --name $CONTAINER_NAME --network $NETWORK -p $GRPC_PORT:$GRPC_PORT -e PG_DSN="${{ secrets.PG_DSN }}" -e GRPC_HOST=0.0.0.0 -e GRPC_PORT=$GRPC_PORT -e HASHING_SALT=$HASHING_SALT $REGISTRY/$IMAGE_NAME:$TAG_NAME
+            docker compose -f docker-compose.chat.yaml down
+            docker compose -f docker-compose.chat.yaml up -d
