@@ -116,7 +116,7 @@ jobs:
             # Login into Selectel Registry
             docker login -u ${{ secrets.REGISTRY_USERNAME }} -p ${{ secrets.REGISTRY_PASSWORD }} ${{ env.REGISTRY }}
             
-            cat <<EOF > .env.chat
+            cat <<EOF > .env.auth
             TAG_NAME=$(echo ${{ env.GITHUB_SHA }} | head -c7)            
             REGISTRY=${{ env.REGISTRY }}
             IMAGE_NAME=${{ env.IMAGE_NAME }}
@@ -135,9 +135,9 @@ jobs:
             POSTGRES_DB=${{ secrets.POSTGRES_DB }}
             EOF
             
-            source .env.chat
+            source .env.auth
             
-            cat <<EOF > docker-compose.chat.yaml
+            cat <<EOF > docker-compose.auth.yaml
             
             version: '3'
             volumes:
@@ -190,5 +190,5 @@ jobs:
 
             EOF
             
-            docker compose -f docker-compose.chat.yaml down
-            docker compose -f docker-compose.chat.yaml up -d
+            docker compose -f docker-compose.auth.yaml down
+            docker compose -f docker-compose.auth.yaml up -d
