@@ -148,7 +148,7 @@ jobs:
                 driver: bridge
 
             services:
-              postgres:
+              postgres-auth:
                 image: ${POSTGRES_IMAGE_NAME}
                 container_name: ${POSTGRES_CONTAINER_NAME}
                 environment:
@@ -160,7 +160,7 @@ jobs:
                 networks:
                   - ${NETWORK}
 
-              migrator:
+              migrator-auth:
                 image: ${REGISTRY}/${MIGRATION_IMAGE_NAME}:${TAG_NAME}
                 container_name: ${MIGRATION_CONTAINER_NAME}
                 environment:
@@ -169,7 +169,7 @@ jobs:
                 networks:
                   - ${NETWORK}
                 depends_on:
-                  - postgres
+                  - postgres-auth
                 restart: on-failure
 
               app:
@@ -185,8 +185,8 @@ jobs:
                 networks:
                   - ${NETWORK}
                 depends_on:
-                  - postgres
-                  - migrator
+                  - postgres-auth
+                  - migrator-auth
 
             EOF
             
