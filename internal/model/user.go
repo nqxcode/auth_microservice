@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+// User represents the user model
 type User struct {
 	ID        int64
 	Name      string
