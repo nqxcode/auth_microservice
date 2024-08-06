@@ -7,6 +7,7 @@ import (
 	"flag"
 	"log"
 	"net"
+	"regexp"
 	"time"
 
 	desc "github.com/nqxcode/auth_microservice/pkg/auth_v1"
@@ -86,24 +87,8 @@ func main() {
 func (s *server) Create(ctx context.Context, req *desc.CreateRequest) (*desc.CreateResponse, error) {
 	log.Printf("User info: %v, password: %v, password confirm: %v", req.GetInfo(), req.GetPassword(), req.GetPasswordConfirm())
 
-	if req.Info == nil {
-		return nil, status.Error(codes.InvalidArgument, "info is required")
-	}
-
-	if req.Info.Name == "" {
-		return nil, status.Error(codes.InvalidArgument, "name is required")
-	}
-
-	if req.Info.Email == "" {
-		return nil, status.Error(codes.InvalidArgument, "email is required")
-	}
-
-	if req.Info.Role == 0 {
-		return nil, status.Error(codes.InvalidArgument, "role is required")
-	}
-
-	if req.Password != req.PasswordConfirm {
-		return nil, status.Error(codes.InvalidArgument, "passwords do not match")
+	if err := createRequestValidate(req); err != nil {
+		return nil, err
 	}
 
 	password, err := hashing.HashPasswordWithSalt(req.Password, s.salt)
@@ -250,4 +235,40 @@ func (s *server) Delete(ctx context.Context, req *desc.DeleteRequest) (*empty.Em
 	}
 
 	return nil, nil
+}
+
+// createRequestValidate validates the create request
+func createRequestValidate(req *desc.CreateRequest) error {
+	if req.Info == nil {
+		return status.Error(codes.InvalidArgument, "info is required")
+	}
+
+	if req.Info.Name == "" {
+		return status.Error(codes.InvalidArgument, "name is required")
+	}
+
+	if req.Info.Email == "" {
+		return status.Error(codes.InvalidArgument, "email is required")
+	}
+
+	if validateEmail(req.Info.Email) == false {
+		return status.Error(codes.InvalidArgument, "invalid email format")
+	}
+
+	if req.Info.Role == 0 {
+		return status.Error(codes.InvalidArgument, "role is required")
+	}
+
+	if req.Password != req.PasswordConfirm {
+		return status.Error(codes.InvalidArgument, "passwords do not match")
+	}
+
+	return nil
+}
+
+// validateEmail checks if the provided email address is valid
+func validateEmail(email string) bool {
+	return regexp.
+		MustCompile(`^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$`).
+		MatchString(email)
 }
