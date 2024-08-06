@@ -251,7 +251,7 @@ func createRequestValidate(req *desc.CreateRequest) error {
 		return status.Error(codes.InvalidArgument, "email is required")
 	}
 
-	if validateEmail(req.Info.Email) == false {
+	if !validateEmail(req.Info.Email) {
 		return status.Error(codes.InvalidArgument, "invalid email format")
 	}
 
