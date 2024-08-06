@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"flag"
 	"log"
@@ -10,14 +9,14 @@ import (
 	"regexp"
 	"time"
 
-	desc "github.com/nqxcode/auth_microservice/pkg/auth_v1"
-	"github.com/nqxcode/auth_microservice/pkg/hashing"
-
 	sq "github.com/Masterminds/squirrel"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/nqxcode/auth_microservice/internal/config"
+	"github.com/nqxcode/auth_microservice/internal/model"
+	desc "github.com/nqxcode/auth_microservice/pkg/auth_v1"
+	"github.com/nqxcode/auth_microservice/pkg/hashing"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/reflection"
@@ -135,13 +134,15 @@ func (s *server) Get(ctx context.Context, req *desc.GetRequest) (*desc.GetRespon
 		log.Fatalf("failed to build query: %v", err)
 	}
 
-	var id int64
-	var name, email string
-	var role int32
-	var createdAt time.Time
-	var updatedAt sql.NullTime
-
-	err = s.pool.QueryRow(ctx, query, args...).Scan(&id, &name, &email, &role, &createdAt, &updatedAt)
+	var user model.User
+	err = s.pool.QueryRow(ctx, query, args...).Scan(
+		&user.ID,
+		&user.Name,
+		&user.Email,
+		&user.Role,
+		&user.CreatedAt,
+		&user.UpdatedAt,
+	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, status.Error(codes.NotFound, "user not found")
@@ -150,19 +151,19 @@ func (s *server) Get(ctx context.Context, req *desc.GetRequest) (*desc.GetRespon
 	}
 
 	var outUpdatedAt *timestamppb.Timestamp
-	if updatedAt.Valid {
-		outUpdatedAt = timestamppb.New(updatedAt.Time)
+	if user.UpdatedAt.Valid {
+		outUpdatedAt = timestamppb.New(user.UpdatedAt.Time)
 	}
 
 	return &desc.GetResponse{
 		User: &desc.User{
-			Id: id,
+			Id: user.ID,
 			Info: &desc.UserInfo{
-				Name:  name,
-				Email: email,
-				Role:  desc.Role(role),
+				Name:  user.Name,
+				Email: user.Email,
+				Role:  desc.Role(user.Role),
 			},
-			CreatedAt: timestamppb.New(createdAt),
+			CreatedAt: timestamppb.New(user.CreatedAt),
 			UpdatedAt: outUpdatedAt,
 		},
 	}, nil
