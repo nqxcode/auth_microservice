@@ -2,9 +2,9 @@ name: Go
 
 on:
   push:
-    branches: [ main, master, week_1, week_2 ]
+    branches: [ main, master ]
   pull_request:
-    branches: [ main, master, week_1, week_2 ]
+    branches: [ main, master, week_1, week_2, week_3 ]
 
 env:
   REGISTRY: "cr.selcloud.ru/nqxcode"
