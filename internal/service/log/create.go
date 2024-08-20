@@ -8,7 +8,7 @@ import (
 )
 
 func (s *service) Create(ctx context.Context, log *model.Log) error {
-	ip, _ := helper.ExtractClientIP(ctx)
+	ip, _ := helper.ClientIP(ctx)
 	jsonPayload, _ := json.Marshal(log.Payload)
 
 	return s.logRepository.Create(ctx, &model.Log{

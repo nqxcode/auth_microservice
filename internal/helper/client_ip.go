@@ -9,7 +9,7 @@ import (
 	"google.golang.org/grpc/peer"
 )
 
-func ExtractClientIP(ctx context.Context) (string, error) {
+func ClientIP(ctx context.Context) (string, error) {
 	p, ok := peer.FromContext(ctx)
 	if !ok {
 		return "", fmt.Errorf("could not get peer from context")
