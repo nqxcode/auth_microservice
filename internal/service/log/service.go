@@ -9,6 +9,7 @@ type service struct {
 	logRepository repository.LogRepository
 }
 
+// NewService new log service
 func NewService(logRepository repository.LogRepository) def.LogService {
 	return &service{
 		logRepository: logRepository,

@@ -17,6 +17,7 @@ import (
 type key string
 
 const (
+	// TxKey tx context key
 	TxKey key = "tx"
 )
 
@@ -24,6 +25,7 @@ type pg struct {
 	dbc *pgxpool.Pool
 }
 
+// NewDB new database client
 func NewDB(dbc *pgxpool.Pool) db.DB {
 	return &pg{
 		dbc: dbc,
@@ -97,6 +99,7 @@ func (p *pg) Close() {
 	p.dbc.Close()
 }
 
+// MakeContextTx make context with tx
 func MakeContextTx(ctx context.Context, tx pgx.Tx) context.Context {
 	return context.WithValue(ctx, TxKey, tx)
 }

@@ -8,6 +8,7 @@ type service struct {
 	salt string
 }
 
+// NewService new hash service
 func NewService(salt string) def.HashService {
 	return &service{
 		salt: salt,

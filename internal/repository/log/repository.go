@@ -2,10 +2,12 @@ package log
 
 import (
 	"context"
-	sq "github.com/Masterminds/squirrel"
+
 	"github.com/nqxcode/auth_microservice/internal/client/db"
 	"github.com/nqxcode/auth_microservice/internal/model"
 	"github.com/nqxcode/auth_microservice/internal/repository"
+
+	sq "github.com/Masterminds/squirrel"
 )
 
 const (
@@ -22,6 +24,7 @@ type repo struct {
 	db db.Client
 }
 
+// NewRepository new log repository
 func NewRepository(db db.Client) repository.LogRepository {
 	return &repo{db: db}
 }
@@ -30,7 +33,7 @@ func (r *repo) Create(ctx context.Context, model *model.Log) error {
 	builder := sq.Insert(tableName).
 		PlaceholderFormat(sq.Dollar).
 		Columns(messageColumn, payloadColumn, ipColumn).
-		Values(model.Message, model.Payload, model.Ip).
+		Values(model.Message, model.Payload, model.IP).
 		Suffix("RETURNING " + idColumn)
 
 	query, args, err := builder.ToSql()

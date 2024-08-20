@@ -3,9 +3,11 @@ package hash
 import (
 	"context"
 	"fmt"
+
 	"github.com/nqxcode/auth_microservice/pkg/hashing"
 )
 
+// GenerateSalt generate salt
 func (s *service) GenerateSalt(_ context.Context) (string, error) {
 	salt, err := hashing.GenerateSalt()
 	if err != nil {

@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+// User user repository model
 type User struct {
 	ID        int64 `db:"user_id"`
 	Name      string

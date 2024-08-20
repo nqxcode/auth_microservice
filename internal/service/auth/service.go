@@ -13,6 +13,7 @@ type service struct {
 	txManager      db.TxManager
 }
 
+// NewService new auth service
 func NewService(
 	userRepository repository.UserRepository,
 	logService def.LogService,

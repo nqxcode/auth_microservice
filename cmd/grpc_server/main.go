@@ -2,8 +2,9 @@ package main
 
 import (
 	"context"
-	"github.com/nqxcode/auth_microservice/internal/app"
 	"log"
+
+	"github.com/nqxcode/auth_microservice/internal/app"
 )
 
 func main() {

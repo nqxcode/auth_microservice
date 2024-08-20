@@ -2,11 +2,12 @@ package auth
 
 import (
 	"context"
-	"github.com/nqxcode/auth_microservice/internal/converter"
 	"log"
 	"regexp"
 
+	"github.com/nqxcode/auth_microservice/internal/converter"
 	desc "github.com/nqxcode/auth_microservice/pkg/auth_v1"
+
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
