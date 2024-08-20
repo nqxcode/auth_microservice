@@ -2,11 +2,12 @@ package user
 
 import (
 	"context"
-	"github.com/nqxcode/auth_microservice/internal/repository/user/converter"
+	"fmt"
 
 	"github.com/nqxcode/auth_microservice/internal/client/db"
 	"github.com/nqxcode/auth_microservice/internal/model"
 	"github.com/nqxcode/auth_microservice/internal/repository"
+	"github.com/nqxcode/auth_microservice/internal/repository/user/converter"
 	modelRepo "github.com/nqxcode/auth_microservice/internal/repository/user/model"
 
 	sq "github.com/Masterminds/squirrel"
@@ -33,7 +34,7 @@ func NewRepository(db db.Client) repository.UserRepository {
 }
 
 func (r *repo) Create(ctx context.Context, model *model.User) (int64, error) {
-	builder := sq.Insert(tableName).
+	builder := sq.Insert(escape(tableName)).
 		PlaceholderFormat(sq.Dollar).
 		Columns(nameColumn, emailColumn, roleColumn, passwordColumn).
 		Values(model.Info.Name, model.Info.Email, model.Info.Role, model.Password).
@@ -63,7 +64,7 @@ func (r *repo) Update(ctx context.Context, id int64, info *model.UpdateUserInfo)
 		return nil
 	}
 
-	builder := sq.Update(tableName).
+	builder := sq.Update(escape(tableName)).
 		PlaceholderFormat(sq.Dollar)
 
 	if info.Name != nil {
@@ -74,8 +75,7 @@ func (r *repo) Update(ctx context.Context, id int64, info *model.UpdateUserInfo)
 	}
 
 	builder.
-		Where(sq.Eq{idColumn: id}).
-		Suffix("RETURNING " + idColumn)
+		Where(sq.Eq{idColumn: id})
 
 	query, args, err := builder.ToSql()
 	if err != nil {
@@ -87,7 +87,7 @@ func (r *repo) Update(ctx context.Context, id int64, info *model.UpdateUserInfo)
 		QueryRaw: query,
 	}
 
-	err = r.db.DB().QueryRowContext(ctx, q, args...).Scan(&id)
+	_, err = r.db.DB().ExecContext(ctx, q, args...)
 	if err != nil {
 		return err
 	}
@@ -96,7 +96,7 @@ func (r *repo) Update(ctx context.Context, id int64, info *model.UpdateUserInfo)
 }
 
 func (r *repo) Delete(ctx context.Context, id int64) error {
-	builder := sq.Delete(tableName).
+	builder := sq.Delete(escape(tableName)).
 		PlaceholderFormat(sq.Dollar).
 		Where(sq.Eq{idColumn: id})
 
@@ -121,7 +121,7 @@ func (r *repo) Delete(ctx context.Context, id int64) error {
 func (r *repo) Find(ctx context.Context, id int64) (*model.User, error) {
 	builder := sq.Select(idColumn, nameColumn, emailColumn, roleColumn, passwordColumn, createdAtColumn, updatedAtColumn).
 		PlaceholderFormat(sq.Dollar).
-		From(tableName).
+		From(escape(tableName)).
 		Where(sq.Eq{idColumn: id}).
 		Limit(1)
 
@@ -142,4 +142,8 @@ func (r *repo) Find(ctx context.Context, id int64) (*model.User, error) {
 	}
 
 	return converter.ToUserFromRepo(&user), nil
+}
+
+func escape(value string) string {
+	return fmt.Sprintf("\"%s\"", value)
 }

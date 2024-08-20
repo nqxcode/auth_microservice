@@ -9,7 +9,7 @@ import (
 type User struct {
 	ID        int64
 	Info      UserInfo
-	Password  string
+	Password  string `json:"-"`
 	CreatedAt time.Time
 	UpdatedAt sql.NullTime
 }

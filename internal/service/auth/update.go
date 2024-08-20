@@ -17,11 +17,11 @@ func (s *service) Update(ctx context.Context, id int64, info *model.UpdateUserIn
 		err := s.logService.Create(ctx, &model.Log{
 			Message: constants.UserUpdated,
 			Payload: struct {
-				id   int64
-				info *model.UpdateUserInfo
+				ID   int64
+				Info *model.UpdateUserInfo
 			}{
-				id:   id,
-				info: info,
+				ID:   id,
+				Info: info,
 			},
 		})
 
