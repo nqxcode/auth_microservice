@@ -110,7 +110,7 @@ func (r *repo) Delete(ctx context.Context, id int64) error {
 		QueryRaw: query,
 	}
 
-	err = r.db.DB().QueryRowContext(ctx, q, args...).Scan(&id)
+	_, err = r.db.DB().ExecContext(ctx, q, args...)
 	if err != nil {
 		return err
 	}
