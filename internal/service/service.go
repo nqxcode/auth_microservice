@@ -7,7 +7,7 @@ import (
 
 type AuthService interface {
 	Create(ctx context.Context, user *model.User) (int64, error)
-	//Get(ctx context.Context, chat *model.User) (int64, error)
+	Find(ctx context.Context, id int64) (*model.User, error)
 	Update(ctx context.Context, id int64, info *model.UpdateUserInfo) error
 	Delete(ctx context.Context, id int64) error
 }

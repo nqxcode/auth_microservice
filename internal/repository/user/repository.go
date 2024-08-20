@@ -2,10 +2,14 @@ package user
 
 import (
 	"context"
-	sq "github.com/Masterminds/squirrel"
+	"github.com/nqxcode/auth_microservice/internal/repository/user/converter"
+
 	"github.com/nqxcode/auth_microservice/internal/client/db"
 	"github.com/nqxcode/auth_microservice/internal/model"
 	"github.com/nqxcode/auth_microservice/internal/repository"
+	modelRepo "github.com/nqxcode/auth_microservice/internal/repository/user/model"
+
+	sq "github.com/Masterminds/squirrel"
 )
 
 const (
@@ -51,7 +55,7 @@ func (r *repo) Create(ctx context.Context, model *model.User) (int64, error) {
 		return 0, err
 	}
 
-	return 0, nil
+	return id, nil
 }
 
 func (r *repo) Update(ctx context.Context, id int64, info *model.UpdateUserInfo) error {
@@ -112,4 +116,30 @@ func (r *repo) Delete(ctx context.Context, id int64) error {
 	}
 
 	return nil
+}
+
+func (r *repo) Find(ctx context.Context, id int64) (*model.User, error) {
+	builder := sq.Select(idColumn, nameColumn, emailColumn, roleColumn, passwordColumn, createdAtColumn, updatedAtColumn).
+		PlaceholderFormat(sq.Dollar).
+		From(tableName).
+		Where(sq.Eq{idColumn: id}).
+		Limit(1)
+
+	query, args, err := builder.ToSql()
+	if err != nil {
+		return nil, err
+	}
+
+	q := db.Query{
+		Name:     tableName + "_repository.Find",
+		QueryRaw: query,
+	}
+
+	var user modelRepo.User
+	err = r.db.DB().ScanOneContext(ctx, &user, q, args...)
+	if err != nil {
+		return nil, err
+	}
+
+	return converter.ToUserFromRepo(&user), nil
 }

@@ -16,14 +16,14 @@ func ToUserFromService(user *model.User) *desc.User {
 
 	return &desc.User{
 		Id:        user.ID,
-		Info:      ToUserInfoFromService(*user),
+		Info:      ToUserInfoFromService(user),
 		CreatedAt: timestamppb.New(user.CreatedAt),
 		UpdatedAt: updatedAt,
 	}
 }
 
 // ToUserInfoFromService convert to user info model
-func ToUserInfoFromService(user model.User) *desc.UserInfo {
+func ToUserInfoFromService(user *model.User) *desc.UserInfo {
 	return &desc.UserInfo{
 		Name:  user.Info.Name,
 		Email: user.Info.Email,
