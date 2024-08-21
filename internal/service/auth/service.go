@@ -1,9 +1,9 @@
 package auth
 
 import (
-	"github.com/nqxcode/auth_microservice/internal/client/db"
 	"github.com/nqxcode/auth_microservice/internal/repository"
 	def "github.com/nqxcode/auth_microservice/internal/service"
+	"github.com/nqxcode/platform_common/client/db"
 )
 
 type service struct {

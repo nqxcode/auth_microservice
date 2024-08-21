@@ -5,10 +5,6 @@ import (
 	"log"
 
 	"github.com/nqxcode/auth_microservice/internal/api/auth"
-	"github.com/nqxcode/auth_microservice/internal/client/db"
-	"github.com/nqxcode/auth_microservice/internal/client/db/pg"
-	"github.com/nqxcode/auth_microservice/internal/client/db/transaction"
-	"github.com/nqxcode/auth_microservice/internal/closer"
 	"github.com/nqxcode/auth_microservice/internal/config"
 	"github.com/nqxcode/auth_microservice/internal/repository"
 	logRepository "github.com/nqxcode/auth_microservice/internal/repository/log"
@@ -17,6 +13,10 @@ import (
 	authService "github.com/nqxcode/auth_microservice/internal/service/auth"
 	hashService "github.com/nqxcode/auth_microservice/internal/service/hash"
 	logService "github.com/nqxcode/auth_microservice/internal/service/log"
+	"github.com/nqxcode/platform_common/client/db"
+	"github.com/nqxcode/platform_common/client/db/pg"
+	"github.com/nqxcode/platform_common/client/db/transaction"
+	"github.com/nqxcode/platform_common/closer"
 )
 
 type serviceProvider struct {

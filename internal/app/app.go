@@ -6,9 +6,9 @@ import (
 	"log"
 	"net"
 
-	"github.com/nqxcode/auth_microservice/internal/closer"
 	"github.com/nqxcode/auth_microservice/internal/config"
 	desc "github.com/nqxcode/auth_microservice/pkg/auth_v1"
+	"github.com/nqxcode/platform_common/closer"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
