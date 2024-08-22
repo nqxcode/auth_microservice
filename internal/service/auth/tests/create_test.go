@@ -3,7 +3,7 @@ package tests
 import (
 	"context"
 	"fmt"
-	"sync"
+	testsService "github.com/nqxcode/auth_microservice/internal/service/auth/tests/service"
 	"testing"
 
 	"github.com/nqxcode/auth_microservice/internal/model"
@@ -20,21 +20,6 @@ import (
 	"github.com/gojuno/minimock/v3"
 	"github.com/stretchr/testify/require"
 )
-
-type txManagerFake struct {
-	mu sync.Mutex
-}
-
-func newTxManagerFake() db.TxManager {
-	return &txManagerFake{}
-}
-
-func (tx *txManagerFake) ReadCommitted(ctx context.Context, f db.Handler) error {
-	tx.mu.Lock()
-	defer tx.mu.Unlock()
-
-	return f(ctx)
-}
 
 func TestCreate(t *testing.T) {
 	t.Parallel()
@@ -114,7 +99,7 @@ func TestCreate(t *testing.T) {
 				mock.HashMock.Expect(ctx, password).Return(passwordHash, nil)
 				return mock
 			},
-			txManagerFake: newTxManagerFake(),
+			txManagerFake: testsService.NewTxManagerFake(),
 		},
 		{
 			name: "service error case",
@@ -143,7 +128,7 @@ func TestCreate(t *testing.T) {
 				mock.HashMock.Expect(ctx, password).Return(passwordHash, nil)
 				return mock
 			},
-			txManagerFake: newTxManagerFake(),
+			txManagerFake: testsService.NewTxManagerFake(),
 		},
 	}
 
