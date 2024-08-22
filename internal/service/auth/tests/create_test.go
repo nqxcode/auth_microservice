@@ -3,7 +3,6 @@ package tests
 import (
 	"context"
 	"fmt"
-	testsService "github.com/nqxcode/auth_microservice/internal/service/auth/tests/service"
 	"testing"
 
 	"github.com/nqxcode/auth_microservice/internal/model"
@@ -11,6 +10,7 @@ import (
 	repoMocks "github.com/nqxcode/auth_microservice/internal/repository/mocks"
 	"github.com/nqxcode/auth_microservice/internal/service"
 	"github.com/nqxcode/auth_microservice/internal/service/auth"
+	testsService "github.com/nqxcode/auth_microservice/internal/service/auth/tests/service"
 	"github.com/nqxcode/auth_microservice/internal/service/log/constants"
 	serviceMocks "github.com/nqxcode/auth_microservice/internal/service/mocks"
 	desc "github.com/nqxcode/auth_microservice/pkg/auth_v1"
