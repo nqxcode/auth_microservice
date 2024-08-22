@@ -11,6 +11,7 @@ import (
 	userRepository "github.com/nqxcode/auth_microservice/internal/repository/user"
 	"github.com/nqxcode/auth_microservice/internal/service"
 	authService "github.com/nqxcode/auth_microservice/internal/service/auth"
+	cacheService "github.com/nqxcode/auth_microservice/internal/service/cache"
 	hashService "github.com/nqxcode/auth_microservice/internal/service/hash"
 	logService "github.com/nqxcode/auth_microservice/internal/service/log"
 	"github.com/nqxcode/platform_common/client/cache"
@@ -32,9 +33,10 @@ type serviceProvider struct {
 	userRepository repository.UserRepository
 	logRepository  repository.LogRepository
 
-	logService  service.LogService
-	hashService service.HashService
-	authService service.AuthService
+	logService   service.LogService
+	hashService  service.HashService
+	authService  service.AuthService
+	cacheService service.CacheService
 
 	authImpl *auth.Implementation
 }
@@ -176,11 +178,22 @@ func (s *serviceProvider) AuthService(ctx context.Context) service.AuthService {
 			s.AuthRepository(ctx),
 			s.LogService(ctx),
 			s.HashService(ctx),
+			s.CacheService(ctx),
 			s.TxManager(ctx),
 		)
 	}
 
 	return s.authService
+}
+
+func (s *serviceProvider) CacheService(ctx context.Context) service.CacheService {
+	if s.cacheService == nil {
+		s.cacheService = cacheService.NewService(
+			s.RedisClient(ctx),
+		)
+	}
+
+	return s.cacheService
 }
 
 func (s *serviceProvider) AuthImpl(ctx context.Context) *auth.Implementation {

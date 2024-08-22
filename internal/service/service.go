@@ -24,3 +24,11 @@ type HashService interface {
 	Hash(ctx context.Context, password string) (string, error)
 	GenerateSalt(ctx context.Context) (string, error)
 }
+
+// CacheService cache service
+type CacheService interface {
+	Set(ctx context.Context, user *model.User) error
+	SetMany(ctx context.Context, users []model.User) error
+	Get(ctx context.Context, userID int64) (*model.User, error)
+	GetMany(ctx context.Context, userIDs []int64) ([]model.User, error)
+}
