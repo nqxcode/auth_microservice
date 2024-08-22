@@ -41,7 +41,7 @@ func TestUpdate(t *testing.T) {
 
 		id   = gofakeit.Int64()
 		name = gofakeit.Name()
-		role = desc.Role(gofakeit.Number(int(desc.Role_ADMIN), int(desc.Role_ADMIN)))
+		role = desc.Role(gofakeit.Number(int(desc.Role_ADMIN), int(desc.Role_USER)))
 
 		serviceErr = fmt.Errorf("service error")
 
@@ -55,6 +55,8 @@ func TestUpdate(t *testing.T) {
 
 		resp = (*emptypb.Empty)(nil)
 	)
+
+	defer t.Cleanup(mc.Finish)
 
 	cases := []struct {
 		name                string

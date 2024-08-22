@@ -46,6 +46,8 @@ func TestDelete(t *testing.T) {
 		resp = (*emptypb.Empty)(nil)
 	)
 
+	defer t.Cleanup(mc.Finish)
+
 	cases := []struct {
 		name                string
 		input               input

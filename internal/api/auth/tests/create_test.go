@@ -60,6 +60,8 @@ func TestCreate(t *testing.T) {
 		}
 	)
 
+	defer t.Cleanup(mc.Finish)
+
 	cases := []struct {
 		name                string
 		input               input
