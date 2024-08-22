@@ -17,7 +17,7 @@ func (s *Implementation) Get(ctx context.Context, req *desc.GetRequest) (*desc.G
 
 	user, err := s.authService.Find(ctx, req.GetId())
 	if err != nil {
-		return nil, status.Error(codes.NotFound, "User not found")
+		return nil, status.Error(codes.NotFound, "user not found")
 	}
 
 	return &desc.GetResponse{
