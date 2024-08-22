@@ -118,11 +118,13 @@ func (s *serviceProvider) DBClient(ctx context.Context) db.Client {
 
 func (s *serviceProvider) RedisClient(ctx context.Context) cache.Cache {
 	if s.redisClient == nil {
-		var err error
-		s.redisClient, err = cache.NewRedisClient(ctx, s.RedisConfig())
+		cl, err := cache.NewRedisClient(ctx, s.RedisConfig())
 		if err != nil {
 			log.Fatalf("redis client error: %s", err.Error())
 		}
+		closer.Add(cl.Close)
+
+		s.redisClient = cl
 	}
 
 	return s.redisClient
