@@ -12,6 +12,7 @@ import (
 
 	"github.com/gojuno/minimock/v3"
 	"github.com/nqxcode/auth_microservice/internal/model"
+	"github.com/nqxcode/platform_common/pagination"
 )
 
 // AuthServiceMock implements service.AuthService
@@ -36,6 +37,12 @@ type AuthServiceMock struct {
 	beforeFindCounter uint64
 	FindMock          mAuthServiceMockFind
 
+	funcGetList          func(ctx context.Context, limit *pagination.Limit) (ua1 []model.User, err error)
+	inspectFuncGetList   func(ctx context.Context, limit *pagination.Limit)
+	afterGetListCounter  uint64
+	beforeGetListCounter uint64
+	GetListMock          mAuthServiceMockGetList
+
 	funcUpdate          func(ctx context.Context, id int64, info *model.UpdateUserInfo) (err error)
 	inspectFuncUpdate   func(ctx context.Context, id int64, info *model.UpdateUserInfo)
 	afterUpdateCounter  uint64
@@ -58,6 +65,9 @@ func NewAuthServiceMock(t minimock.Tester) *AuthServiceMock {
 
 	m.FindMock = mAuthServiceMockFind{mock: m}
 	m.FindMock.callArgs = []*AuthServiceMockFindParams{}
+
+	m.GetListMock = mAuthServiceMockGetList{mock: m}
+	m.GetListMock.callArgs = []*AuthServiceMockGetListParams{}
 
 	m.UpdateMock = mAuthServiceMockUpdate{mock: m}
 	m.UpdateMock.callArgs = []*AuthServiceMockUpdateParams{}
@@ -715,6 +725,223 @@ func (m *AuthServiceMock) MinimockFindInspect() {
 	}
 }
 
+type mAuthServiceMockGetList struct {
+	mock               *AuthServiceMock
+	defaultExpectation *AuthServiceMockGetListExpectation
+	expectations       []*AuthServiceMockGetListExpectation
+
+	callArgs []*AuthServiceMockGetListParams
+	mutex    sync.RWMutex
+}
+
+// AuthServiceMockGetListExpectation specifies expectation struct of the AuthService.GetList
+type AuthServiceMockGetListExpectation struct {
+	mock    *AuthServiceMock
+	params  *AuthServiceMockGetListParams
+	results *AuthServiceMockGetListResults
+	Counter uint64
+}
+
+// AuthServiceMockGetListParams contains parameters of the AuthService.GetList
+type AuthServiceMockGetListParams struct {
+	ctx   context.Context
+	limit *pagination.Limit
+}
+
+// AuthServiceMockGetListResults contains results of the AuthService.GetList
+type AuthServiceMockGetListResults struct {
+	ua1 []model.User
+	err error
+}
+
+// Expect sets up expected params for AuthService.GetList
+func (mmGetList *mAuthServiceMockGetList) Expect(ctx context.Context, limit *pagination.Limit) *mAuthServiceMockGetList {
+	if mmGetList.mock.funcGetList != nil {
+		mmGetList.mock.t.Fatalf("AuthServiceMock.GetList mock is already set by Set")
+	}
+
+	if mmGetList.defaultExpectation == nil {
+		mmGetList.defaultExpectation = &AuthServiceMockGetListExpectation{}
+	}
+
+	mmGetList.defaultExpectation.params = &AuthServiceMockGetListParams{ctx, limit}
+	for _, e := range mmGetList.expectations {
+		if minimock.Equal(e.params, mmGetList.defaultExpectation.params) {
+			mmGetList.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmGetList.defaultExpectation.params)
+		}
+	}
+
+	return mmGetList
+}
+
+// Inspect accepts an inspector function that has same arguments as the AuthService.GetList
+func (mmGetList *mAuthServiceMockGetList) Inspect(f func(ctx context.Context, limit *pagination.Limit)) *mAuthServiceMockGetList {
+	if mmGetList.mock.inspectFuncGetList != nil {
+		mmGetList.mock.t.Fatalf("Inspect function is already set for AuthServiceMock.GetList")
+	}
+
+	mmGetList.mock.inspectFuncGetList = f
+
+	return mmGetList
+}
+
+// Return sets up results that will be returned by AuthService.GetList
+func (mmGetList *mAuthServiceMockGetList) Return(ua1 []model.User, err error) *AuthServiceMock {
+	if mmGetList.mock.funcGetList != nil {
+		mmGetList.mock.t.Fatalf("AuthServiceMock.GetList mock is already set by Set")
+	}
+
+	if mmGetList.defaultExpectation == nil {
+		mmGetList.defaultExpectation = &AuthServiceMockGetListExpectation{mock: mmGetList.mock}
+	}
+	mmGetList.defaultExpectation.results = &AuthServiceMockGetListResults{ua1, err}
+	return mmGetList.mock
+}
+
+// Set uses given function f to mock the AuthService.GetList method
+func (mmGetList *mAuthServiceMockGetList) Set(f func(ctx context.Context, limit *pagination.Limit) (ua1 []model.User, err error)) *AuthServiceMock {
+	if mmGetList.defaultExpectation != nil {
+		mmGetList.mock.t.Fatalf("Default expectation is already set for the AuthService.GetList method")
+	}
+
+	if len(mmGetList.expectations) > 0 {
+		mmGetList.mock.t.Fatalf("Some expectations are already set for the AuthService.GetList method")
+	}
+
+	mmGetList.mock.funcGetList = f
+	return mmGetList.mock
+}
+
+// When sets expectation for the AuthService.GetList which will trigger the result defined by the following
+// Then helper
+func (mmGetList *mAuthServiceMockGetList) When(ctx context.Context, limit *pagination.Limit) *AuthServiceMockGetListExpectation {
+	if mmGetList.mock.funcGetList != nil {
+		mmGetList.mock.t.Fatalf("AuthServiceMock.GetList mock is already set by Set")
+	}
+
+	expectation := &AuthServiceMockGetListExpectation{
+		mock:   mmGetList.mock,
+		params: &AuthServiceMockGetListParams{ctx, limit},
+	}
+	mmGetList.expectations = append(mmGetList.expectations, expectation)
+	return expectation
+}
+
+// Then sets up AuthService.GetList return parameters for the expectation previously defined by the When method
+func (e *AuthServiceMockGetListExpectation) Then(ua1 []model.User, err error) *AuthServiceMock {
+	e.results = &AuthServiceMockGetListResults{ua1, err}
+	return e.mock
+}
+
+// GetList implements service.AuthService
+func (mmGetList *AuthServiceMock) GetList(ctx context.Context, limit *pagination.Limit) (ua1 []model.User, err error) {
+	mm_atomic.AddUint64(&mmGetList.beforeGetListCounter, 1)
+	defer mm_atomic.AddUint64(&mmGetList.afterGetListCounter, 1)
+
+	if mmGetList.inspectFuncGetList != nil {
+		mmGetList.inspectFuncGetList(ctx, limit)
+	}
+
+	mm_params := &AuthServiceMockGetListParams{ctx, limit}
+
+	// Record call args
+	mmGetList.GetListMock.mutex.Lock()
+	mmGetList.GetListMock.callArgs = append(mmGetList.GetListMock.callArgs, mm_params)
+	mmGetList.GetListMock.mutex.Unlock()
+
+	for _, e := range mmGetList.GetListMock.expectations {
+		if minimock.Equal(e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.ua1, e.results.err
+		}
+	}
+
+	if mmGetList.GetListMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmGetList.GetListMock.defaultExpectation.Counter, 1)
+		mm_want := mmGetList.GetListMock.defaultExpectation.params
+		mm_got := AuthServiceMockGetListParams{ctx, limit}
+		if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmGetList.t.Errorf("AuthServiceMock.GetList got unexpected parameters, want: %#v, got: %#v%s\n", *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmGetList.GetListMock.defaultExpectation.results
+		if mm_results == nil {
+			mmGetList.t.Fatal("No results are set for the AuthServiceMock.GetList")
+		}
+		return (*mm_results).ua1, (*mm_results).err
+	}
+	if mmGetList.funcGetList != nil {
+		return mmGetList.funcGetList(ctx, limit)
+	}
+	mmGetList.t.Fatalf("Unexpected call to AuthServiceMock.GetList. %v %v", ctx, limit)
+	return
+}
+
+// GetListAfterCounter returns a count of finished AuthServiceMock.GetList invocations
+func (mmGetList *AuthServiceMock) GetListAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmGetList.afterGetListCounter)
+}
+
+// GetListBeforeCounter returns a count of AuthServiceMock.GetList invocations
+func (mmGetList *AuthServiceMock) GetListBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmGetList.beforeGetListCounter)
+}
+
+// Calls returns a list of arguments used in each call to AuthServiceMock.GetList.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmGetList *mAuthServiceMockGetList) Calls() []*AuthServiceMockGetListParams {
+	mmGetList.mutex.RLock()
+
+	argCopy := make([]*AuthServiceMockGetListParams, len(mmGetList.callArgs))
+	copy(argCopy, mmGetList.callArgs)
+
+	mmGetList.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockGetListDone returns true if the count of the GetList invocations corresponds
+// the number of defined expectations
+func (m *AuthServiceMock) MinimockGetListDone() bool {
+	for _, e := range m.GetListMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	// if default expectation was set then invocations count should be greater than zero
+	if m.GetListMock.defaultExpectation != nil && mm_atomic.LoadUint64(&m.afterGetListCounter) < 1 {
+		return false
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcGetList != nil && mm_atomic.LoadUint64(&m.afterGetListCounter) < 1 {
+		return false
+	}
+	return true
+}
+
+// MinimockGetListInspect logs each unmet expectation
+func (m *AuthServiceMock) MinimockGetListInspect() {
+	for _, e := range m.GetListMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to AuthServiceMock.GetList with params: %#v", *e.params)
+		}
+	}
+
+	// if default expectation was set then invocations count should be greater than zero
+	if m.GetListMock.defaultExpectation != nil && mm_atomic.LoadUint64(&m.afterGetListCounter) < 1 {
+		if m.GetListMock.defaultExpectation.params == nil {
+			m.t.Error("Expected call to AuthServiceMock.GetList")
+		} else {
+			m.t.Errorf("Expected call to AuthServiceMock.GetList with params: %#v", *m.GetListMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcGetList != nil && mm_atomic.LoadUint64(&m.afterGetListCounter) < 1 {
+		m.t.Error("Expected call to AuthServiceMock.GetList")
+	}
+}
+
 type mAuthServiceMockUpdate struct {
 	mock               *AuthServiceMock
 	defaultExpectation *AuthServiceMockUpdateExpectation
@@ -941,6 +1168,8 @@ func (m *AuthServiceMock) MinimockFinish() {
 
 		m.MinimockFindInspect()
 
+		m.MinimockGetListInspect()
+
 		m.MinimockUpdateInspect()
 		m.t.FailNow()
 	}
@@ -968,5 +1197,6 @@ func (m *AuthServiceMock) minimockDone() bool {
 		m.MinimockCreateDone() &&
 		m.MinimockDeleteDone() &&
 		m.MinimockFindDone() &&
+		m.MinimockGetListDone() &&
 		m.MinimockUpdateDone()
 }

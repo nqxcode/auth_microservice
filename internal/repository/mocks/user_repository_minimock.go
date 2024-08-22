@@ -12,6 +12,7 @@ import (
 
 	"github.com/gojuno/minimock/v3"
 	"github.com/nqxcode/auth_microservice/internal/model"
+	"github.com/nqxcode/platform_common/pagination"
 )
 
 // UserRepositoryMock implements repository.UserRepository
@@ -36,6 +37,12 @@ type UserRepositoryMock struct {
 	beforeFindCounter uint64
 	FindMock          mUserRepositoryMockFind
 
+	funcGetList          func(ctx context.Context, limit *pagination.Limit) (ua1 []model.User, err error)
+	inspectFuncGetList   func(ctx context.Context, limit *pagination.Limit)
+	afterGetListCounter  uint64
+	beforeGetListCounter uint64
+	GetListMock          mUserRepositoryMockGetList
+
 	funcUpdate          func(ctx context.Context, id int64, info *model.UpdateUserInfo) (err error)
 	inspectFuncUpdate   func(ctx context.Context, id int64, info *model.UpdateUserInfo)
 	afterUpdateCounter  uint64
@@ -58,6 +65,9 @@ func NewUserRepositoryMock(t minimock.Tester) *UserRepositoryMock {
 
 	m.FindMock = mUserRepositoryMockFind{mock: m}
 	m.FindMock.callArgs = []*UserRepositoryMockFindParams{}
+
+	m.GetListMock = mUserRepositoryMockGetList{mock: m}
+	m.GetListMock.callArgs = []*UserRepositoryMockGetListParams{}
 
 	m.UpdateMock = mUserRepositoryMockUpdate{mock: m}
 	m.UpdateMock.callArgs = []*UserRepositoryMockUpdateParams{}
@@ -715,6 +725,223 @@ func (m *UserRepositoryMock) MinimockFindInspect() {
 	}
 }
 
+type mUserRepositoryMockGetList struct {
+	mock               *UserRepositoryMock
+	defaultExpectation *UserRepositoryMockGetListExpectation
+	expectations       []*UserRepositoryMockGetListExpectation
+
+	callArgs []*UserRepositoryMockGetListParams
+	mutex    sync.RWMutex
+}
+
+// UserRepositoryMockGetListExpectation specifies expectation struct of the UserRepository.GetList
+type UserRepositoryMockGetListExpectation struct {
+	mock    *UserRepositoryMock
+	params  *UserRepositoryMockGetListParams
+	results *UserRepositoryMockGetListResults
+	Counter uint64
+}
+
+// UserRepositoryMockGetListParams contains parameters of the UserRepository.GetList
+type UserRepositoryMockGetListParams struct {
+	ctx   context.Context
+	limit *pagination.Limit
+}
+
+// UserRepositoryMockGetListResults contains results of the UserRepository.GetList
+type UserRepositoryMockGetListResults struct {
+	ua1 []model.User
+	err error
+}
+
+// Expect sets up expected params for UserRepository.GetList
+func (mmGetList *mUserRepositoryMockGetList) Expect(ctx context.Context, limit *pagination.Limit) *mUserRepositoryMockGetList {
+	if mmGetList.mock.funcGetList != nil {
+		mmGetList.mock.t.Fatalf("UserRepositoryMock.GetList mock is already set by Set")
+	}
+
+	if mmGetList.defaultExpectation == nil {
+		mmGetList.defaultExpectation = &UserRepositoryMockGetListExpectation{}
+	}
+
+	mmGetList.defaultExpectation.params = &UserRepositoryMockGetListParams{ctx, limit}
+	for _, e := range mmGetList.expectations {
+		if minimock.Equal(e.params, mmGetList.defaultExpectation.params) {
+			mmGetList.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmGetList.defaultExpectation.params)
+		}
+	}
+
+	return mmGetList
+}
+
+// Inspect accepts an inspector function that has same arguments as the UserRepository.GetList
+func (mmGetList *mUserRepositoryMockGetList) Inspect(f func(ctx context.Context, limit *pagination.Limit)) *mUserRepositoryMockGetList {
+	if mmGetList.mock.inspectFuncGetList != nil {
+		mmGetList.mock.t.Fatalf("Inspect function is already set for UserRepositoryMock.GetList")
+	}
+
+	mmGetList.mock.inspectFuncGetList = f
+
+	return mmGetList
+}
+
+// Return sets up results that will be returned by UserRepository.GetList
+func (mmGetList *mUserRepositoryMockGetList) Return(ua1 []model.User, err error) *UserRepositoryMock {
+	if mmGetList.mock.funcGetList != nil {
+		mmGetList.mock.t.Fatalf("UserRepositoryMock.GetList mock is already set by Set")
+	}
+
+	if mmGetList.defaultExpectation == nil {
+		mmGetList.defaultExpectation = &UserRepositoryMockGetListExpectation{mock: mmGetList.mock}
+	}
+	mmGetList.defaultExpectation.results = &UserRepositoryMockGetListResults{ua1, err}
+	return mmGetList.mock
+}
+
+// Set uses given function f to mock the UserRepository.GetList method
+func (mmGetList *mUserRepositoryMockGetList) Set(f func(ctx context.Context, limit *pagination.Limit) (ua1 []model.User, err error)) *UserRepositoryMock {
+	if mmGetList.defaultExpectation != nil {
+		mmGetList.mock.t.Fatalf("Default expectation is already set for the UserRepository.GetList method")
+	}
+
+	if len(mmGetList.expectations) > 0 {
+		mmGetList.mock.t.Fatalf("Some expectations are already set for the UserRepository.GetList method")
+	}
+
+	mmGetList.mock.funcGetList = f
+	return mmGetList.mock
+}
+
+// When sets expectation for the UserRepository.GetList which will trigger the result defined by the following
+// Then helper
+func (mmGetList *mUserRepositoryMockGetList) When(ctx context.Context, limit *pagination.Limit) *UserRepositoryMockGetListExpectation {
+	if mmGetList.mock.funcGetList != nil {
+		mmGetList.mock.t.Fatalf("UserRepositoryMock.GetList mock is already set by Set")
+	}
+
+	expectation := &UserRepositoryMockGetListExpectation{
+		mock:   mmGetList.mock,
+		params: &UserRepositoryMockGetListParams{ctx, limit},
+	}
+	mmGetList.expectations = append(mmGetList.expectations, expectation)
+	return expectation
+}
+
+// Then sets up UserRepository.GetList return parameters for the expectation previously defined by the When method
+func (e *UserRepositoryMockGetListExpectation) Then(ua1 []model.User, err error) *UserRepositoryMock {
+	e.results = &UserRepositoryMockGetListResults{ua1, err}
+	return e.mock
+}
+
+// GetList implements repository.UserRepository
+func (mmGetList *UserRepositoryMock) GetList(ctx context.Context, limit *pagination.Limit) (ua1 []model.User, err error) {
+	mm_atomic.AddUint64(&mmGetList.beforeGetListCounter, 1)
+	defer mm_atomic.AddUint64(&mmGetList.afterGetListCounter, 1)
+
+	if mmGetList.inspectFuncGetList != nil {
+		mmGetList.inspectFuncGetList(ctx, limit)
+	}
+
+	mm_params := &UserRepositoryMockGetListParams{ctx, limit}
+
+	// Record call args
+	mmGetList.GetListMock.mutex.Lock()
+	mmGetList.GetListMock.callArgs = append(mmGetList.GetListMock.callArgs, mm_params)
+	mmGetList.GetListMock.mutex.Unlock()
+
+	for _, e := range mmGetList.GetListMock.expectations {
+		if minimock.Equal(e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.ua1, e.results.err
+		}
+	}
+
+	if mmGetList.GetListMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmGetList.GetListMock.defaultExpectation.Counter, 1)
+		mm_want := mmGetList.GetListMock.defaultExpectation.params
+		mm_got := UserRepositoryMockGetListParams{ctx, limit}
+		if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmGetList.t.Errorf("UserRepositoryMock.GetList got unexpected parameters, want: %#v, got: %#v%s\n", *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmGetList.GetListMock.defaultExpectation.results
+		if mm_results == nil {
+			mmGetList.t.Fatal("No results are set for the UserRepositoryMock.GetList")
+		}
+		return (*mm_results).ua1, (*mm_results).err
+	}
+	if mmGetList.funcGetList != nil {
+		return mmGetList.funcGetList(ctx, limit)
+	}
+	mmGetList.t.Fatalf("Unexpected call to UserRepositoryMock.GetList. %v %v", ctx, limit)
+	return
+}
+
+// GetListAfterCounter returns a count of finished UserRepositoryMock.GetList invocations
+func (mmGetList *UserRepositoryMock) GetListAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmGetList.afterGetListCounter)
+}
+
+// GetListBeforeCounter returns a count of UserRepositoryMock.GetList invocations
+func (mmGetList *UserRepositoryMock) GetListBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmGetList.beforeGetListCounter)
+}
+
+// Calls returns a list of arguments used in each call to UserRepositoryMock.GetList.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmGetList *mUserRepositoryMockGetList) Calls() []*UserRepositoryMockGetListParams {
+	mmGetList.mutex.RLock()
+
+	argCopy := make([]*UserRepositoryMockGetListParams, len(mmGetList.callArgs))
+	copy(argCopy, mmGetList.callArgs)
+
+	mmGetList.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockGetListDone returns true if the count of the GetList invocations corresponds
+// the number of defined expectations
+func (m *UserRepositoryMock) MinimockGetListDone() bool {
+	for _, e := range m.GetListMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	// if default expectation was set then invocations count should be greater than zero
+	if m.GetListMock.defaultExpectation != nil && mm_atomic.LoadUint64(&m.afterGetListCounter) < 1 {
+		return false
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcGetList != nil && mm_atomic.LoadUint64(&m.afterGetListCounter) < 1 {
+		return false
+	}
+	return true
+}
+
+// MinimockGetListInspect logs each unmet expectation
+func (m *UserRepositoryMock) MinimockGetListInspect() {
+	for _, e := range m.GetListMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to UserRepositoryMock.GetList with params: %#v", *e.params)
+		}
+	}
+
+	// if default expectation was set then invocations count should be greater than zero
+	if m.GetListMock.defaultExpectation != nil && mm_atomic.LoadUint64(&m.afterGetListCounter) < 1 {
+		if m.GetListMock.defaultExpectation.params == nil {
+			m.t.Error("Expected call to UserRepositoryMock.GetList")
+		} else {
+			m.t.Errorf("Expected call to UserRepositoryMock.GetList with params: %#v", *m.GetListMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcGetList != nil && mm_atomic.LoadUint64(&m.afterGetListCounter) < 1 {
+		m.t.Error("Expected call to UserRepositoryMock.GetList")
+	}
+}
+
 type mUserRepositoryMockUpdate struct {
 	mock               *UserRepositoryMock
 	defaultExpectation *UserRepositoryMockUpdateExpectation
@@ -941,6 +1168,8 @@ func (m *UserRepositoryMock) MinimockFinish() {
 
 		m.MinimockFindInspect()
 
+		m.MinimockGetListInspect()
+
 		m.MinimockUpdateInspect()
 		m.t.FailNow()
 	}
@@ -968,5 +1197,6 @@ func (m *UserRepositoryMock) minimockDone() bool {
 		m.MinimockCreateDone() &&
 		m.MinimockDeleteDone() &&
 		m.MinimockFindDone() &&
+		m.MinimockGetListDone() &&
 		m.MinimockUpdateDone()
 }
