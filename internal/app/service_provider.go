@@ -13,6 +13,7 @@ import (
 	authService "github.com/nqxcode/auth_microservice/internal/service/auth"
 	hashService "github.com/nqxcode/auth_microservice/internal/service/hash"
 	logService "github.com/nqxcode/auth_microservice/internal/service/log"
+	"github.com/nqxcode/platform_common/client/cache"
 	"github.com/nqxcode/platform_common/client/db"
 	"github.com/nqxcode/platform_common/client/db/pg"
 	"github.com/nqxcode/platform_common/client/db/transaction"
@@ -23,9 +24,11 @@ type serviceProvider struct {
 	pgConfig      config.PGConfig
 	grpcConfig    config.GRPCConfig
 	hashingConfig config.HashingConfig
+	redisConfig   cache.RedisConfig
 
 	dbClient       db.Client
 	txManager      db.TxManager
+	redisClient    cache.Cache
 	userRepository repository.UserRepository
 	logRepository  repository.LogRepository
 
@@ -79,6 +82,19 @@ func (s *serviceProvider) HashingConfig() config.HashingConfig {
 	return s.hashingConfig
 }
 
+func (s *serviceProvider) RedisConfig() cache.RedisConfig {
+	if s.redisConfig == nil {
+		cfg, err := config.NewRedisConfig()
+		if err != nil {
+			log.Fatalf("failed to get redis config: %s", err.Error())
+		}
+
+		s.redisConfig = cfg
+	}
+
+	return s.redisConfig
+}
+
 func (s *serviceProvider) DBClient(ctx context.Context) db.Client {
 	if s.dbClient == nil {
 		cl, err := pg.New(ctx, s.PGConfig().DSN())
@@ -96,6 +112,18 @@ func (s *serviceProvider) DBClient(ctx context.Context) db.Client {
 	}
 
 	return s.dbClient
+}
+
+func (s *serviceProvider) RedisClient(ctx context.Context) cache.Cache {
+	if s.redisClient == nil {
+		var err error
+		s.redisClient, err = cache.NewRedisClient(ctx, s.RedisConfig())
+		if err != nil {
+			log.Fatalf("redis client error: %s", err.Error())
+		}
+	}
+
+	return s.redisClient
 }
 
 func (s *serviceProvider) TxManager(ctx context.Context) db.TxManager {
