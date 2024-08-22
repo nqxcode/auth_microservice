@@ -9,4 +9,6 @@ const (
 	UserDeleted = "user deleted"
 	// UserFound user found log action
 	UserFound = "user found"
+	// UserList user list log action
+	UserList = "user list"
 )

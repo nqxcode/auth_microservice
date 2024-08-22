@@ -9,6 +9,7 @@ import (
 	"github.com/nqxcode/auth_microservice/internal/repository/user/converter"
 	modelRepo "github.com/nqxcode/auth_microservice/internal/repository/user/model"
 	"github.com/nqxcode/platform_common/client/db"
+	"github.com/nqxcode/platform_common/pagination"
 
 	sq "github.com/Masterminds/squirrel"
 )
@@ -142,6 +143,32 @@ func (r *repo) Find(ctx context.Context, id int64) (*model.User, error) {
 	}
 
 	return converter.ToUserFromRepo(&user), nil
+}
+
+func (r *repo) GetList(ctx context.Context, limit *pagination.Limit) ([]model.User, error) {
+	builder := sq.Select(idColumn, nameColumn, emailColumn, roleColumn, passwordColumn, createdAtColumn, updatedAtColumn).
+		PlaceholderFormat(sq.Dollar).
+		From(tableName).
+		Offset(limit.Offset).
+		Limit(limit.Limit)
+
+	query, args, err := builder.ToSql()
+	if err != nil {
+		return nil, err
+	}
+
+	q := db.Query{
+		Name:     tableName + "_repository.GetList",
+		QueryRaw: query,
+	}
+
+	var users []modelRepo.User
+	err = r.db.DB().ScanAllContext(ctx, &users, q, args...)
+	if err != nil {
+		return nil, err
+	}
+
+	return converter.ToManyUserFromRepo(users), nil
 }
 
 func escape(value string) string {

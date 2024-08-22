@@ -11,6 +11,7 @@ option go_package = "github.com/nqxcode/auth_microservice/pkg/auth_v1;auth_v1";
 service AuthV1 {
   rpc Create(CreateRequest) returns (CreateResponse);
   rpc Get(GetRequest) returns (GetResponse);
+  rpc GetList(GetListRequest) returns (GetListResponse);
   rpc Update(UpdateRequest) returns (google.protobuf.Empty);
   rpc Delete(DeleteRequest) returns (google.protobuf.Empty);
 }
@@ -66,5 +67,17 @@ message DeleteRequest {
   int64 id = 1;
 }
 
+message Limit {
+  uint64 offset = 1;
+  uint64 limit = 2;
+}
+
+message GetListRequest {
+  Limit limit = 1;
+}
+
+message GetListResponse {
+  repeated User users = 1;
+}
 
 

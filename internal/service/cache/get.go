@@ -6,5 +6,10 @@ import (
 )
 
 func (s *service) Get(ctx context.Context, userID int64) (*model.User, error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
 	panic("implement me")
+
+	// TODO implement
 }

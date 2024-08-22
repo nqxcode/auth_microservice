@@ -22,6 +22,15 @@ func ToUserFromService(user *model.User) *desc.User {
 	}
 }
 
+// ToUsersFromService convert to users model
+func ToUsersFromService(users []model.User) []*desc.User {
+	userList := make([]*desc.User, len(users))
+	for i := range users {
+		userList = append(userList, ToUserFromService(&users[i]))
+	}
+	return userList
+}
+
 // ToUserInfoFromService convert to user info model
 func ToUserInfoFromService(user *model.User) *desc.UserInfo {
 	return &desc.UserInfo{
