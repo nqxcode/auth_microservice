@@ -8,9 +8,9 @@ import (
 	"github.com/nqxcode/auth_microservice/internal/api/auth"
 	"github.com/nqxcode/auth_microservice/internal/converter"
 	"github.com/nqxcode/auth_microservice/internal/service"
-	"github.com/nqxcode/auth_microservice/internal/service/auth/tests/support"
 	serviceMocks "github.com/nqxcode/auth_microservice/internal/service/mocks"
 	desc "github.com/nqxcode/auth_microservice/pkg/auth_v1"
+	helperGob "github.com/nqxcode/platform_common/helper/gob"
 
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/gojuno/minimock/v3"
@@ -20,7 +20,7 @@ import (
 )
 
 func TestCreate(t *testing.T) {
-	//t.Parallel()
+	t.Parallel()
 
 	type AuthServiceMockFunc func(mc *minimock.Controller) service.AuthService
 
@@ -90,7 +90,7 @@ func TestCreate(t *testing.T) {
 				ctx: ctx,
 				req: func() *desc.CreateRequest {
 					var invalidReq *desc.CreateRequest
-					support.DeepClone(req, &invalidReq)
+					helperGob.DeepClone(req, &invalidReq)
 
 					invalidReq.Info.Email = "invalid email"
 
@@ -111,7 +111,7 @@ func TestCreate(t *testing.T) {
 				ctx: ctx,
 				req: func() *desc.CreateRequest {
 					var invalidReq *desc.CreateRequest
-					support.DeepClone(req, &invalidReq)
+					helperGob.DeepClone(req, &invalidReq)
 
 					invalidReq.Info.Email = ""
 
@@ -132,7 +132,7 @@ func TestCreate(t *testing.T) {
 				ctx: ctx,
 				req: func() *desc.CreateRequest {
 					var invalidReq *desc.CreateRequest
-					support.DeepClone(req, &invalidReq)
+					helperGob.DeepClone(req, &invalidReq)
 
 					invalidReq.Info.Name = ""
 
@@ -153,7 +153,7 @@ func TestCreate(t *testing.T) {
 				ctx: ctx,
 				req: func() *desc.CreateRequest {
 					var invalidReq *desc.CreateRequest
-					support.DeepClone(req, &invalidReq)
+					helperGob.DeepClone(req, &invalidReq)
 
 					invalidReq.Info.Role = 0
 
@@ -174,7 +174,7 @@ func TestCreate(t *testing.T) {
 				ctx: ctx,
 				req: func() *desc.CreateRequest {
 					var invalidReq *desc.CreateRequest
-					support.DeepClone(req, &invalidReq)
+					helperGob.DeepClone(req, &invalidReq)
 
 					invalidReq.Password = "123"
 					invalidReq.PasswordConfirm = "321"
@@ -196,7 +196,7 @@ func TestCreate(t *testing.T) {
 				ctx: ctx,
 				req: func() *desc.CreateRequest {
 					var invalidReq *desc.CreateRequest
-					support.DeepClone(req, &invalidReq)
+					helperGob.DeepClone(req, &invalidReq)
 
 					invalidReq.Info = nil
 
@@ -231,7 +231,7 @@ func TestCreate(t *testing.T) {
 	for _, tt := range cases {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			//t.Parallel()
+			t.Parallel()
 
 			authServiceMock := tt.authServiceMockFunc(mc)
 			api := auth.NewImplementation(authServiceMock)

@@ -131,8 +131,8 @@ github.com/mattn/go-isatty v0.0.8/go.mod h1:Iq45c/XA43vh69/j3iqttzPXn0bhXyGjM0Hd
 github.com/mattn/go-isatty v0.0.9/go.mod h1:YNRxwqDuOph6SZLI9vUUz6OYw3QyUt7WiY2yME+cCiQ=
 github.com/mattn/go-isatty v0.0.12/go.mod h1:cbi8OIDigv2wuxKPP5vlRcQ1OAZbq2CE4Kysco4FUpU=
 github.com/mattn/go-sqlite3 v1.14.6/go.mod h1:NyWgC/yNuGj7Q9rpYnZvas74GogHl5/Z4A/KQRfk6bU=
-github.com/nqxcode/platform_common v0.0.0-20240822094705-dd125fff720f h1:eVvnWWadBtK+AGJlkcIDgG8eBtcm1mdPb8/f2PUQFf0=
-github.com/nqxcode/platform_common v0.0.0-20240822094705-dd125fff720f/go.mod h1:b730Eofaai+qjmGwHPJNtgIZn3pyQUIQEu8Hz67MkhE=
+github.com/nqxcode/platform_common v0.0.0-20240822130248-6ad4c1cf9326 h1:BARjXNq0OsvZwnnDqtGcTC3nqK8cnq1XG9gVn5bdwbk=
+github.com/nqxcode/platform_common v0.0.0-20240822130248-6ad4c1cf9326/go.mod h1:b730Eofaai+qjmGwHPJNtgIZn3pyQUIQEu8Hz67MkhE=
 github.com/pkg/errors v0.8.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pkg/errors v0.9.1 h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=
 github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
