@@ -3,19 +3,21 @@ package tests
 import (
 	"context"
 	"fmt"
-	"github.com/brianvoe/gofakeit/v6"
-	"github.com/gojuno/minimock/v3"
+	"testing"
+
 	"github.com/nqxcode/auth_microservice/internal/model"
 	"github.com/nqxcode/auth_microservice/internal/repository"
 	repoMocks "github.com/nqxcode/auth_microservice/internal/repository/mocks"
 	"github.com/nqxcode/auth_microservice/internal/service"
 	"github.com/nqxcode/auth_microservice/internal/service/auth"
-	testsService "github.com/nqxcode/auth_microservice/internal/service/auth/tests/service"
+	service2 "github.com/nqxcode/auth_microservice/internal/service/auth/tests/support"
 	"github.com/nqxcode/auth_microservice/internal/service/log/constants"
 	serviceMocks "github.com/nqxcode/auth_microservice/internal/service/mocks"
 	"github.com/nqxcode/platform_common/client/db"
+
+	"github.com/brianvoe/gofakeit/v6"
+	"github.com/gojuno/minimock/v3"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestDelete(t *testing.T) {
@@ -81,7 +83,7 @@ func TestDelete(t *testing.T) {
 				mock := serviceMocks.NewHashServiceMock(mc)
 				return mock
 			},
-			txManagerFake: testsService.NewTxManagerFake(),
+			txManagerFake: service2.NewTxManagerFake(),
 		},
 		{
 			name: "service error case",
@@ -106,7 +108,7 @@ func TestDelete(t *testing.T) {
 				mock := serviceMocks.NewHashServiceMock(mc)
 				return mock
 			},
-			txManagerFake: testsService.NewTxManagerFake(),
+			txManagerFake: service2.NewTxManagerFake(),
 		},
 	}
 

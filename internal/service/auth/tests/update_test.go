@@ -3,20 +3,22 @@ package tests
 import (
 	"context"
 	"fmt"
-	"github.com/brianvoe/gofakeit/v6"
-	"github.com/gojuno/minimock/v3"
+	"testing"
+
 	"github.com/nqxcode/auth_microservice/internal/model"
 	"github.com/nqxcode/auth_microservice/internal/repository"
 	repoMocks "github.com/nqxcode/auth_microservice/internal/repository/mocks"
 	"github.com/nqxcode/auth_microservice/internal/service"
 	"github.com/nqxcode/auth_microservice/internal/service/auth"
-	testsService "github.com/nqxcode/auth_microservice/internal/service/auth/tests/service"
+	service2 "github.com/nqxcode/auth_microservice/internal/service/auth/tests/support"
 	"github.com/nqxcode/auth_microservice/internal/service/log/constants"
 	serviceMocks "github.com/nqxcode/auth_microservice/internal/service/mocks"
 	desc "github.com/nqxcode/auth_microservice/pkg/auth_v1"
 	"github.com/nqxcode/platform_common/client/db"
+
+	"github.com/brianvoe/gofakeit/v6"
+	"github.com/gojuno/minimock/v3"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestUpdate(t *testing.T) {
@@ -92,7 +94,7 @@ func TestUpdate(t *testing.T) {
 				mock := serviceMocks.NewHashServiceMock(mc)
 				return mock
 			},
-			txManagerFake: testsService.NewTxManagerFake(),
+			txManagerFake: service2.NewTxManagerFake(),
 		},
 		{
 			name: "service error case",
@@ -117,7 +119,7 @@ func TestUpdate(t *testing.T) {
 				mock := serviceMocks.NewHashServiceMock(mc)
 				return mock
 			},
-			txManagerFake: testsService.NewTxManagerFake(),
+			txManagerFake: service2.NewTxManagerFake(),
 		},
 	}
 

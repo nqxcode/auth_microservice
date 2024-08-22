@@ -10,7 +10,7 @@ import (
 	repoMocks "github.com/nqxcode/auth_microservice/internal/repository/mocks"
 	"github.com/nqxcode/auth_microservice/internal/service"
 	"github.com/nqxcode/auth_microservice/internal/service/auth"
-	testsService "github.com/nqxcode/auth_microservice/internal/service/auth/tests/service"
+	testsSupport "github.com/nqxcode/auth_microservice/internal/service/auth/tests/support"
 	"github.com/nqxcode/auth_microservice/internal/service/log/constants"
 	serviceMocks "github.com/nqxcode/auth_microservice/internal/service/mocks"
 	desc "github.com/nqxcode/auth_microservice/pkg/auth_v1"
@@ -99,7 +99,7 @@ func TestCreate(t *testing.T) {
 				mock.HashMock.Expect(ctx, password).Return(passwordHash, nil)
 				return mock
 			},
-			txManagerFake: testsService.NewTxManagerFake(),
+			txManagerFake: testsSupport.NewTxManagerFake(),
 		},
 		{
 			name: "service error case",
@@ -128,7 +128,7 @@ func TestCreate(t *testing.T) {
 				mock.HashMock.Expect(ctx, password).Return(passwordHash, nil)
 				return mock
 			},
-			txManagerFake: testsService.NewTxManagerFake(),
+			txManagerFake: testsSupport.NewTxManagerFake(),
 		},
 	}
 

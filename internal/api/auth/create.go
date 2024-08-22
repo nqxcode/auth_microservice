@@ -17,7 +17,7 @@ func (s *Implementation) Create(ctx context.Context, req *desc.CreateRequest) (*
 	log.Printf("Create user: %+v", req.GetInfo())
 
 	if err := createRequestValidate(req); err != nil {
-		return nil, status.Error(codes.InvalidArgument, err.Error())
+		return nil, err
 	}
 
 	userID, err := s.authService.Create(ctx, converter.ToUserFromDesc(req.GetInfo(), req.GetPassword()))
