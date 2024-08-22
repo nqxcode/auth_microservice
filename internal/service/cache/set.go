@@ -6,5 +6,5 @@ import (
 )
 
 func (s *service) Set(ctx context.Context, user *model.User) error {
-	return nil
+	panic("implement me")
 }

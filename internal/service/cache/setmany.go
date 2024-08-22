@@ -6,5 +6,5 @@ import (
 )
 
 func (s *service) SetMany(ctx context.Context, users []model.User) error {
-	return nil
+	panic("implement me")
 }

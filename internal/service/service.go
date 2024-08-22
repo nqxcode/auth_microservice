@@ -31,4 +31,5 @@ type CacheService interface {
 	SetMany(ctx context.Context, users []model.User) error
 	Get(ctx context.Context, userID int64) (*model.User, error)
 	GetMany(ctx context.Context, userIDs []int64) ([]model.User, error)
+	Delete(ctx context.Context, userID int64) error
 }

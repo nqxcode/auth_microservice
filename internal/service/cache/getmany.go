@@ -7,5 +7,5 @@ import (
 )
 
 func (s *service) GetMany(ctx context.Context, userIDs []int64) ([]model.User, error) {
-	return nil, nil
+	panic("implement me")
 }

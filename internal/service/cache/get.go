@@ -6,5 +6,5 @@ import (
 )
 
 func (s *service) Get(ctx context.Context, userID int64) (*model.User, error) {
-	return nil, nil
+	panic("implement me")
 }
