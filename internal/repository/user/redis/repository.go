@@ -53,6 +53,10 @@ func (r repo) Create(ctx context.Context, model *model.User) (int64, error) {
 
 // Update user
 func (r repo) Update(ctx context.Context, id int64, info *model.UpdateUserInfo) error {
+	if info == nil {
+		return nil
+	}
+
 	idStr := strconv.FormatInt(id, 10)
 	values, err := r.redisClient.HGetAll(ctx, buildCacheKey(idStr))
 	if err != nil {

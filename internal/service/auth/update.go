@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"github.com/pkg/errors"
 	"log"
 
 	"github.com/nqxcode/auth_microservice/internal/model"
@@ -9,6 +10,10 @@ import (
 )
 
 func (s *service) Update(ctx context.Context, userID int64, info *model.UpdateUserInfo) error {
+	if info == nil {
+		return errors.New("info is nil")
+	}
+
 	err := s.txManager.ReadCommitted(ctx, func(ctx context.Context) error {
 		errTx := s.userRepository.Update(ctx, userID, info)
 		if errTx != nil {

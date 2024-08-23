@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"github.com/pkg/errors"
 	"log"
 
 	"github.com/nqxcode/auth_microservice/internal/model"
@@ -9,6 +10,10 @@ import (
 )
 
 func (s *service) Create(ctx context.Context, user *model.User) (int64, error) {
+	if user == nil {
+		return 0, errors.New("user is nil")
+	}
+
 	var userID int64
 	err := s.txManager.ReadCommitted(ctx, func(ctx context.Context) error {
 		password, errHash := s.hashService.Hash(ctx, user.Password)

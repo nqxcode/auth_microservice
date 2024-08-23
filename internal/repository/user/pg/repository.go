@@ -3,6 +3,7 @@ package pg
 import (
 	"context"
 	"fmt"
+	"github.com/pkg/errors"
 
 	"github.com/nqxcode/auth_microservice/internal/model"
 	"github.com/nqxcode/auth_microservice/internal/repository"
@@ -36,6 +37,10 @@ func NewRepository(db db.Client) repository.UserRepository {
 }
 
 func (r *repo) Create(ctx context.Context, model *model.User) (int64, error) {
+	if model == nil {
+		return 0, errors.New("model is nil")
+	}
+
 	builder := sq.Insert(escape(tableName)).
 		PlaceholderFormat(sq.Dollar).
 		Columns(nameColumn, emailColumn, roleColumn, passwordColumn).
