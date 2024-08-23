@@ -30,8 +30,8 @@ type HashService interface {
 // CacheService cache service
 type CacheService interface {
 	Set(ctx context.Context, user *model.User) error
-	SetMany(ctx context.Context, users []model.User) error
+	SetList(ctx context.Context, users []model.User) error
 	Get(ctx context.Context, userID int64) (*model.User, error)
-	GetMany(ctx context.Context, userIDs []int64) ([]model.User, error)
+	GetList(ctx context.Context, limit *pagination.Limit) ([]model.User, error)
 	Delete(ctx context.Context, userID int64) error
 }

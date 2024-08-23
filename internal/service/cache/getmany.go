@@ -4,9 +4,10 @@ import (
 	"context"
 
 	"github.com/nqxcode/auth_microservice/internal/model"
+	"github.com/nqxcode/platform_common/pagination"
 )
 
-func (s *service) GetMany(ctx context.Context, userIDs []int64) ([]model.User, error) {
+func (s *service) GetList(ctx context.Context, limit *pagination.Limit) ([]model.User, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
