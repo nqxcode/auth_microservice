@@ -1,64 +1,125 @@
 package config
 
 import (
+	"net"
 	"os"
 	"strconv"
+	"time"
 
-	"github.com/nqxcode/platform_common/client/cache"
 	"github.com/pkg/errors"
 )
 
 const (
-	addressEnvName  = "REDIS_ADDRESS"
-	passwordEnvName = "REDIS_PASSWORD"
-	dbEnvName       = "REDIS_DB"
+	redisHostEnvName              = "REDIS_HOST"
+	redisPortEnvName              = "REDIS_PORT"
+	redisPasswordEnvName          = "REDIS_PASSWORD"
+	redisConnectionTimeoutEnvName = "REDIS_CONNECTION_TIMEOUT_SEC"
+	redisMaxIdleEnvName           = "REDIS_MAX_IDLE"
+	redisIdleTimeoutEnvName       = "REDIS_IDLE_TIMEOUT_SEC"
+	redisDbEnvName                = "REDIS_DB"
 )
 
 type redisConfig struct {
-	address  string
+	host string
+	port string
+
 	password string
-	db       int
+
+	connectionTimeout time.Duration
+
+	maxIdle     int
+	idleTimeout time.Duration
+
+	db int
 }
 
-// NewRedisConfig create new redis config
-func NewRedisConfig() (cache.RedisConfig, error) {
-	address := os.Getenv(addressEnvName)
-	if len(address) == 0 {
-		return nil, errors.New("redis address not found")
+func NewRedisConfig() (*redisConfig, error) {
+	host := os.Getenv(redisHostEnvName)
+	if len(host) == 0 {
+		return nil, errors.New("redis host not found")
 	}
 
-	password := os.Getenv(passwordEnvName)
-	if len(address) == 0 {
+	port := os.Getenv(redisPortEnvName)
+	if len(port) == 0 {
+		return nil, errors.New("redis port not found")
+	}
+
+	password := os.Getenv(redisPasswordEnvName)
+	if len(password) == 0 {
 		return nil, errors.New("redis password not found")
 	}
 
-	dbStr := os.Getenv(dbEnvName)
-	if len(dbStr) == 0 {
-		return nil, errors.New("redis database not found")
+	connectionTimeoutStr := os.Getenv(redisConnectionTimeoutEnvName)
+	if len(connectionTimeoutStr) == 0 {
+		return nil, errors.New("redis connection timeout not found")
 	}
-	db, err := strconv.Atoi(dbStr)
+
+	connectionTimeout, err := strconv.ParseInt(connectionTimeoutStr, 10, 64)
 	if err != nil {
-		return nil, errors.New("redis database is not a number")
+		return nil, errors.Wrap(err, "failed to parse connection timeout")
+	}
+
+	maxIdleStr := os.Getenv(redisMaxIdleEnvName)
+	if len(maxIdleStr) == 0 {
+		return nil, errors.New("redis max idle not found")
+	}
+
+	maxIdle, err := strconv.Atoi(maxIdleStr)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to parse max idle")
+	}
+
+	idleTimeoutStr := os.Getenv(redisIdleTimeoutEnvName)
+	if len(idleTimeoutStr) == 0 {
+		return nil, errors.New("redis idle timeout not found")
+	}
+
+	idleTimeout, err := strconv.ParseInt(idleTimeoutStr, 10, 64)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to parse idle timeout")
+	}
+
+	dbStr := os.Getenv(redisDbEnvName)
+	if len(dbStr) == 0 {
+		return nil, errors.New("redis db not found")
+	}
+
+	db, err := strconv.ParseInt(dbStr, 10, 64)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to parse db")
 	}
 
 	return &redisConfig{
-		address:  address,
-		password: password,
-		db:       db,
+		host:              host,
+		port:              port,
+		password:          password,
+		connectionTimeout: time.Duration(connectionTimeout) * time.Second,
+		maxIdle:           maxIdle,
+		idleTimeout:       time.Duration(idleTimeout) * time.Second,
+		db:                int(db),
 	}, nil
 }
 
-// Address get address
 func (cfg *redisConfig) Address() string {
-	return cfg.address
+	return net.JoinHostPort(cfg.host, cfg.port)
 }
 
-// Password get password
 func (cfg *redisConfig) Password() string {
 	return cfg.password
 }
 
-// DB get db
+func (cfg *redisConfig) ConnectionTimeout() time.Duration {
+	return cfg.connectionTimeout
+}
+
+func (cfg *redisConfig) MaxIdle() int {
+	return cfg.maxIdle
+}
+
+func (cfg *redisConfig) IdleTimeout() time.Duration {
+	return cfg.idleTimeout
+}
+
 func (cfg *redisConfig) DB() int {
 	return cfg.db
 }

@@ -30,6 +30,7 @@ type HashService interface {
 // CacheService cache service
 type CacheService interface {
 	Set(ctx context.Context, user *model.User) error
+	SetPartial(ctx context.Context, id int64, user *model.UpdateUserInfo) error
 	SetList(ctx context.Context, users []model.User) error
 	Get(ctx context.Context, userID int64) (*model.User, error)
 	GetList(ctx context.Context, limit *pagination.Limit) ([]model.User, error)

@@ -7,8 +7,9 @@ require (
 	github.com/brianvoe/gofakeit/v6 v6.28.0
 	github.com/gojuno/minimock/v3 v3.3.14
 	github.com/golang/protobuf v1.5.4
+	github.com/gomodule/redigo v1.9.2
 	github.com/joho/godotenv v1.5.1
-	github.com/nqxcode/platform_common v0.0.0-20240822180841-ffd4f00adb93
+	github.com/nqxcode/platform_common v0.0.0-20240823133705-c1538f8963b5
 	github.com/pkg/errors v0.9.1
 	github.com/redis/go-redis/v9 v9.6.1
 	github.com/stretchr/testify v1.8.4
@@ -38,6 +39,5 @@ require (
 	golang.org/x/sys v0.21.0 // indirect
 	golang.org/x/text v0.16.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240604185151-ef581f913117 // indirect
-	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.5.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

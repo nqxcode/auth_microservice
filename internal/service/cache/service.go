@@ -1,20 +1,20 @@
 package cache
 
 import (
+	"github.com/nqxcode/auth_microservice/internal/repository"
 	"sync"
 
 	def "github.com/nqxcode/auth_microservice/internal/service"
-	"github.com/nqxcode/platform_common/client/cache"
 )
 
 type service struct {
-	mu          sync.RWMutex
-	cacheClient cache.Cache
+	mu             sync.RWMutex
+	userRepository repository.UserRepository
 }
 
 // NewService new cache service
-func NewService(cacheClient cache.Cache) def.CacheService {
+func NewService(userRepository repository.UserRepository) def.CacheService {
 	return &service{
-		cacheClient: cacheClient,
+		userRepository: userRepository,
 	}
 }

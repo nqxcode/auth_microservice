@@ -11,5 +11,10 @@ func (s *service) GetList(ctx context.Context, limit *pagination.Limit) ([]model
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
-	panic("implement me")
+	users, err := s.userRepository.GetList(ctx, limit)
+	if err != nil {
+		return nil, err
+	}
+
+	return users, nil
 }

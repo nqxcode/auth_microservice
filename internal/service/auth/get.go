@@ -51,12 +51,14 @@ func (s *service) Get(ctx context.Context, id int64) (*model.User, error) {
 		return nil, err
 	}
 
-	go func() {
-		err = s.cacheService.Set(ctx, user)
-		if err != nil {
-			log.Println("cant set user to cache:", err)
-		}
-	}()
+	if user != nil {
+		go func() {
+			err = s.cacheService.Set(ctx, user)
+			if err != nil {
+				log.Println("cant set user to cache:", err)
+			}
+		}()
+	}
 
 	return user, err
 }

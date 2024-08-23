@@ -6,6 +6,10 @@ func (s *service) Delete(ctx context.Context, userID int64) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	panic("implement me")
-	// TODO implement
+	err := s.userRepository.Delete(ctx, userID)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

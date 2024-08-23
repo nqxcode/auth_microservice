@@ -16,15 +16,15 @@ func (s *service) GetList(ctx context.Context, limit *pagination.Limit) ([]model
 		users []model.User
 		err   error
 	)
-	users, err = s.cacheService.GetList(ctx, id)
+	users, err = s.cacheService.GetList(ctx, limit)
 	if err != nil {
 		if !errors.Is(err, redis.Nil) { // TODO check this comparison
 			return nil, err
 		}
 	}
 
-	if user != nil {
-		return user, nil
+	if len(users) > 0 {
+		return users, nil
 	}
 
 	err = s.txManager.ReadCommitted(ctx, func(ctx context.Context) error {
@@ -50,12 +50,14 @@ func (s *service) GetList(ctx context.Context, limit *pagination.Limit) ([]model
 		return nil, err
 	}
 
-	go func() {
-		err = s.cacheService.SetList(ctx, users)
-		if err != nil {
-			log.Println("cant set many users to cache:", err)
-		}
-	}()
+	if len(users) > 0 {
+		go func() {
+			err = s.cacheService.SetList(ctx, users)
+			if err != nil {
+				log.Println("cant set many users to cache:", err)
+			}
+		}()
+	}
 
 	return users, nil
 }

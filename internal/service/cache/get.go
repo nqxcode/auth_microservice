@@ -9,7 +9,10 @@ func (s *service) Get(ctx context.Context, userID int64) (*model.User, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
-	panic("implement me")
+	user, err := s.userRepository.Get(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
 
-	// TODO implement
+	return user, nil
 }

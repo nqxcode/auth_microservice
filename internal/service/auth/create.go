@@ -2,9 +2,10 @@ package auth
 
 import (
 	"context"
-	"github.com/nqxcode/auth_microservice/internal/service/log/constants"
+	"log"
 
 	"github.com/nqxcode/auth_microservice/internal/model"
+	"github.com/nqxcode/auth_microservice/internal/service/log/constants"
 )
 
 func (s *service) Create(ctx context.Context, user *model.User) (int64, error) {
@@ -21,9 +22,14 @@ func (s *service) Create(ctx context.Context, user *model.User) (int64, error) {
 			return errTx
 		}
 
+		user, errTx = s.userRepository.Get(ctx, userID)
+		if errTx != nil {
+			return errTx
+		}
+
 		err := s.logService.Create(ctx, &model.Log{
 			Message: constants.UserCreated,
-			Payload: model.User{ID: userID, Info: user.Info},
+			Payload: user,
 		})
 
 		if err != nil {
@@ -33,5 +39,18 @@ func (s *service) Create(ctx context.Context, user *model.User) (int64, error) {
 		return nil
 	})
 
-	return userID, err
+	if err != nil {
+		return 0, err
+	}
+
+	if user != nil {
+		go func() {
+			err = s.cacheService.Set(ctx, user)
+			if err != nil {
+				log.Println("cant set user to cache:", err)
+			}
+		}()
+	}
+
+	return userID, nil
 }

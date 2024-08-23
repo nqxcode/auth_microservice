@@ -2,13 +2,15 @@ package app
 
 import (
 	"context"
+	"github.com/nqxcode/platform_common/client/cache/redis"
 	"log"
 
 	"github.com/nqxcode/auth_microservice/internal/api/auth"
 	"github.com/nqxcode/auth_microservice/internal/config"
 	"github.com/nqxcode/auth_microservice/internal/repository"
 	logRepository "github.com/nqxcode/auth_microservice/internal/repository/log"
-	userRepository "github.com/nqxcode/auth_microservice/internal/repository/user"
+	pgUserRepository "github.com/nqxcode/auth_microservice/internal/repository/user/pg"
+	redisUserRepository "github.com/nqxcode/auth_microservice/internal/repository/user/redis"
 	"github.com/nqxcode/auth_microservice/internal/service"
 	authService "github.com/nqxcode/auth_microservice/internal/service/auth"
 	cacheService "github.com/nqxcode/auth_microservice/internal/service/cache"
@@ -19,6 +21,8 @@ import (
 	"github.com/nqxcode/platform_common/client/db/pg"
 	"github.com/nqxcode/platform_common/client/db/transaction"
 	"github.com/nqxcode/platform_common/closer"
+
+	redigo "github.com/gomodule/redigo/redis"
 )
 
 type serviceProvider struct {
@@ -27,11 +31,16 @@ type serviceProvider struct {
 	hashingConfig config.HashingConfig
 	redisConfig   cache.RedisConfig
 
-	dbClient       db.Client
-	txManager      db.TxManager
-	redisClient    cache.Cache
+	dbClient  db.Client
+	txManager db.TxManager
+
+	redisPool   *redigo.Pool
+	redisClient cache.RedisClient
+
 	userRepository repository.UserRepository
 	logRepository  repository.LogRepository
+
+	cacheUserRepository repository.UserRepository
 
 	logService   service.LogService
 	hashService  service.HashService
@@ -116,15 +125,29 @@ func (s *serviceProvider) DBClient(ctx context.Context) db.Client {
 	return s.dbClient
 }
 
-func (s *serviceProvider) RedisClient(ctx context.Context) cache.Cache {
-	if s.redisClient == nil {
-		cl, err := cache.NewRedisClient(ctx, s.RedisConfig())
-		if err != nil {
-			log.Fatalf("redis client error: %s", err.Error())
+func (s *serviceProvider) RedisPool() *redigo.Pool {
+	if s.redisPool == nil {
+		s.redisPool = &redigo.Pool{
+			MaxIdle:     s.RedisConfig().MaxIdle(),
+			IdleTimeout: s.RedisConfig().IdleTimeout(),
+			DialContext: func(ctx context.Context) (redigo.Conn, error) {
+				return redigo.DialContext(
+					ctx,
+					"tcp",
+					s.RedisConfig().Address(),
+					redigo.DialDatabase(s.RedisConfig().DB()),
+					redigo.DialPassword(s.RedisConfig().Password()),
+				)
+			},
 		}
-		closer.Add(cl.Close)
+	}
 
-		s.redisClient = cl
+	return s.redisPool
+}
+
+func (s *serviceProvider) RedisClient() cache.RedisClient {
+	if s.redisClient == nil {
+		s.redisClient = redis.NewClient(s.RedisPool(), s.RedisConfig())
 	}
 
 	return s.redisClient
@@ -138,9 +161,9 @@ func (s *serviceProvider) TxManager(ctx context.Context) db.TxManager {
 	return s.txManager
 }
 
-func (s *serviceProvider) AuthRepository(ctx context.Context) repository.UserRepository {
+func (s *serviceProvider) UserRepository(ctx context.Context) repository.UserRepository {
 	if s.userRepository == nil {
-		s.userRepository = userRepository.NewRepository(s.DBClient(ctx))
+		s.userRepository = pgUserRepository.NewRepository(s.DBClient(ctx))
 	}
 
 	return s.userRepository
@@ -152,6 +175,14 @@ func (s *serviceProvider) LogRepository(ctx context.Context) repository.LogRepos
 	}
 
 	return s.logRepository
+}
+
+func (s *serviceProvider) CacheUserRepository() repository.UserRepository {
+	if s.userRepository == nil {
+		s.userRepository = redisUserRepository.NewRepository(s.RedisClient())
+	}
+
+	return s.userRepository
 }
 
 func (s *serviceProvider) LogService(ctx context.Context) service.LogService {
@@ -177,10 +208,10 @@ func (s *serviceProvider) HashService(ctx context.Context) service.HashService {
 func (s *serviceProvider) AuthService(ctx context.Context) service.AuthService {
 	if s.authService == nil {
 		s.authService = authService.NewService(
-			s.AuthRepository(ctx),
+			s.UserRepository(ctx),
 			s.LogService(ctx),
 			s.HashService(ctx),
-			s.CacheService(ctx),
+			s.CacheService(),
 			s.TxManager(ctx),
 		)
 	}
@@ -188,10 +219,10 @@ func (s *serviceProvider) AuthService(ctx context.Context) service.AuthService {
 	return s.authService
 }
 
-func (s *serviceProvider) CacheService(ctx context.Context) service.CacheService {
+func (s *serviceProvider) CacheService() service.CacheService {
 	if s.cacheService == nil {
 		s.cacheService = cacheService.NewService(
-			s.RedisClient(ctx),
+			s.CacheUserRepository(),
 		)
 	}
 

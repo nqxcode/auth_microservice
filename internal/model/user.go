@@ -14,14 +14,14 @@ type User struct {
 	UpdatedAt sql.NullTime
 }
 
-// UserInfo user info model
+// UserInfo represents user info model
 type UserInfo struct {
 	Name  string
 	Email string
 	Role  int32
 }
 
-// UpdateUserInfo model ot update user info
+// UpdateUserInfo represents model ot update user info
 type UpdateUserInfo struct {
 	Name *string
 	Role *int32

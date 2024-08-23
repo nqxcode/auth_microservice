@@ -10,5 +10,12 @@ func (s *service) SetList(ctx context.Context, users []model.User) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	panic("implement me")
+	for i := range users {
+		_, err := s.userRepository.Create(ctx, &users[i])
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

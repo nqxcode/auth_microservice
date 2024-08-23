@@ -2,14 +2,14 @@ package auth
 
 import (
 	"context"
-
 	"github.com/nqxcode/auth_microservice/internal/model"
 	"github.com/nqxcode/auth_microservice/internal/service/log/constants"
+	"log"
 )
 
-func (s *service) Update(ctx context.Context, id int64, info *model.UpdateUserInfo) error {
+func (s *service) Update(ctx context.Context, userID int64, info *model.UpdateUserInfo) error {
 	err := s.txManager.ReadCommitted(ctx, func(ctx context.Context) error {
-		errTx := s.userRepository.Update(ctx, id, info)
+		errTx := s.userRepository.Update(ctx, userID, info)
 		if errTx != nil {
 			return errTx
 		}
@@ -20,7 +20,7 @@ func (s *service) Update(ctx context.Context, id int64, info *model.UpdateUserIn
 				ID   int64
 				Info *model.UpdateUserInfo
 			}{
-				ID:   id,
+				ID:   userID,
 				Info: info,
 			},
 		})
@@ -32,5 +32,18 @@ func (s *service) Update(ctx context.Context, id int64, info *model.UpdateUserIn
 		return nil
 	})
 
-	return err
+	if err != nil {
+		return err
+	}
+
+	if info != nil {
+		go func() {
+			err = s.cacheService.SetPartial(ctx, userID, info)
+			if err != nil {
+				log.Println("cant set user to cache:", err)
+			}
+		}()
+	}
+
+	return nil
 }

@@ -2,7 +2,7 @@ package converter
 
 import (
 	"github.com/nqxcode/auth_microservice/internal/model"
-	modelRepo "github.com/nqxcode/auth_microservice/internal/repository/user/model"
+	modelRepo "github.com/nqxcode/auth_microservice/internal/repository/user/pg/model"
 )
 
 // ToUserFromRepo model converter

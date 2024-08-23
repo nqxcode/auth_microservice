@@ -1,6 +1,6 @@
 package model
 
-// Log log model
+// Log represents the model of log
 type Log struct {
 	Message string
 	Payload any
