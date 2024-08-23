@@ -69,7 +69,9 @@ func (s *service) GetList(ctx context.Context, limit pagination.Limit) ([]model.
 
 	users := make([]model.User, 0, len(ids))
 	for _, id := range ids {
-		users = append(users, userMap[id])
+		if u, ok := userMap[id]; ok {
+			users = append(users, u)
+		}
 	}
 
 	return users, nil
