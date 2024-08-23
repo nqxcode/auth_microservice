@@ -35,7 +35,7 @@ func ToUserInfoFromService(user *model.User) *desc.UserInfo {
 func ToUpdateUserInfoFromDesc(info *desc.UpdateUserInfo) *model.UpdateUserInfo {
 	var name *string
 	if info.GetName() != nil {
-		name = toPtr(info.GetName().String())
+		name = toPtr(info.GetName().GetValue())
 	}
 
 	var role *int32

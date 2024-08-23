@@ -75,8 +75,7 @@ func (r *repo) Update(ctx context.Context, id int64, info *model.UpdateUserInfo)
 		builder = builder.Set(roleColumn, *info.Role)
 	}
 
-	builder.
-		Where(sq.Eq{idColumn: id})
+	builder = builder.Where(sq.Eq{idColumn: id})
 
 	query, args, err := builder.ToSql()
 	if err != nil {
