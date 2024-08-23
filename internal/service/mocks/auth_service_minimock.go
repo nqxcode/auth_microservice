@@ -517,7 +517,7 @@ type mAuthServiceMockFind struct {
 	mutex    sync.RWMutex
 }
 
-// AuthServiceMockFindExpectation specifies expectation struct of the AuthService.Find
+// AuthServiceMockFindExpectation specifies expectation struct of the AuthService.Get
 type AuthServiceMockFindExpectation struct {
 	mock    *AuthServiceMock
 	params  *AuthServiceMockFindParams
@@ -525,22 +525,22 @@ type AuthServiceMockFindExpectation struct {
 	Counter uint64
 }
 
-// AuthServiceMockFindParams contains parameters of the AuthService.Find
+// AuthServiceMockFindParams contains parameters of the AuthService.Get
 type AuthServiceMockFindParams struct {
 	ctx context.Context
 	id  int64
 }
 
-// AuthServiceMockFindResults contains results of the AuthService.Find
+// AuthServiceMockFindResults contains results of the AuthService.Get
 type AuthServiceMockFindResults struct {
 	up1 *model.User
 	err error
 }
 
-// Expect sets up expected params for AuthService.Find
+// Expect sets up expected params for AuthService.Get
 func (mmFind *mAuthServiceMockFind) Expect(ctx context.Context, id int64) *mAuthServiceMockFind {
 	if mmFind.mock.funcFind != nil {
-		mmFind.mock.t.Fatalf("AuthServiceMock.Find mock is already set by Set")
+		mmFind.mock.t.Fatalf("AuthServiceMock.Get mock is already set by Set")
 	}
 
 	if mmFind.defaultExpectation == nil {
@@ -557,10 +557,10 @@ func (mmFind *mAuthServiceMockFind) Expect(ctx context.Context, id int64) *mAuth
 	return mmFind
 }
 
-// Inspect accepts an inspector function that has same arguments as the AuthService.Find
+// Inspect accepts an inspector function that has same arguments as the AuthService.Get
 func (mmFind *mAuthServiceMockFind) Inspect(f func(ctx context.Context, id int64)) *mAuthServiceMockFind {
 	if mmFind.mock.inspectFuncFind != nil {
-		mmFind.mock.t.Fatalf("Inspect function is already set for AuthServiceMock.Find")
+		mmFind.mock.t.Fatalf("Inspect function is already set for AuthServiceMock.Get")
 	}
 
 	mmFind.mock.inspectFuncFind = f
@@ -568,10 +568,10 @@ func (mmFind *mAuthServiceMockFind) Inspect(f func(ctx context.Context, id int64
 	return mmFind
 }
 
-// Return sets up results that will be returned by AuthService.Find
+// Return sets up results that will be returned by AuthService.Get
 func (mmFind *mAuthServiceMockFind) Return(up1 *model.User, err error) *AuthServiceMock {
 	if mmFind.mock.funcFind != nil {
-		mmFind.mock.t.Fatalf("AuthServiceMock.Find mock is already set by Set")
+		mmFind.mock.t.Fatalf("AuthServiceMock.Get mock is already set by Set")
 	}
 
 	if mmFind.defaultExpectation == nil {
@@ -581,25 +581,25 @@ func (mmFind *mAuthServiceMockFind) Return(up1 *model.User, err error) *AuthServ
 	return mmFind.mock
 }
 
-// Set uses given function f to mock the AuthService.Find method
+// Set uses given function f to mock the AuthService.Get method
 func (mmFind *mAuthServiceMockFind) Set(f func(ctx context.Context, id int64) (up1 *model.User, err error)) *AuthServiceMock {
 	if mmFind.defaultExpectation != nil {
-		mmFind.mock.t.Fatalf("Default expectation is already set for the AuthService.Find method")
+		mmFind.mock.t.Fatalf("Default expectation is already set for the AuthService.Get method")
 	}
 
 	if len(mmFind.expectations) > 0 {
-		mmFind.mock.t.Fatalf("Some expectations are already set for the AuthService.Find method")
+		mmFind.mock.t.Fatalf("Some expectations are already set for the AuthService.Get method")
 	}
 
 	mmFind.mock.funcFind = f
 	return mmFind.mock
 }
 
-// When sets expectation for the AuthService.Find which will trigger the result defined by the following
+// When sets expectation for the AuthService.Get which will trigger the result defined by the following
 // Then helper
 func (mmFind *mAuthServiceMockFind) When(ctx context.Context, id int64) *AuthServiceMockFindExpectation {
 	if mmFind.mock.funcFind != nil {
-		mmFind.mock.t.Fatalf("AuthServiceMock.Find mock is already set by Set")
+		mmFind.mock.t.Fatalf("AuthServiceMock.Get mock is already set by Set")
 	}
 
 	expectation := &AuthServiceMockFindExpectation{
@@ -610,14 +610,14 @@ func (mmFind *mAuthServiceMockFind) When(ctx context.Context, id int64) *AuthSer
 	return expectation
 }
 
-// Then sets up AuthService.Find return parameters for the expectation previously defined by the When method
+// Then sets up AuthService.Get return parameters for the expectation previously defined by the When method
 func (e *AuthServiceMockFindExpectation) Then(up1 *model.User, err error) *AuthServiceMock {
 	e.results = &AuthServiceMockFindResults{up1, err}
 	return e.mock
 }
 
 // Find implements service.AuthService
-func (mmFind *AuthServiceMock) Find(ctx context.Context, id int64) (up1 *model.User, err error) {
+func (mmFind *AuthServiceMock) Get(ctx context.Context, id int64) (up1 *model.User, err error) {
 	mm_atomic.AddUint64(&mmFind.beforeFindCounter, 1)
 	defer mm_atomic.AddUint64(&mmFind.afterFindCounter, 1)
 
@@ -644,19 +644,19 @@ func (mmFind *AuthServiceMock) Find(ctx context.Context, id int64) (up1 *model.U
 		mm_want := mmFind.FindMock.defaultExpectation.params
 		mm_got := AuthServiceMockFindParams{ctx, id}
 		if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
-			mmFind.t.Errorf("AuthServiceMock.Find got unexpected parameters, want: %#v, got: %#v%s\n", *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+			mmFind.t.Errorf("AuthServiceMock.Get got unexpected parameters, want: %#v, got: %#v%s\n", *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
 		}
 
 		mm_results := mmFind.FindMock.defaultExpectation.results
 		if mm_results == nil {
-			mmFind.t.Fatal("No results are set for the AuthServiceMock.Find")
+			mmFind.t.Fatal("No results are set for the AuthServiceMock.Get")
 		}
 		return (*mm_results).up1, (*mm_results).err
 	}
 	if mmFind.funcFind != nil {
 		return mmFind.funcFind(ctx, id)
 	}
-	mmFind.t.Fatalf("Unexpected call to AuthServiceMock.Find. %v %v", ctx, id)
+	mmFind.t.Fatalf("Unexpected call to AuthServiceMock.Get. %v %v", ctx, id)
 	return
 }
 
@@ -707,21 +707,21 @@ func (m *AuthServiceMock) MinimockFindDone() bool {
 func (m *AuthServiceMock) MinimockFindInspect() {
 	for _, e := range m.FindMock.expectations {
 		if mm_atomic.LoadUint64(&e.Counter) < 1 {
-			m.t.Errorf("Expected call to AuthServiceMock.Find with params: %#v", *e.params)
+			m.t.Errorf("Expected call to AuthServiceMock.Get with params: %#v", *e.params)
 		}
 	}
 
 	// if default expectation was set then invocations count should be greater than zero
 	if m.FindMock.defaultExpectation != nil && mm_atomic.LoadUint64(&m.afterFindCounter) < 1 {
 		if m.FindMock.defaultExpectation.params == nil {
-			m.t.Error("Expected call to AuthServiceMock.Find")
+			m.t.Error("Expected call to AuthServiceMock.Get")
 		} else {
-			m.t.Errorf("Expected call to AuthServiceMock.Find with params: %#v", *m.FindMock.defaultExpectation.params)
+			m.t.Errorf("Expected call to AuthServiceMock.Get with params: %#v", *m.FindMock.defaultExpectation.params)
 		}
 	}
 	// if func was set then invocations count should be greater than zero
 	if m.funcFind != nil && mm_atomic.LoadUint64(&m.afterFindCounter) < 1 {
-		m.t.Error("Expected call to AuthServiceMock.Find")
+		m.t.Error("Expected call to AuthServiceMock.Get")
 	}
 }
 

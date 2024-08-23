@@ -10,7 +10,7 @@ import (
 // AuthService auth service
 type AuthService interface {
 	Create(ctx context.Context, user *model.User) (int64, error)
-	Find(ctx context.Context, id int64) (*model.User, error)
+	Get(ctx context.Context, id int64) (*model.User, error)
 	GetList(ctx context.Context, limit *pagination.Limit) ([]model.User, error)
 	Update(ctx context.Context, id int64, info *model.UpdateUserInfo) error
 	Delete(ctx context.Context, id int64) error

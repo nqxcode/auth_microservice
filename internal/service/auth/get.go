@@ -11,7 +11,7 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-func (s *service) Find(ctx context.Context, id int64) (*model.User, error) {
+func (s *service) Get(ctx context.Context, id int64) (*model.User, error) {
 	var (
 		user *model.User
 		err  error
@@ -30,7 +30,7 @@ func (s *service) Find(ctx context.Context, id int64) (*model.User, error) {
 
 	err = s.txManager.ReadCommitted(ctx, func(ctx context.Context) error {
 		var errTx error
-		user, errTx = s.userRepository.Find(ctx, id)
+		user, errTx = s.userRepository.Get(ctx, id)
 		if errTx != nil {
 			return errTx
 		}

@@ -119,7 +119,7 @@ func (r *repo) Delete(ctx context.Context, id int64) error {
 	return nil
 }
 
-func (r *repo) Find(ctx context.Context, id int64) (*model.User, error) {
+func (r *repo) Get(ctx context.Context, id int64) (*model.User, error) {
 	builder := sq.Select(idColumn, nameColumn, emailColumn, roleColumn, passwordColumn, createdAtColumn, updatedAtColumn).
 		PlaceholderFormat(sq.Dollar).
 		From(escape(tableName)).
@@ -132,7 +132,7 @@ func (r *repo) Find(ctx context.Context, id int64) (*model.User, error) {
 	}
 
 	q := db.Query{
-		Name:     tableName + "_repository.Find",
+		Name:     tableName + "_repository.Get",
 		QueryRaw: query,
 	}
 

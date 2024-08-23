@@ -517,7 +517,7 @@ type mUserRepositoryMockFind struct {
 	mutex    sync.RWMutex
 }
 
-// UserRepositoryMockFindExpectation specifies expectation struct of the UserRepository.Find
+// UserRepositoryMockFindExpectation specifies expectation struct of the UserRepository.Get
 type UserRepositoryMockFindExpectation struct {
 	mock    *UserRepositoryMock
 	params  *UserRepositoryMockFindParams
@@ -525,22 +525,22 @@ type UserRepositoryMockFindExpectation struct {
 	Counter uint64
 }
 
-// UserRepositoryMockFindParams contains parameters of the UserRepository.Find
+// UserRepositoryMockFindParams contains parameters of the UserRepository.Get
 type UserRepositoryMockFindParams struct {
 	ctx context.Context
 	id  int64
 }
 
-// UserRepositoryMockFindResults contains results of the UserRepository.Find
+// UserRepositoryMockFindResults contains results of the UserRepository.Get
 type UserRepositoryMockFindResults struct {
 	up1 *model.User
 	err error
 }
 
-// Expect sets up expected params for UserRepository.Find
+// Expect sets up expected params for UserRepository.Get
 func (mmFind *mUserRepositoryMockFind) Expect(ctx context.Context, id int64) *mUserRepositoryMockFind {
 	if mmFind.mock.funcFind != nil {
-		mmFind.mock.t.Fatalf("UserRepositoryMock.Find mock is already set by Set")
+		mmFind.mock.t.Fatalf("UserRepositoryMock.Get mock is already set by Set")
 	}
 
 	if mmFind.defaultExpectation == nil {
@@ -557,10 +557,10 @@ func (mmFind *mUserRepositoryMockFind) Expect(ctx context.Context, id int64) *mU
 	return mmFind
 }
 
-// Inspect accepts an inspector function that has same arguments as the UserRepository.Find
+// Inspect accepts an inspector function that has same arguments as the UserRepository.Get
 func (mmFind *mUserRepositoryMockFind) Inspect(f func(ctx context.Context, id int64)) *mUserRepositoryMockFind {
 	if mmFind.mock.inspectFuncFind != nil {
-		mmFind.mock.t.Fatalf("Inspect function is already set for UserRepositoryMock.Find")
+		mmFind.mock.t.Fatalf("Inspect function is already set for UserRepositoryMock.Get")
 	}
 
 	mmFind.mock.inspectFuncFind = f
@@ -568,10 +568,10 @@ func (mmFind *mUserRepositoryMockFind) Inspect(f func(ctx context.Context, id in
 	return mmFind
 }
 
-// Return sets up results that will be returned by UserRepository.Find
+// Return sets up results that will be returned by UserRepository.Get
 func (mmFind *mUserRepositoryMockFind) Return(up1 *model.User, err error) *UserRepositoryMock {
 	if mmFind.mock.funcFind != nil {
-		mmFind.mock.t.Fatalf("UserRepositoryMock.Find mock is already set by Set")
+		mmFind.mock.t.Fatalf("UserRepositoryMock.Get mock is already set by Set")
 	}
 
 	if mmFind.defaultExpectation == nil {
@@ -581,25 +581,25 @@ func (mmFind *mUserRepositoryMockFind) Return(up1 *model.User, err error) *UserR
 	return mmFind.mock
 }
 
-// Set uses given function f to mock the UserRepository.Find method
+// Set uses given function f to mock the UserRepository.Get method
 func (mmFind *mUserRepositoryMockFind) Set(f func(ctx context.Context, id int64) (up1 *model.User, err error)) *UserRepositoryMock {
 	if mmFind.defaultExpectation != nil {
-		mmFind.mock.t.Fatalf("Default expectation is already set for the UserRepository.Find method")
+		mmFind.mock.t.Fatalf("Default expectation is already set for the UserRepository.Get method")
 	}
 
 	if len(mmFind.expectations) > 0 {
-		mmFind.mock.t.Fatalf("Some expectations are already set for the UserRepository.Find method")
+		mmFind.mock.t.Fatalf("Some expectations are already set for the UserRepository.Get method")
 	}
 
 	mmFind.mock.funcFind = f
 	return mmFind.mock
 }
 
-// When sets expectation for the UserRepository.Find which will trigger the result defined by the following
+// When sets expectation for the UserRepository.Get which will trigger the result defined by the following
 // Then helper
 func (mmFind *mUserRepositoryMockFind) When(ctx context.Context, id int64) *UserRepositoryMockFindExpectation {
 	if mmFind.mock.funcFind != nil {
-		mmFind.mock.t.Fatalf("UserRepositoryMock.Find mock is already set by Set")
+		mmFind.mock.t.Fatalf("UserRepositoryMock.Get mock is already set by Set")
 	}
 
 	expectation := &UserRepositoryMockFindExpectation{
@@ -610,14 +610,14 @@ func (mmFind *mUserRepositoryMockFind) When(ctx context.Context, id int64) *User
 	return expectation
 }
 
-// Then sets up UserRepository.Find return parameters for the expectation previously defined by the When method
+// Then sets up UserRepository.Get return parameters for the expectation previously defined by the When method
 func (e *UserRepositoryMockFindExpectation) Then(up1 *model.User, err error) *UserRepositoryMock {
 	e.results = &UserRepositoryMockFindResults{up1, err}
 	return e.mock
 }
 
 // Find implements repository.UserRepository
-func (mmFind *UserRepositoryMock) Find(ctx context.Context, id int64) (up1 *model.User, err error) {
+func (mmFind *UserRepositoryMock) Get(ctx context.Context, id int64) (up1 *model.User, err error) {
 	mm_atomic.AddUint64(&mmFind.beforeFindCounter, 1)
 	defer mm_atomic.AddUint64(&mmFind.afterFindCounter, 1)
 
@@ -644,19 +644,19 @@ func (mmFind *UserRepositoryMock) Find(ctx context.Context, id int64) (up1 *mode
 		mm_want := mmFind.FindMock.defaultExpectation.params
 		mm_got := UserRepositoryMockFindParams{ctx, id}
 		if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
-			mmFind.t.Errorf("UserRepositoryMock.Find got unexpected parameters, want: %#v, got: %#v%s\n", *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+			mmFind.t.Errorf("UserRepositoryMock.Get got unexpected parameters, want: %#v, got: %#v%s\n", *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
 		}
 
 		mm_results := mmFind.FindMock.defaultExpectation.results
 		if mm_results == nil {
-			mmFind.t.Fatal("No results are set for the UserRepositoryMock.Find")
+			mmFind.t.Fatal("No results are set for the UserRepositoryMock.Get")
 		}
 		return (*mm_results).up1, (*mm_results).err
 	}
 	if mmFind.funcFind != nil {
 		return mmFind.funcFind(ctx, id)
 	}
-	mmFind.t.Fatalf("Unexpected call to UserRepositoryMock.Find. %v %v", ctx, id)
+	mmFind.t.Fatalf("Unexpected call to UserRepositoryMock.Get. %v %v", ctx, id)
 	return
 }
 
@@ -707,21 +707,21 @@ func (m *UserRepositoryMock) MinimockFindDone() bool {
 func (m *UserRepositoryMock) MinimockFindInspect() {
 	for _, e := range m.FindMock.expectations {
 		if mm_atomic.LoadUint64(&e.Counter) < 1 {
-			m.t.Errorf("Expected call to UserRepositoryMock.Find with params: %#v", *e.params)
+			m.t.Errorf("Expected call to UserRepositoryMock.Get with params: %#v", *e.params)
 		}
 	}
 
 	// if default expectation was set then invocations count should be greater than zero
 	if m.FindMock.defaultExpectation != nil && mm_atomic.LoadUint64(&m.afterFindCounter) < 1 {
 		if m.FindMock.defaultExpectation.params == nil {
-			m.t.Error("Expected call to UserRepositoryMock.Find")
+			m.t.Error("Expected call to UserRepositoryMock.Get")
 		} else {
-			m.t.Errorf("Expected call to UserRepositoryMock.Find with params: %#v", *m.FindMock.defaultExpectation.params)
+			m.t.Errorf("Expected call to UserRepositoryMock.Get with params: %#v", *m.FindMock.defaultExpectation.params)
 		}
 	}
 	// if func was set then invocations count should be greater than zero
 	if m.funcFind != nil && mm_atomic.LoadUint64(&m.afterFindCounter) < 1 {
-		m.t.Error("Expected call to UserRepositoryMock.Find")
+		m.t.Error("Expected call to UserRepositoryMock.Get")
 	}
 }
 

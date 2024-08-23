@@ -26,6 +26,7 @@ func TestCreate(t *testing.T) {
 	type userRepositoryMock func(mc *minimock.Controller) repository.UserRepository
 	type logServiceMock func(mc *minimock.Controller) service.LogService
 	type hashServiceMock func(mc *minimock.Controller) service.HashService
+	type cacheServiceMock func(mc *minimock.Controller) service.CacheService
 
 	type input struct {
 		ctx  context.Context
@@ -66,6 +67,7 @@ func TestCreate(t *testing.T) {
 		userRepositoryMock userRepositoryMock
 		logServiceMock     logServiceMock
 		hashServiceMock    hashServiceMock
+		cacheServiceMock   cacheServiceMock
 		txManagerFake      db.TxManager
 	}{
 		{
@@ -140,9 +142,10 @@ func TestCreate(t *testing.T) {
 			userRepoMock := tt.userRepositoryMock(mc)
 			logSrvMock := tt.logServiceMock(mc)
 			hashSrvMock := tt.hashServiceMock(mc)
+			cacheSrvMock := tt.cacheServiceMock(mc)
 			txMngFake := tt.txManagerFake
 
-			srv := auth.NewService(userRepoMock, logSrvMock, hashSrvMock, txMngFake)
+			srv := auth.NewService(userRepoMock, logSrvMock, hashSrvMock, cacheSrvMock, txMngFake)
 
 			ar, err := srv.Create(tt.input.ctx, tt.input.user)
 			require.Equal(t, tt.expected.err, err)
