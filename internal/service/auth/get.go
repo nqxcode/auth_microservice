@@ -17,7 +17,7 @@ func (s *service) Get(ctx context.Context, id int64) (*model.User, error) {
 		err  error
 	)
 
-	user, err = s.cacheService.Get(ctx, id)
+	user, err = s.cacheUserService.Get(ctx, id)
 	if err != nil {
 		if !errors.Is(err, redis.Nil) { // TODO check this comparison
 			return nil, err
@@ -53,7 +53,7 @@ func (s *service) Get(ctx context.Context, id int64) (*model.User, error) {
 
 	if user != nil {
 		go func() {
-			err = s.cacheService.Set(ctx, user)
+			err = s.cacheUserService.Set(ctx, user)
 			if err != nil {
 				log.Println("cant set user to cache:", err)
 			}

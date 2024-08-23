@@ -2,8 +2,8 @@ package user
 
 import (
 	"context"
-
 	"github.com/nqxcode/auth_microservice/internal/model"
+	"github.com/nqxcode/platform_common/helper/slice"
 	modelCommon "github.com/nqxcode/platform_common/model"
 	"github.com/nqxcode/platform_common/pagination"
 )
@@ -12,15 +12,7 @@ func (s *service) SetList(ctx context.Context, users []model.User, limit paginat
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	err := s.redisClient.RPush(ctx, buildListCacheKeyByLimit(limit), func() []interface{} {
-		userIDs := modelCommon.ExtractIDs(users)
-
-		var results []interface{}
-		for _, user := range userIDs {
-			results = append(results, user)
-		}
-		return results
-	}())
+	err := s.redisClient.RPush(ctx, buildListCacheKeyByLimit(limit), slice.ToAnySlice(modelCommon.ExtractIDs(users)))
 	if err != nil {
 		return err
 	}

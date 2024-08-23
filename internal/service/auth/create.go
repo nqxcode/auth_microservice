@@ -45,7 +45,7 @@ func (s *service) Create(ctx context.Context, user *model.User) (int64, error) {
 
 	if user != nil {
 		go func() {
-			err = s.cacheService.Set(ctx, user)
+			err = s.cacheUserService.Set(ctx, user)
 			if err != nil {
 				log.Println("cant set user to cache:", err)
 			}

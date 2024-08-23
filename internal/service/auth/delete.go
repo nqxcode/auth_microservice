@@ -32,7 +32,7 @@ func (s *service) Delete(ctx context.Context, userID int64) error {
 	}
 
 	go func() {
-		err = s.cacheService.Delete(ctx, userID)
+		err = s.cacheUserService.Delete(ctx, userID)
 		if err != nil {
 			log.Println("cant delete user to cache:", err)
 		}

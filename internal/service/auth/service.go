@@ -7,11 +7,11 @@ import (
 )
 
 type service struct {
-	userRepository repository.UserRepository
-	logService     def.LogService
-	hashService    def.HashService
-	cacheService   def.CacheUserService
-	txManager      db.TxManager
+	userRepository   repository.UserRepository
+	logService       def.LogService
+	hashService      def.HashService
+	cacheUserService def.CacheUserService
+	txManager        db.TxManager
 }
 
 // NewService new auth service
@@ -19,14 +19,14 @@ func NewService(
 	userRepository repository.UserRepository,
 	logService def.LogService,
 	hashService def.HashService,
-	cacheService def.CacheUserService,
+	cacheUserService def.CacheUserService,
 	txManager db.TxManager,
 ) def.AuthService {
 	return &service{
-		userRepository: userRepository,
-		logService:     logService,
-		hashService:    hashService,
-		cacheService:   cacheService,
-		txManager:      txManager,
+		userRepository:   userRepository,
+		logService:       logService,
+		hashService:      hashService,
+		cacheUserService: cacheUserService,
+		txManager:        txManager,
 	}
 }

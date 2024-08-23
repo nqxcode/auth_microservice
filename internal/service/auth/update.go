@@ -39,7 +39,7 @@ func (s *service) Update(ctx context.Context, userID int64, info *model.UpdateUs
 
 	if info != nil {
 		go func() {
-			err = s.cacheService.SetPartial(ctx, userID, info)
+			err = s.cacheUserService.SetPartial(ctx, userID, info)
 			if err != nil {
 				log.Println("cant set user to cache:", err)
 			}

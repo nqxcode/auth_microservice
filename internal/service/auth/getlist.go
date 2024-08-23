@@ -17,7 +17,7 @@ func (s *service) GetList(ctx context.Context, limit pagination.Limit) ([]model.
 		users []model.User
 		err   error
 	)
-	users, err = s.cacheService.GetList(ctx, limit)
+	users, err = s.cacheUserService.GetList(ctx, limit)
 	if err != nil {
 		if !errors.Is(err, redis.Nil) { // TODO check this comparison
 			return nil, err
@@ -53,7 +53,7 @@ func (s *service) GetList(ctx context.Context, limit pagination.Limit) ([]model.
 
 	if len(users) > 0 {
 		go func() {
-			err = s.cacheService.SetList(ctx, users, limit)
+			err = s.cacheUserService.SetList(ctx, users, limit)
 			if err != nil {
 				log.Println("cant set many users to cache:", err)
 			}
