@@ -1,7 +1,8 @@
-package cache
+package user
 
 import (
 	"context"
+
 	"github.com/nqxcode/auth_microservice/internal/model"
 )
 

@@ -149,6 +149,7 @@ func (r *repo) GetList(ctx context.Context, limit pagination.Limit) ([]model.Use
 	builder := sq.Select(idColumn, nameColumn, emailColumn, roleColumn, passwordColumn, createdAtColumn, updatedAtColumn).
 		PlaceholderFormat(sq.Dollar).
 		From(escape(tableName)).
+		OrderBy(idColumn).
 		Offset(limit.Offset).
 		Limit(limit.Limit)
 

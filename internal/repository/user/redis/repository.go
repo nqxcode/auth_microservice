@@ -89,7 +89,7 @@ func (r repo) Update(ctx context.Context, id int64, info *model.UpdateUserInfo) 
 		return nil
 	}
 
-	err = r.redisClient.HashSet(ctx, buildCacheKey(idStr), user) // TODO set only changes field without getting of source values
+	err = r.redisClient.HashSet(ctx, buildCacheKey(idStr), user)
 	if err != nil {
 		return err
 	}
@@ -133,11 +133,11 @@ func (r repo) Get(ctx context.Context, id int64) (*model.User, error) {
 func (r repo) GetList(ctx context.Context, limit pagination.Limit) ([]model.User, error) {
 	cacheKeyPrefix := buildCacheKeyPrefix()
 
-	keys, err := r.redisClient.Scan(ctx, buildCacheKey("*"), func(a, b string) bool {
+	keys, err := r.redisClient.Scan(ctx, buildCacheKey("*"), cache.WithKeyComparator(func(a, b string) bool {
 		aNum := extractNumberAfterPrefix(a, cacheKeyPrefix)
 		bNum := extractNumberAfterPrefix(b, cacheKeyPrefix)
 		return aNum < bNum
-	})
+	}))
 
 	if err != nil {
 		return nil, err

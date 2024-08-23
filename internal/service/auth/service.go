@@ -10,7 +10,7 @@ type service struct {
 	userRepository repository.UserRepository
 	logService     def.LogService
 	hashService    def.HashService
-	cacheService   def.CacheService
+	cacheService   def.CacheUserService
 	txManager      db.TxManager
 }
 
@@ -19,7 +19,7 @@ func NewService(
 	userRepository repository.UserRepository,
 	logService def.LogService,
 	hashService def.HashService,
-	cacheService def.CacheService,
+	cacheService def.CacheUserService,
 	txManager db.TxManager,
 ) def.AuthService {
 	return &service{

@@ -14,6 +14,10 @@ type User struct {
 	UpdatedAt sql.NullTime
 }
 
+func (u User) GetID() int64 {
+	return u.ID
+}
+
 // UserInfo represents user info model
 type UserInfo struct {
 	Name  string

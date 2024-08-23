@@ -26,7 +26,7 @@ func TestUpdate(t *testing.T) {
 	type userRepositoryMock func(mc *minimock.Controller) repository.UserRepository
 	type logServiceMock func(mc *minimock.Controller) service.LogService
 	type hashServiceMock func(mc *minimock.Controller) service.HashService
-	type cacheServiceMock func(mc *minimock.Controller) service.CacheService
+	type cacheServiceMock func(mc *minimock.Controller) service.CacheUserService
 
 	type input struct {
 		ctx    context.Context

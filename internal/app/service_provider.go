@@ -2,8 +2,10 @@ package app
 
 import (
 	"context"
-	"github.com/nqxcode/platform_common/client/cache/redis"
+	cacheUserService "github.com/nqxcode/auth_microservice/internal/service/cache/user"
 	"log"
+
+	"github.com/nqxcode/platform_common/client/cache/redis"
 
 	"github.com/nqxcode/auth_microservice/internal/api/auth"
 	"github.com/nqxcode/auth_microservice/internal/config"
@@ -13,7 +15,6 @@ import (
 	redisUserRepository "github.com/nqxcode/auth_microservice/internal/repository/user/redis"
 	"github.com/nqxcode/auth_microservice/internal/service"
 	authService "github.com/nqxcode/auth_microservice/internal/service/auth"
-	cacheService "github.com/nqxcode/auth_microservice/internal/service/cache"
 	hashService "github.com/nqxcode/auth_microservice/internal/service/hash"
 	logService "github.com/nqxcode/auth_microservice/internal/service/log"
 	"github.com/nqxcode/platform_common/client/cache"
@@ -42,10 +43,10 @@ type serviceProvider struct {
 
 	cacheUserRepository repository.UserRepository
 
-	logService   service.LogService
-	hashService  service.HashService
-	authService  service.AuthService
-	cacheService service.CacheService
+	logService       service.LogService
+	hashService      service.HashService
+	authService      service.AuthService
+	cacheUserService service.CacheUserService
 
 	authImpl *auth.Implementation
 }
@@ -211,7 +212,7 @@ func (s *serviceProvider) AuthService(ctx context.Context) service.AuthService {
 			s.UserRepository(ctx),
 			s.LogService(ctx),
 			s.HashService(ctx),
-			s.CacheService(),
+			s.CacheUserService(),
 			s.TxManager(ctx),
 		)
 	}
@@ -219,14 +220,15 @@ func (s *serviceProvider) AuthService(ctx context.Context) service.AuthService {
 	return s.authService
 }
 
-func (s *serviceProvider) CacheService() service.CacheService {
-	if s.cacheService == nil {
-		s.cacheService = cacheService.NewService(
+func (s *serviceProvider) CacheUserService() service.CacheUserService {
+	if s.cacheUserService == nil {
+		s.cacheUserService = cacheUserService.NewService(
+			s.RedisClient(),
 			s.CacheUserRepository(),
 		)
 	}
 
-	return s.cacheService
+	return s.cacheUserService
 }
 
 func (s *serviceProvider) AuthImpl(ctx context.Context) *auth.Implementation {

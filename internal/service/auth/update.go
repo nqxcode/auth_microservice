@@ -2,9 +2,10 @@ package auth
 
 import (
 	"context"
+	"log"
+
 	"github.com/nqxcode/auth_microservice/internal/model"
 	"github.com/nqxcode/auth_microservice/internal/service/log/constants"
-	"log"
 )
 
 func (s *service) Update(ctx context.Context, userID int64, info *model.UpdateUserInfo) error {

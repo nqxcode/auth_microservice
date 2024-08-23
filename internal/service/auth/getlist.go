@@ -2,10 +2,11 @@ package auth
 
 import (
 	"context"
+	"log"
+
 	"github.com/nqxcode/auth_microservice/internal/service/log/constants"
 	"github.com/pkg/errors"
 	"github.com/redis/go-redis/v9"
-	"log"
 
 	"github.com/nqxcode/auth_microservice/internal/model"
 	"github.com/nqxcode/platform_common/pagination"
@@ -52,7 +53,7 @@ func (s *service) GetList(ctx context.Context, limit pagination.Limit) ([]model.
 
 	if len(users) > 0 {
 		go func() {
-			err = s.cacheService.SetList(ctx, users)
+			err = s.cacheService.SetList(ctx, users, limit)
 			if err != nil {
 				log.Println("cant set many users to cache:", err)
 			}

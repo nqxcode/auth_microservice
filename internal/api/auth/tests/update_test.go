@@ -3,8 +3,9 @@ package tests
 import (
 	"context"
 	"fmt"
-	"google.golang.org/protobuf/types/known/emptypb"
 	"testing"
+
+	"google.golang.org/protobuf/types/known/emptypb"
 
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/gojuno/minimock/v3"

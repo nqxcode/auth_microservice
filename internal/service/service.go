@@ -27,11 +27,11 @@ type HashService interface {
 	GenerateSalt(ctx context.Context) (string, error)
 }
 
-// CacheService cache service
-type CacheService interface {
+// CacheUserService cache service
+type CacheUserService interface {
 	Set(ctx context.Context, user *model.User) error
 	SetPartial(ctx context.Context, id int64, user *model.UpdateUserInfo) error
-	SetList(ctx context.Context, users []model.User) error
+	SetList(ctx context.Context, users []model.User, limit pagination.Limit) error
 	Get(ctx context.Context, userID int64) (*model.User, error)
 	GetList(ctx context.Context, limit pagination.Limit) ([]model.User, error)
 	Delete(ctx context.Context, userID int64) error
