@@ -28,7 +28,7 @@ func NewService(redisClient cache.RedisClient, userRepository repository.UserRep
 }
 
 func buildListCacheKeyByLimit(limit pagination.Limit) string {
-	return buildListCacheKey(strconv.Itoa(int(limit.Offset)) + strconv.Itoa(int(limit.Limit)))
+	return buildListCacheKey(strconv.Itoa(int(limit.Offset)) + "-" + strconv.Itoa(int(limit.Limit)))
 }
 
 func buildListCacheKey(value string) string {
