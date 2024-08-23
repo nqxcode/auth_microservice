@@ -2,6 +2,7 @@ package redis
 
 import (
 	"context"
+	"runtime"
 	"strconv"
 	"strings"
 	"sync"
@@ -158,6 +159,14 @@ func (r repo) GetList(ctx context.Context, limit pagination.Limit) ([]model.User
 
 	keys = keys[offset:end]
 
+	keysCh := make(chan string)
+	go func() {
+		for _, key := range keys {
+			keysCh <- key
+		}
+		close(keysCh)
+	}()
+
 	type Values struct {
 		key    string
 		values []interface{}
@@ -167,23 +176,25 @@ func (r repo) GetList(ctx context.Context, limit pagination.Limit) ([]model.User
 	errCh := make(chan error, len(keys))
 
 	var wg sync.WaitGroup
-	for _, key := range keys {
+	for i := 0; i < runtime.GOMAXPROCS(0); i++ {
 		wg.Add(1)
-		go func(key string) {
+		go func() {
 			defer wg.Done()
+			for key := range keysCh {
+				values, hGetAllErr := r.redisClient.HGetAll(ctx, key)
+				if hGetAllErr != nil {
+					errCh <- hGetAllErr
+					continue
+				}
 
-			values, hGetAllErr := r.redisClient.HGetAll(ctx, key)
-			if hGetAllErr != nil {
-				errCh <- hGetAllErr
-				return
+				if len(values) == 0 {
+					errCh <- model.ErrorNoteNotFound
+					continue
+				}
+
+				valuesListCh <- Values{key: key, values: values}
 			}
-
-			if len(values) == 0 {
-				errCh <- model.ErrorNoteNotFound
-			}
-
-			valuesListCh <- Values{key: key, values: values}
-		}(key)
+		}()
 	}
 
 	wg.Wait()
