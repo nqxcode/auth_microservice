@@ -11,7 +11,7 @@ import (
 type AuthService interface {
 	Create(ctx context.Context, user *model.User) (int64, error)
 	Get(ctx context.Context, id int64) (*model.User, error)
-	GetList(ctx context.Context, limit *pagination.Limit) ([]model.User, error)
+	GetList(ctx context.Context, limit pagination.Limit) ([]model.User, error)
 	Update(ctx context.Context, id int64, info *model.UpdateUserInfo) error
 	Delete(ctx context.Context, id int64) error
 }
@@ -33,6 +33,6 @@ type CacheService interface {
 	SetPartial(ctx context.Context, id int64, user *model.UpdateUserInfo) error
 	SetList(ctx context.Context, users []model.User) error
 	Get(ctx context.Context, userID int64) (*model.User, error)
-	GetList(ctx context.Context, limit *pagination.Limit) ([]model.User, error)
+	GetList(ctx context.Context, limit pagination.Limit) ([]model.User, error)
 	Delete(ctx context.Context, userID int64) error
 }

@@ -11,7 +11,7 @@ import (
 	"github.com/nqxcode/platform_common/pagination"
 )
 
-func (s *service) GetList(ctx context.Context, limit *pagination.Limit) ([]model.User, error) {
+func (s *service) GetList(ctx context.Context, limit pagination.Limit) ([]model.User, error) {
 	var (
 		users []model.User
 		err   error

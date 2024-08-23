@@ -178,11 +178,11 @@ func (s *serviceProvider) LogRepository(ctx context.Context) repository.LogRepos
 }
 
 func (s *serviceProvider) CacheUserRepository() repository.UserRepository {
-	if s.userRepository == nil {
-		s.userRepository = redisUserRepository.NewRepository(s.RedisClient())
+	if s.cacheUserRepository == nil {
+		s.cacheUserRepository = redisUserRepository.NewRepository(s.RedisClient())
 	}
 
-	return s.userRepository
+	return s.cacheUserRepository
 }
 
 func (s *serviceProvider) LogService(ctx context.Context) service.LogService {

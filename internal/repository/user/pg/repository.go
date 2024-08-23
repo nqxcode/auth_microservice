@@ -145,10 +145,10 @@ func (r *repo) Get(ctx context.Context, id int64) (*model.User, error) {
 	return converter.ToUserFromRepo(&user), nil
 }
 
-func (r *repo) GetList(ctx context.Context, limit *pagination.Limit) ([]model.User, error) {
+func (r *repo) GetList(ctx context.Context, limit pagination.Limit) ([]model.User, error) {
 	builder := sq.Select(idColumn, nameColumn, emailColumn, roleColumn, passwordColumn, createdAtColumn, updatedAtColumn).
 		PlaceholderFormat(sq.Dollar).
-		From(tableName).
+		From(escape(tableName)).
 		Offset(limit.Offset).
 		Limit(limit.Limit)
 

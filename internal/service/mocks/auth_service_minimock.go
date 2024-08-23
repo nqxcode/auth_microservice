@@ -31,14 +31,14 @@ type AuthServiceMock struct {
 	beforeDeleteCounter uint64
 	DeleteMock          mAuthServiceMockDelete
 
-	funcFind          func(ctx context.Context, id int64) (up1 *model.User, err error)
-	inspectFuncFind   func(ctx context.Context, id int64)
-	afterFindCounter  uint64
-	beforeFindCounter uint64
-	FindMock          mAuthServiceMockFind
+	funcGet          func(ctx context.Context, id int64) (up1 *model.User, err error)
+	inspectFuncGet   func(ctx context.Context, id int64)
+	afterGetCounter  uint64
+	beforeGetCounter uint64
+	GetMock          mAuthServiceMockGet
 
-	funcGetList          func(ctx context.Context, limit *pagination.Limit) (ua1 []model.User, err error)
-	inspectFuncGetList   func(ctx context.Context, limit *pagination.Limit)
+	funcGetList          func(ctx context.Context, limit pagination.Limit) (ua1 []model.User, err error)
+	inspectFuncGetList   func(ctx context.Context, limit pagination.Limit)
 	afterGetListCounter  uint64
 	beforeGetListCounter uint64
 	GetListMock          mAuthServiceMockGetList
@@ -63,8 +63,8 @@ func NewAuthServiceMock(t minimock.Tester) *AuthServiceMock {
 	m.DeleteMock = mAuthServiceMockDelete{mock: m}
 	m.DeleteMock.callArgs = []*AuthServiceMockDeleteParams{}
 
-	m.FindMock = mAuthServiceMockFind{mock: m}
-	m.FindMock.callArgs = []*AuthServiceMockFindParams{}
+	m.GetMock = mAuthServiceMockGet{mock: m}
+	m.GetMock.callArgs = []*AuthServiceMockGetParams{}
 
 	m.GetListMock = mAuthServiceMockGetList{mock: m}
 	m.GetListMock.callArgs = []*AuthServiceMockGetListParams{}
@@ -508,219 +508,219 @@ func (m *AuthServiceMock) MinimockDeleteInspect() {
 	}
 }
 
-type mAuthServiceMockFind struct {
+type mAuthServiceMockGet struct {
 	mock               *AuthServiceMock
-	defaultExpectation *AuthServiceMockFindExpectation
-	expectations       []*AuthServiceMockFindExpectation
+	defaultExpectation *AuthServiceMockGetExpectation
+	expectations       []*AuthServiceMockGetExpectation
 
-	callArgs []*AuthServiceMockFindParams
+	callArgs []*AuthServiceMockGetParams
 	mutex    sync.RWMutex
 }
 
-// AuthServiceMockFindExpectation specifies expectation struct of the AuthService.Get
-type AuthServiceMockFindExpectation struct {
+// AuthServiceMockGetExpectation specifies expectation struct of the AuthService.Get
+type AuthServiceMockGetExpectation struct {
 	mock    *AuthServiceMock
-	params  *AuthServiceMockFindParams
-	results *AuthServiceMockFindResults
+	params  *AuthServiceMockGetParams
+	results *AuthServiceMockGetResults
 	Counter uint64
 }
 
-// AuthServiceMockFindParams contains parameters of the AuthService.Get
-type AuthServiceMockFindParams struct {
+// AuthServiceMockGetParams contains parameters of the AuthService.Get
+type AuthServiceMockGetParams struct {
 	ctx context.Context
 	id  int64
 }
 
-// AuthServiceMockFindResults contains results of the AuthService.Get
-type AuthServiceMockFindResults struct {
+// AuthServiceMockGetResults contains results of the AuthService.Get
+type AuthServiceMockGetResults struct {
 	up1 *model.User
 	err error
 }
 
 // Expect sets up expected params for AuthService.Get
-func (mmFind *mAuthServiceMockFind) Expect(ctx context.Context, id int64) *mAuthServiceMockFind {
-	if mmFind.mock.funcFind != nil {
-		mmFind.mock.t.Fatalf("AuthServiceMock.Get mock is already set by Set")
+func (mmGet *mAuthServiceMockGet) Expect(ctx context.Context, id int64) *mAuthServiceMockGet {
+	if mmGet.mock.funcGet != nil {
+		mmGet.mock.t.Fatalf("AuthServiceMock.Get mock is already set by Set")
 	}
 
-	if mmFind.defaultExpectation == nil {
-		mmFind.defaultExpectation = &AuthServiceMockFindExpectation{}
+	if mmGet.defaultExpectation == nil {
+		mmGet.defaultExpectation = &AuthServiceMockGetExpectation{}
 	}
 
-	mmFind.defaultExpectation.params = &AuthServiceMockFindParams{ctx, id}
-	for _, e := range mmFind.expectations {
-		if minimock.Equal(e.params, mmFind.defaultExpectation.params) {
-			mmFind.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmFind.defaultExpectation.params)
+	mmGet.defaultExpectation.params = &AuthServiceMockGetParams{ctx, id}
+	for _, e := range mmGet.expectations {
+		if minimock.Equal(e.params, mmGet.defaultExpectation.params) {
+			mmGet.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmGet.defaultExpectation.params)
 		}
 	}
 
-	return mmFind
+	return mmGet
 }
 
 // Inspect accepts an inspector function that has same arguments as the AuthService.Get
-func (mmFind *mAuthServiceMockFind) Inspect(f func(ctx context.Context, id int64)) *mAuthServiceMockFind {
-	if mmFind.mock.inspectFuncFind != nil {
-		mmFind.mock.t.Fatalf("Inspect function is already set for AuthServiceMock.Get")
+func (mmGet *mAuthServiceMockGet) Inspect(f func(ctx context.Context, id int64)) *mAuthServiceMockGet {
+	if mmGet.mock.inspectFuncGet != nil {
+		mmGet.mock.t.Fatalf("Inspect function is already set for AuthServiceMock.Get")
 	}
 
-	mmFind.mock.inspectFuncFind = f
+	mmGet.mock.inspectFuncGet = f
 
-	return mmFind
+	return mmGet
 }
 
 // Return sets up results that will be returned by AuthService.Get
-func (mmFind *mAuthServiceMockFind) Return(up1 *model.User, err error) *AuthServiceMock {
-	if mmFind.mock.funcFind != nil {
-		mmFind.mock.t.Fatalf("AuthServiceMock.Get mock is already set by Set")
+func (mmGet *mAuthServiceMockGet) Return(up1 *model.User, err error) *AuthServiceMock {
+	if mmGet.mock.funcGet != nil {
+		mmGet.mock.t.Fatalf("AuthServiceMock.Get mock is already set by Set")
 	}
 
-	if mmFind.defaultExpectation == nil {
-		mmFind.defaultExpectation = &AuthServiceMockFindExpectation{mock: mmFind.mock}
+	if mmGet.defaultExpectation == nil {
+		mmGet.defaultExpectation = &AuthServiceMockGetExpectation{mock: mmGet.mock}
 	}
-	mmFind.defaultExpectation.results = &AuthServiceMockFindResults{up1, err}
-	return mmFind.mock
+	mmGet.defaultExpectation.results = &AuthServiceMockGetResults{up1, err}
+	return mmGet.mock
 }
 
 // Set uses given function f to mock the AuthService.Get method
-func (mmFind *mAuthServiceMockFind) Set(f func(ctx context.Context, id int64) (up1 *model.User, err error)) *AuthServiceMock {
-	if mmFind.defaultExpectation != nil {
-		mmFind.mock.t.Fatalf("Default expectation is already set for the AuthService.Get method")
+func (mmGet *mAuthServiceMockGet) Set(f func(ctx context.Context, id int64) (up1 *model.User, err error)) *AuthServiceMock {
+	if mmGet.defaultExpectation != nil {
+		mmGet.mock.t.Fatalf("Default expectation is already set for the AuthService.Get method")
 	}
 
-	if len(mmFind.expectations) > 0 {
-		mmFind.mock.t.Fatalf("Some expectations are already set for the AuthService.Get method")
+	if len(mmGet.expectations) > 0 {
+		mmGet.mock.t.Fatalf("Some expectations are already set for the AuthService.Get method")
 	}
 
-	mmFind.mock.funcFind = f
-	return mmFind.mock
+	mmGet.mock.funcGet = f
+	return mmGet.mock
 }
 
 // When sets expectation for the AuthService.Get which will trigger the result defined by the following
 // Then helper
-func (mmFind *mAuthServiceMockFind) When(ctx context.Context, id int64) *AuthServiceMockFindExpectation {
-	if mmFind.mock.funcFind != nil {
-		mmFind.mock.t.Fatalf("AuthServiceMock.Get mock is already set by Set")
+func (mmGet *mAuthServiceMockGet) When(ctx context.Context, id int64) *AuthServiceMockGetExpectation {
+	if mmGet.mock.funcGet != nil {
+		mmGet.mock.t.Fatalf("AuthServiceMock.Get mock is already set by Set")
 	}
 
-	expectation := &AuthServiceMockFindExpectation{
-		mock:   mmFind.mock,
-		params: &AuthServiceMockFindParams{ctx, id},
+	expectation := &AuthServiceMockGetExpectation{
+		mock:   mmGet.mock,
+		params: &AuthServiceMockGetParams{ctx, id},
 	}
-	mmFind.expectations = append(mmFind.expectations, expectation)
+	mmGet.expectations = append(mmGet.expectations, expectation)
 	return expectation
 }
 
 // Then sets up AuthService.Get return parameters for the expectation previously defined by the When method
-func (e *AuthServiceMockFindExpectation) Then(up1 *model.User, err error) *AuthServiceMock {
-	e.results = &AuthServiceMockFindResults{up1, err}
+func (e *AuthServiceMockGetExpectation) Then(up1 *model.User, err error) *AuthServiceMock {
+	e.results = &AuthServiceMockGetResults{up1, err}
 	return e.mock
 }
 
-// Find implements service.AuthService
-func (mmFind *AuthServiceMock) Get(ctx context.Context, id int64) (up1 *model.User, err error) {
-	mm_atomic.AddUint64(&mmFind.beforeFindCounter, 1)
-	defer mm_atomic.AddUint64(&mmFind.afterFindCounter, 1)
+// Get implements service.AuthService
+func (mmGet *AuthServiceMock) Get(ctx context.Context, id int64) (up1 *model.User, err error) {
+	mm_atomic.AddUint64(&mmGet.beforeGetCounter, 1)
+	defer mm_atomic.AddUint64(&mmGet.afterGetCounter, 1)
 
-	if mmFind.inspectFuncFind != nil {
-		mmFind.inspectFuncFind(ctx, id)
+	if mmGet.inspectFuncGet != nil {
+		mmGet.inspectFuncGet(ctx, id)
 	}
 
-	mm_params := &AuthServiceMockFindParams{ctx, id}
+	mm_params := &AuthServiceMockGetParams{ctx, id}
 
 	// Record call args
-	mmFind.FindMock.mutex.Lock()
-	mmFind.FindMock.callArgs = append(mmFind.FindMock.callArgs, mm_params)
-	mmFind.FindMock.mutex.Unlock()
+	mmGet.GetMock.mutex.Lock()
+	mmGet.GetMock.callArgs = append(mmGet.GetMock.callArgs, mm_params)
+	mmGet.GetMock.mutex.Unlock()
 
-	for _, e := range mmFind.FindMock.expectations {
+	for _, e := range mmGet.GetMock.expectations {
 		if minimock.Equal(e.params, mm_params) {
 			mm_atomic.AddUint64(&e.Counter, 1)
 			return e.results.up1, e.results.err
 		}
 	}
 
-	if mmFind.FindMock.defaultExpectation != nil {
-		mm_atomic.AddUint64(&mmFind.FindMock.defaultExpectation.Counter, 1)
-		mm_want := mmFind.FindMock.defaultExpectation.params
-		mm_got := AuthServiceMockFindParams{ctx, id}
+	if mmGet.GetMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmGet.GetMock.defaultExpectation.Counter, 1)
+		mm_want := mmGet.GetMock.defaultExpectation.params
+		mm_got := AuthServiceMockGetParams{ctx, id}
 		if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
-			mmFind.t.Errorf("AuthServiceMock.Get got unexpected parameters, want: %#v, got: %#v%s\n", *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+			mmGet.t.Errorf("AuthServiceMock.Get got unexpected parameters, want: %#v, got: %#v%s\n", *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
 		}
 
-		mm_results := mmFind.FindMock.defaultExpectation.results
+		mm_results := mmGet.GetMock.defaultExpectation.results
 		if mm_results == nil {
-			mmFind.t.Fatal("No results are set for the AuthServiceMock.Get")
+			mmGet.t.Fatal("No results are set for the AuthServiceMock.Get")
 		}
 		return (*mm_results).up1, (*mm_results).err
 	}
-	if mmFind.funcFind != nil {
-		return mmFind.funcFind(ctx, id)
+	if mmGet.funcGet != nil {
+		return mmGet.funcGet(ctx, id)
 	}
-	mmFind.t.Fatalf("Unexpected call to AuthServiceMock.Get. %v %v", ctx, id)
+	mmGet.t.Fatalf("Unexpected call to AuthServiceMock.Get. %v %v", ctx, id)
 	return
 }
 
-// FindAfterCounter returns a count of finished AuthServiceMock.Find invocations
-func (mmFind *AuthServiceMock) FindAfterCounter() uint64 {
-	return mm_atomic.LoadUint64(&mmFind.afterFindCounter)
+// GetAfterCounter returns a count of finished AuthServiceMock.Get invocations
+func (mmGet *AuthServiceMock) GetAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmGet.afterGetCounter)
 }
 
-// FindBeforeCounter returns a count of AuthServiceMock.Find invocations
-func (mmFind *AuthServiceMock) FindBeforeCounter() uint64 {
-	return mm_atomic.LoadUint64(&mmFind.beforeFindCounter)
+// GetBeforeCounter returns a count of AuthServiceMock.Get invocations
+func (mmGet *AuthServiceMock) GetBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmGet.beforeGetCounter)
 }
 
-// Calls returns a list of arguments used in each call to AuthServiceMock.Find.
+// Calls returns a list of arguments used in each call to AuthServiceMock.Get.
 // The list is in the same order as the calls were made (i.e. recent calls have a higher index)
-func (mmFind *mAuthServiceMockFind) Calls() []*AuthServiceMockFindParams {
-	mmFind.mutex.RLock()
+func (mmGet *mAuthServiceMockGet) Calls() []*AuthServiceMockGetParams {
+	mmGet.mutex.RLock()
 
-	argCopy := make([]*AuthServiceMockFindParams, len(mmFind.callArgs))
-	copy(argCopy, mmFind.callArgs)
+	argCopy := make([]*AuthServiceMockGetParams, len(mmGet.callArgs))
+	copy(argCopy, mmGet.callArgs)
 
-	mmFind.mutex.RUnlock()
+	mmGet.mutex.RUnlock()
 
 	return argCopy
 }
 
-// MinimockFindDone returns true if the count of the Find invocations corresponds
+// MinimockGetDone returns true if the count of the Get invocations corresponds
 // the number of defined expectations
-func (m *AuthServiceMock) MinimockFindDone() bool {
-	for _, e := range m.FindMock.expectations {
+func (m *AuthServiceMock) MinimockGetDone() bool {
+	for _, e := range m.GetMock.expectations {
 		if mm_atomic.LoadUint64(&e.Counter) < 1 {
 			return false
 		}
 	}
 
 	// if default expectation was set then invocations count should be greater than zero
-	if m.FindMock.defaultExpectation != nil && mm_atomic.LoadUint64(&m.afterFindCounter) < 1 {
+	if m.GetMock.defaultExpectation != nil && mm_atomic.LoadUint64(&m.afterGetCounter) < 1 {
 		return false
 	}
 	// if func was set then invocations count should be greater than zero
-	if m.funcFind != nil && mm_atomic.LoadUint64(&m.afterFindCounter) < 1 {
+	if m.funcGet != nil && mm_atomic.LoadUint64(&m.afterGetCounter) < 1 {
 		return false
 	}
 	return true
 }
 
-// MinimockFindInspect logs each unmet expectation
-func (m *AuthServiceMock) MinimockFindInspect() {
-	for _, e := range m.FindMock.expectations {
+// MinimockGetInspect logs each unmet expectation
+func (m *AuthServiceMock) MinimockGetInspect() {
+	for _, e := range m.GetMock.expectations {
 		if mm_atomic.LoadUint64(&e.Counter) < 1 {
 			m.t.Errorf("Expected call to AuthServiceMock.Get with params: %#v", *e.params)
 		}
 	}
 
 	// if default expectation was set then invocations count should be greater than zero
-	if m.FindMock.defaultExpectation != nil && mm_atomic.LoadUint64(&m.afterFindCounter) < 1 {
-		if m.FindMock.defaultExpectation.params == nil {
+	if m.GetMock.defaultExpectation != nil && mm_atomic.LoadUint64(&m.afterGetCounter) < 1 {
+		if m.GetMock.defaultExpectation.params == nil {
 			m.t.Error("Expected call to AuthServiceMock.Get")
 		} else {
-			m.t.Errorf("Expected call to AuthServiceMock.Get with params: %#v", *m.FindMock.defaultExpectation.params)
+			m.t.Errorf("Expected call to AuthServiceMock.Get with params: %#v", *m.GetMock.defaultExpectation.params)
 		}
 	}
 	// if func was set then invocations count should be greater than zero
-	if m.funcFind != nil && mm_atomic.LoadUint64(&m.afterFindCounter) < 1 {
+	if m.funcGet != nil && mm_atomic.LoadUint64(&m.afterGetCounter) < 1 {
 		m.t.Error("Expected call to AuthServiceMock.Get")
 	}
 }
@@ -745,7 +745,7 @@ type AuthServiceMockGetListExpectation struct {
 // AuthServiceMockGetListParams contains parameters of the AuthService.GetList
 type AuthServiceMockGetListParams struct {
 	ctx   context.Context
-	limit *pagination.Limit
+	limit pagination.Limit
 }
 
 // AuthServiceMockGetListResults contains results of the AuthService.GetList
@@ -755,7 +755,7 @@ type AuthServiceMockGetListResults struct {
 }
 
 // Expect sets up expected params for AuthService.GetList
-func (mmGetList *mAuthServiceMockGetList) Expect(ctx context.Context, limit *pagination.Limit) *mAuthServiceMockGetList {
+func (mmGetList *mAuthServiceMockGetList) Expect(ctx context.Context, limit pagination.Limit) *mAuthServiceMockGetList {
 	if mmGetList.mock.funcGetList != nil {
 		mmGetList.mock.t.Fatalf("AuthServiceMock.GetList mock is already set by Set")
 	}
@@ -775,7 +775,7 @@ func (mmGetList *mAuthServiceMockGetList) Expect(ctx context.Context, limit *pag
 }
 
 // Inspect accepts an inspector function that has same arguments as the AuthService.GetList
-func (mmGetList *mAuthServiceMockGetList) Inspect(f func(ctx context.Context, limit *pagination.Limit)) *mAuthServiceMockGetList {
+func (mmGetList *mAuthServiceMockGetList) Inspect(f func(ctx context.Context, limit pagination.Limit)) *mAuthServiceMockGetList {
 	if mmGetList.mock.inspectFuncGetList != nil {
 		mmGetList.mock.t.Fatalf("Inspect function is already set for AuthServiceMock.GetList")
 	}
@@ -799,7 +799,7 @@ func (mmGetList *mAuthServiceMockGetList) Return(ua1 []model.User, err error) *A
 }
 
 // Set uses given function f to mock the AuthService.GetList method
-func (mmGetList *mAuthServiceMockGetList) Set(f func(ctx context.Context, limit *pagination.Limit) (ua1 []model.User, err error)) *AuthServiceMock {
+func (mmGetList *mAuthServiceMockGetList) Set(f func(ctx context.Context, limit pagination.Limit) (ua1 []model.User, err error)) *AuthServiceMock {
 	if mmGetList.defaultExpectation != nil {
 		mmGetList.mock.t.Fatalf("Default expectation is already set for the AuthService.GetList method")
 	}
@@ -814,7 +814,7 @@ func (mmGetList *mAuthServiceMockGetList) Set(f func(ctx context.Context, limit 
 
 // When sets expectation for the AuthService.GetList which will trigger the result defined by the following
 // Then helper
-func (mmGetList *mAuthServiceMockGetList) When(ctx context.Context, limit *pagination.Limit) *AuthServiceMockGetListExpectation {
+func (mmGetList *mAuthServiceMockGetList) When(ctx context.Context, limit pagination.Limit) *AuthServiceMockGetListExpectation {
 	if mmGetList.mock.funcGetList != nil {
 		mmGetList.mock.t.Fatalf("AuthServiceMock.GetList mock is already set by Set")
 	}
@@ -834,7 +834,7 @@ func (e *AuthServiceMockGetListExpectation) Then(ua1 []model.User, err error) *A
 }
 
 // GetList implements service.AuthService
-func (mmGetList *AuthServiceMock) GetList(ctx context.Context, limit *pagination.Limit) (ua1 []model.User, err error) {
+func (mmGetList *AuthServiceMock) GetList(ctx context.Context, limit pagination.Limit) (ua1 []model.User, err error) {
 	mm_atomic.AddUint64(&mmGetList.beforeGetListCounter, 1)
 	defer mm_atomic.AddUint64(&mmGetList.afterGetListCounter, 1)
 
@@ -1166,7 +1166,7 @@ func (m *AuthServiceMock) MinimockFinish() {
 
 		m.MinimockDeleteInspect()
 
-		m.MinimockFindInspect()
+		m.MinimockGetInspect()
 
 		m.MinimockGetListInspect()
 
@@ -1196,7 +1196,7 @@ func (m *AuthServiceMock) minimockDone() bool {
 	return done &&
 		m.MinimockCreateDone() &&
 		m.MinimockDeleteDone() &&
-		m.MinimockFindDone() &&
+		m.MinimockGetDone() &&
 		m.MinimockGetListDone() &&
 		m.MinimockUpdateDone()
 }

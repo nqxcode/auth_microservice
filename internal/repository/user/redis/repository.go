@@ -2,16 +2,22 @@ package redis
 
 import (
 	"context"
+	"strconv"
+	"strings"
+	"sync"
+
 	"github.com/nqxcode/auth_microservice/internal/model"
 	"github.com/nqxcode/auth_microservice/internal/repository"
 	"github.com/nqxcode/auth_microservice/internal/repository/user/redis/converter"
 	modelRepo "github.com/nqxcode/auth_microservice/internal/repository/user/redis/model"
 	"github.com/nqxcode/platform_common/client/cache"
+	"github.com/nqxcode/platform_common/helper/time"
 	"github.com/nqxcode/platform_common/pagination"
-	"strconv"
 
 	redigo "github.com/gomodule/redigo/redis"
 )
+
+const cacheKey = "user"
 
 type repo struct {
 	redisClient cache.RedisClient
@@ -32,12 +38,7 @@ func (r repo) Create(ctx context.Context, model *model.User) (int64, error) {
 		Role:        model.Info.Role,
 		Password:    model.Password,
 		CreatedAtNs: model.CreatedAt.UnixNano(),
-		UpdatedAtNs: func() *int64 {
-			if !model.UpdatedAt.Valid {
-				return nil
-			}
-			return toPtr(model.UpdatedAt.Time.UnixNano())
-		}(),
+		UpdatedAtNs: time.ToUnixNanoFromSqlNullTime(model.UpdatedAt),
 	}
 
 	idStr := strconv.FormatInt(id, 10)
@@ -128,44 +129,110 @@ func (r repo) Get(ctx context.Context, id int64) (*model.User, error) {
 }
 
 // GetList users
-func (r repo) GetList(ctx context.Context, limit *pagination.Limit) ([]model.User, error) {
-	keys, err := r.redisClient.Scan(ctx, buildCacheKey("*"))
+func (r repo) GetList(ctx context.Context, limit pagination.Limit) ([]model.User, error) {
+	cacheKeyPrefix := buildCacheKeyPrefix()
+
+	keys, err := r.redisClient.Scan(ctx, buildCacheKey("*"), func(a, b string) bool {
+		aNum := extractNumberAfterPrefix(a, cacheKeyPrefix)
+		bNum := extractNumberAfterPrefix(b, cacheKeyPrefix)
+		return aNum < bNum
+	})
+
 	if err != nil {
 		return nil, err
+	}
+
+	total := uint64(len(keys))
+	if total == 0 {
+		return nil, nil
 	}
 
 	offset := limit.Offset
+	if offset > total {
+		offset = total
+	}
 	end := limit.Offset + limit.Limit
+	if end == 0 || end > total {
+		end = total
+	}
 
 	keys = keys[offset:end]
 
-	valuesList := make([]interface{}, 0, len(keys))
+	type Values struct {
+		key    string
+		values []interface{}
+	}
+
+	valuesListCh := make(chan Values, len(keys))
+	errCh := make(chan error, len(keys))
+
+	var wg sync.WaitGroup
 	for _, key := range keys {
-		values, err := r.redisClient.HGetAll(ctx, key) // TODO make this parallel
+		wg.Add(1)
+		go func(key string) {
+			defer wg.Done()
+
+			values, hGetAllErr := r.redisClient.HGetAll(ctx, key)
+			if hGetAllErr != nil {
+				errCh <- hGetAllErr
+				return
+			}
+
+			if len(values) == 0 {
+				errCh <- model.ErrorNoteNotFound
+			}
+
+			valuesListCh <- Values{key: key, values: values}
+		}(key)
+	}
+
+	wg.Wait()
+	close(errCh)
+	close(valuesListCh)
+
+	for err = range errCh {
 		if err != nil {
 			return nil, err
 		}
-
-		if len(values) == 0 {
-			return nil, model.ErrorNoteNotFound
-		}
-
-		valuesList = append(valuesList, values)
 	}
 
-	users := make([]modelRepo.User, 0, len(valuesList))
-	err = redigo.ScanSlice(valuesList, &users)
-	if err != nil {
-		return nil, err
+	valuesList := make([]Values, 0, len(keys))
+	for v := range valuesListCh {
+		valuesList = append(valuesList, v)
+	}
+
+	userMap := make(map[string]modelRepo.User, len(valuesList))
+	for _, v := range valuesList {
+		var user modelRepo.User
+		err = redigo.ScanStruct(v.values, &user)
+		if err != nil {
+			return nil, err
+		}
+		userMap[v.key] = user
+	}
+
+	users := make([]modelRepo.User, 0, len(userMap))
+	for _, key := range keys {
+		if user, ok := userMap[key]; ok {
+			users = append(users, user)
+		}
 	}
 
 	return converter.ToManyUserFromRepo(users), nil
 }
 
-func toPtr[T any](s T) *T {
-	return &s
+func buildCacheKey(value string) string {
+	return buildCacheKeyPrefix() + value
 }
 
-func buildCacheKey(value string) string {
-	return "user:" + value
+func buildCacheKeyPrefix() string {
+	return cacheKey + ":"
+}
+
+func extractNumberAfterPrefix(key, prefix string) int {
+	num, err := strconv.Atoi(strings.TrimPrefix(key, prefix))
+	if err == nil {
+		return num
+	}
+	return 0
 }

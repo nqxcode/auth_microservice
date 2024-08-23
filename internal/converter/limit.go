@@ -6,8 +6,11 @@ import (
 )
 
 // ToLimitFromDesc convert to pagination limit
-func ToLimitFromDesc(message *desc.Limit) *pagination.Limit {
-	return &pagination.Limit{
+func ToLimitFromDesc(message *desc.Limit) pagination.Limit {
+	if message == nil {
+		return pagination.Limit{}
+	}
+	return pagination.Limit{
 		Offset: message.Offset,
 		Limit:  message.Limit,
 	}
