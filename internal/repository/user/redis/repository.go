@@ -117,7 +117,7 @@ func (r repo) Get(ctx context.Context, id int64) (*model.User, error) {
 	}
 
 	if len(values) == 0 {
-		return nil, model.ErrorNoteNotFound
+		return nil, nil
 	}
 
 	var user modelRepo.User

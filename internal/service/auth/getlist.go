@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/nqxcode/auth_microservice/internal/service/log/constants"
+	modelCommon "github.com/nqxcode/platform_common/model"
 	"github.com/pkg/errors"
 	"github.com/redis/go-redis/v9"
 
@@ -35,13 +36,13 @@ func (s *service) GetList(ctx context.Context, limit pagination.Limit) ([]model.
 			return errTx
 		}
 
-		err := s.logService.Create(ctx, &model.Log{
+		errLog := s.logService.Create(ctx, &model.Log{
 			Message: constants.UserList,
-			Payload: users,
+			Payload: modelCommon.ExtractIDs(users),
 		})
 
-		if err != nil {
-			return err
+		if errLog != nil {
+			return errLog
 		}
 
 		return nil
