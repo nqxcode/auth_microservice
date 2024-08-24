@@ -83,7 +83,7 @@ func TestGet(t *testing.T) {
 			},
 			authServiceMockFunc: func(mc *minimock.Controller) service.AuthService {
 				mock := serviceMocks.NewAuthServiceMock(mc)
-				mock.FindMock.Expect(ctx, req.GetId()).Return(func() *model.User {
+				mock.GetMock.Expect(ctx, req.GetId()).Return(func() *model.User {
 					user := converter.ToUserFromDesc(resp.GetUser().GetInfo(), "")
 					user.ID = id
 					user.CreatedAt = createdAt
@@ -104,7 +104,7 @@ func TestGet(t *testing.T) {
 			},
 			authServiceMockFunc: func(mc *minimock.Controller) service.AuthService {
 				mock := serviceMocks.NewAuthServiceMock(mc)
-				mock.FindMock.Expect(ctx, id).Return(nil, serviceErr)
+				mock.GetMock.Expect(ctx, id).Return(nil, serviceErr)
 				return mock
 			},
 		},

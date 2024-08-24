@@ -9,6 +9,7 @@ import (
 	"github.com/nqxcode/auth_microservice/internal/repository"
 	repoMocks "github.com/nqxcode/auth_microservice/internal/repository/mocks"
 	"github.com/nqxcode/auth_microservice/internal/service"
+	"github.com/nqxcode/auth_microservice/internal/service/async"
 	"github.com/nqxcode/auth_microservice/internal/service/auth"
 	serviceSupport "github.com/nqxcode/auth_microservice/internal/service/auth/tests/support"
 	"github.com/nqxcode/auth_microservice/internal/service/log/constants"
@@ -22,6 +23,8 @@ import (
 )
 
 func TestUpdate(t *testing.T) {
+	t.Parallel()
+
 	type userRepositoryMock func(mc *minimock.Controller) repository.UserRepository
 	type logServiceMock func(mc *minimock.Controller) service.LogService
 	type hashServiceMock func(mc *minimock.Controller) service.HashService
@@ -48,8 +51,6 @@ func TestUpdate(t *testing.T) {
 		repoErr = fmt.Errorf("repo error")
 	)
 
-	defer t.Cleanup(mc.Finish)
-
 	info := &model.UpdateUserInfo{
 		Name: &name,
 		Role: &role,
@@ -64,6 +65,7 @@ func TestUpdate(t *testing.T) {
 		hashServiceMock      hashServiceMock
 		cacheUserServiceMock cacheUserServiceMock
 		txManagerFake        db.TxManager
+		asyncRunnerFake      async.Runner
 	}{
 		{
 			name: "success case",
@@ -100,7 +102,8 @@ func TestUpdate(t *testing.T) {
 				mock.SetPartialMock.Expect(ctx, id, &model.UpdateUserInfo{Name: &name, Role: &role}).Return(nil)
 				return mock
 			},
-			txManagerFake: serviceSupport.NewTxManagerFake(),
+			txManagerFake:   serviceSupport.NewTxManagerFake(),
+			asyncRunnerFake: serviceSupport.NewAsyncRunnerFake(),
 		},
 		{
 			name: "service error case",
@@ -129,20 +132,24 @@ func TestUpdate(t *testing.T) {
 				mock := serviceMocks.NewHashServiceMock(mc)
 				return mock
 			},
-			txManagerFake: serviceSupport.NewTxManagerFake(),
+			txManagerFake:   serviceSupport.NewTxManagerFake(),
+			asyncRunnerFake: serviceSupport.NewAsyncRunnerFake(),
 		},
 	}
 
 	for _, tt := range cases {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			userRepoMock := tt.userRepositoryMock(mc)
 			logSrvMock := tt.logServiceMock(mc)
 			hashSrvMock := tt.hashServiceMock(mc)
 			cacheUserSrvMock := tt.cacheUserServiceMock(mc)
 			txMngFake := tt.txManagerFake
+			asyncRunnerFake := tt.asyncRunnerFake
 
-			srv := auth.NewService(userRepoMock, logSrvMock, hashSrvMock, cacheUserSrvMock, txMngFake)
+			srv := auth.NewService(userRepoMock, logSrvMock, hashSrvMock, cacheUserSrvMock, txMngFake, asyncRunnerFake)
 
 			err := srv.Update(tt.input.ctx, tt.input.userID, tt.input.info)
 			require.Equal(t, tt.expected.err, err)

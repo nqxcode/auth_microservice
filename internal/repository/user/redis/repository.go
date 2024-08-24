@@ -2,7 +2,6 @@ package redis
 
 import (
 	"context"
-	"github.com/nqxcode/platform_common/helper/slice"
 	"strconv"
 	"strings"
 
@@ -11,6 +10,7 @@ import (
 	"github.com/nqxcode/auth_microservice/internal/repository/user/redis/converter"
 	modelRepo "github.com/nqxcode/auth_microservice/internal/repository/user/redis/model"
 	"github.com/nqxcode/platform_common/client/cache"
+	"github.com/nqxcode/platform_common/helper/slice"
 	"github.com/nqxcode/platform_common/helper/time"
 	"github.com/nqxcode/platform_common/pagination"
 

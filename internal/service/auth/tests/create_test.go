@@ -9,8 +9,9 @@ import (
 	"github.com/nqxcode/auth_microservice/internal/repository"
 	repoMocks "github.com/nqxcode/auth_microservice/internal/repository/mocks"
 	"github.com/nqxcode/auth_microservice/internal/service"
+	"github.com/nqxcode/auth_microservice/internal/service/async"
 	"github.com/nqxcode/auth_microservice/internal/service/auth"
-	testsSupport "github.com/nqxcode/auth_microservice/internal/service/auth/tests/support"
+	serviceSupport "github.com/nqxcode/auth_microservice/internal/service/auth/tests/support"
 	"github.com/nqxcode/auth_microservice/internal/service/log/constants"
 	serviceMocks "github.com/nqxcode/auth_microservice/internal/service/mocks"
 	desc "github.com/nqxcode/auth_microservice/pkg/auth_v1"
@@ -22,6 +23,8 @@ import (
 )
 
 func TestCreate(t *testing.T) {
+	t.Parallel()
+
 	type userRepositoryMock func(mc *minimock.Controller) repository.UserRepository
 	type logServiceMock func(mc *minimock.Controller) service.LogService
 	type hashServiceMock func(mc *minimock.Controller) service.HashService
@@ -51,8 +54,6 @@ func TestCreate(t *testing.T) {
 		repoErr = fmt.Errorf("repo error")
 	)
 
-	defer t.Cleanup(mc.Finish)
-
 	info := model.UserInfo{
 		Name:  name,
 		Email: email,
@@ -68,6 +69,7 @@ func TestCreate(t *testing.T) {
 		hashServiceMock      hashServiceMock
 		cacheUserServiceMock cacheUserServiceMock
 		txManagerFake        db.TxManager
+		asyncRunnerFake      async.Runner
 	}{
 		{
 			name: "success case",
@@ -106,7 +108,8 @@ func TestCreate(t *testing.T) {
 				mock.SetMock.Expect(ctx, &model.User{ID: id, Info: info, Password: passwordHash}).Return(nil)
 				return mock
 			},
-			txManagerFake: testsSupport.NewTxManagerFake(),
+			txManagerFake:   serviceSupport.NewTxManagerFake(),
+			asyncRunnerFake: serviceSupport.NewAsyncRunnerFake(),
 		},
 		{
 			name: "service error case",
@@ -139,20 +142,24 @@ func TestCreate(t *testing.T) {
 				mock := serviceMocks.NewCacheUserServiceMock(mc)
 				return mock
 			},
-			txManagerFake: testsSupport.NewTxManagerFake(),
+			txManagerFake:   serviceSupport.NewTxManagerFake(),
+			asyncRunnerFake: serviceSupport.NewAsyncRunnerFake(),
 		},
 	}
 
 	for _, tt := range cases {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			userRepoMock := tt.userRepositoryMock(mc)
 			logSrvMock := tt.logServiceMock(mc)
 			hashSrvMock := tt.hashServiceMock(mc)
 			cacheSrvMock := tt.cacheUserServiceMock(mc)
 			txMngFake := tt.txManagerFake
+			asyncRunnerFake := tt.asyncRunnerFake
 
-			srv := auth.NewService(userRepoMock, logSrvMock, hashSrvMock, cacheSrvMock, txMngFake)
+			srv := auth.NewService(userRepoMock, logSrvMock, hashSrvMock, cacheSrvMock, txMngFake, asyncRunnerFake)
 
 			ar, err := srv.Create(tt.input.ctx, tt.input.user)
 			require.Equal(t, tt.expected.err, err)

@@ -47,12 +47,12 @@ func (s *service) Get(ctx context.Context, id int64) (*model.User, error) {
 	}
 
 	if user != nil {
-		go func() {
+		s.asyncRunner.Run(func() {
 			err = s.cacheUserService.Set(ctx, user)
 			if err != nil {
 				log.Println("cant set user to cache:", err)
 			}
-		}()
+		})
 	}
 
 	return user, err

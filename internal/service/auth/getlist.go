@@ -48,12 +48,12 @@ func (s *service) GetList(ctx context.Context, limit pagination.Limit) ([]model.
 	}
 
 	if len(users) > 0 {
-		go func() {
+		s.asyncRunner.Run(func() {
 			err = s.cacheUserService.SetList(ctx, users, limit)
 			if err != nil {
 				log.Println("cant set many users to cache:", err)
 			}
-		}()
+		})
 	}
 
 	return users, nil

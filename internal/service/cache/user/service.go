@@ -1,12 +1,12 @@
 package user
 
 import (
-	"github.com/nqxcode/platform_common/pagination"
 	"strconv"
 	"sync"
 
 	"github.com/nqxcode/auth_microservice/internal/repository"
 	"github.com/nqxcode/platform_common/client/cache"
+	"github.com/nqxcode/platform_common/pagination"
 
 	def "github.com/nqxcode/auth_microservice/internal/service"
 )

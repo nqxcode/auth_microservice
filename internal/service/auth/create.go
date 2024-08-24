@@ -2,11 +2,12 @@ package auth
 
 import (
 	"context"
-	"github.com/pkg/errors"
 	"log"
 
 	"github.com/nqxcode/auth_microservice/internal/model"
 	"github.com/nqxcode/auth_microservice/internal/service/log/constants"
+
+	"github.com/pkg/errors"
 )
 
 func (s *service) Create(ctx context.Context, user *model.User) (int64, error) {
@@ -49,12 +50,12 @@ func (s *service) Create(ctx context.Context, user *model.User) (int64, error) {
 	}
 
 	if user != nil {
-		go func() {
+		s.asyncRunner.Run(func() {
 			err = s.cacheUserService.Set(ctx, user)
 			if err != nil {
 				log.Println("cant set user to cache:", err)
 			}
-		}()
+		})
 	}
 
 	return userID, nil

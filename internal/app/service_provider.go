@@ -2,8 +2,10 @@ package app
 
 import (
 	"context"
-	cacheUserService "github.com/nqxcode/auth_microservice/internal/service/cache/user"
 	"log"
+
+	"github.com/nqxcode/auth_microservice/internal/service/async"
+	cacheUserService "github.com/nqxcode/auth_microservice/internal/service/cache/user"
 
 	"github.com/nqxcode/platform_common/client/cache/redis"
 
@@ -32,8 +34,9 @@ type serviceProvider struct {
 	hashingConfig config.HashingConfig
 	redisConfig   cache.RedisConfig
 
-	dbClient  db.Client
-	txManager db.TxManager
+	dbClient    db.Client
+	txManager   db.TxManager
+	asyncRunner async.Runner
 
 	redisPool   *redigo.Pool
 	redisClient cache.RedisClient
@@ -162,6 +165,14 @@ func (s *serviceProvider) TxManager(ctx context.Context) db.TxManager {
 	return s.txManager
 }
 
+func (s *serviceProvider) AsyncRunner() async.Runner {
+	if s.asyncRunner == nil {
+		s.asyncRunner = async.NewRunner()
+	}
+
+	return s.asyncRunner
+}
+
 func (s *serviceProvider) UserRepository(ctx context.Context) repository.UserRepository {
 	if s.userRepository == nil {
 		s.userRepository = pgUserRepository.NewRepository(s.DBClient(ctx))
@@ -214,6 +225,7 @@ func (s *serviceProvider) AuthService(ctx context.Context) service.AuthService {
 			s.HashService(ctx),
 			s.CacheUserService(),
 			s.TxManager(ctx),
+			s.AsyncRunner(),
 		)
 	}
 

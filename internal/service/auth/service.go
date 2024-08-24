@@ -3,6 +3,7 @@ package auth
 import (
 	"github.com/nqxcode/auth_microservice/internal/repository"
 	def "github.com/nqxcode/auth_microservice/internal/service"
+	"github.com/nqxcode/auth_microservice/internal/service/async"
 	"github.com/nqxcode/platform_common/client/db"
 )
 
@@ -12,6 +13,7 @@ type service struct {
 	hashService      def.HashService
 	cacheUserService def.CacheUserService
 	txManager        db.TxManager
+	asyncRunner      async.Runner
 }
 
 // NewService new auth service
@@ -21,6 +23,7 @@ func NewService(
 	hashService def.HashService,
 	cacheUserService def.CacheUserService,
 	txManager db.TxManager,
+	asyncRunner async.Runner,
 ) def.AuthService {
 	return &service{
 		userRepository:   userRepository,
@@ -28,5 +31,6 @@ func NewService(
 		hashService:      hashService,
 		cacheUserService: cacheUserService,
 		txManager:        txManager,
+		asyncRunner:      asyncRunner,
 	}
 }

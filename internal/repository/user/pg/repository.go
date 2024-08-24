@@ -3,7 +3,6 @@ package pg
 import (
 	"context"
 	"fmt"
-	"github.com/pkg/errors"
 
 	"github.com/nqxcode/auth_microservice/internal/model"
 	"github.com/nqxcode/auth_microservice/internal/repository"
@@ -13,6 +12,7 @@ import (
 	"github.com/nqxcode/platform_common/pagination"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/pkg/errors"
 )
 
 const (

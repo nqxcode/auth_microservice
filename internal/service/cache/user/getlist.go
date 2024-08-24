@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+
 	"github.com/gomodule/redigo/redis"
 	"github.com/nqxcode/auth_microservice/internal/model"
 	"github.com/nqxcode/platform_common/helper/slice"

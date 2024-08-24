@@ -9,6 +9,7 @@ import (
 	"github.com/nqxcode/auth_microservice/internal/repository"
 	repoMocks "github.com/nqxcode/auth_microservice/internal/repository/mocks"
 	"github.com/nqxcode/auth_microservice/internal/service"
+	"github.com/nqxcode/auth_microservice/internal/service/async"
 	"github.com/nqxcode/auth_microservice/internal/service/auth"
 	serviceSupport "github.com/nqxcode/auth_microservice/internal/service/auth/tests/support"
 	"github.com/nqxcode/auth_microservice/internal/service/log/constants"
@@ -21,6 +22,8 @@ import (
 )
 
 func TestDelete(t *testing.T) {
+	t.Parallel()
+
 	type userRepositoryMock func(mc *minimock.Controller) repository.UserRepository
 	type logServiceMock func(mc *minimock.Controller) service.LogService
 	type hashServiceMock func(mc *minimock.Controller) service.HashService
@@ -45,8 +48,6 @@ func TestDelete(t *testing.T) {
 		repoErr = fmt.Errorf("repo error")
 	)
 
-	defer t.Cleanup(mc.Finish)
-
 	cases := []struct {
 		name                 string
 		input                input
@@ -56,6 +57,7 @@ func TestDelete(t *testing.T) {
 		hashServiceMock      hashServiceMock
 		cacheUserServiceMock cacheUserServiceMock
 		txManagerFake        db.TxManager
+		asyncRunnerFake      async.Runner
 	}{
 		{
 			name: "success case",
@@ -89,7 +91,8 @@ func TestDelete(t *testing.T) {
 				mock.DeleteMock.Expect(ctx, id).Return(nil)
 				return mock
 			},
-			txManagerFake: serviceSupport.NewTxManagerFake(),
+			txManagerFake:   serviceSupport.NewTxManagerFake(),
+			asyncRunnerFake: serviceSupport.NewAsyncRunnerFake(),
 		},
 		{
 			name: "service error case",
@@ -118,20 +121,24 @@ func TestDelete(t *testing.T) {
 				mock := serviceMocks.NewCacheUserServiceMock(mc)
 				return mock
 			},
-			txManagerFake: serviceSupport.NewTxManagerFake(),
+			txManagerFake:   serviceSupport.NewTxManagerFake(),
+			asyncRunnerFake: serviceSupport.NewAsyncRunnerFake(),
 		},
 	}
 
 	for _, tt := range cases {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			userRepoMock := tt.userRepositoryMock(mc)
 			logSrvMock := tt.logServiceMock(mc)
 			hashSrvMock := tt.hashServiceMock(mc)
 			cacheSrvMock := tt.cacheUserServiceMock(mc)
 			txMngFake := tt.txManagerFake
+			asyncRunnerFake := tt.asyncRunnerFake
 
-			srv := auth.NewService(userRepoMock, logSrvMock, hashSrvMock, cacheSrvMock, txMngFake)
+			srv := auth.NewService(userRepoMock, logSrvMock, hashSrvMock, cacheSrvMock, txMngFake, asyncRunnerFake)
 
 			err := srv.Delete(tt.input.ctx, tt.input.userID)
 			require.Equal(t, tt.expected.err, err)

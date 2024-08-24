@@ -31,12 +31,12 @@ func (s *service) Delete(ctx context.Context, userID int64) error {
 		return err
 	}
 
-	go func() {
+	s.asyncRunner.Run(func() {
 		err = s.cacheUserService.Delete(ctx, userID)
 		if err != nil {
 			log.Println("cant delete user to cache:", err)
 		}
-	}()
+	})
 
 	return nil
 }
