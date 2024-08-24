@@ -21,7 +21,6 @@ import (
 )
 
 func TestDelete(t *testing.T) {
-	t.Parallel()
 	type userRepositoryMock func(mc *minimock.Controller) repository.UserRepository
 	type logServiceMock func(mc *minimock.Controller) service.LogService
 	type hashServiceMock func(mc *minimock.Controller) service.HashService
@@ -87,6 +86,7 @@ func TestDelete(t *testing.T) {
 			},
 			cacheUserServiceMock: func(mc *minimock.Controller) service.CacheUserService {
 				mock := serviceMocks.NewCacheUserServiceMock(mc)
+				mock.DeleteMock.Expect(ctx, id).Return(nil)
 				return mock
 			},
 			txManagerFake: serviceSupport.NewTxManagerFake(),
@@ -125,8 +125,6 @@ func TestDelete(t *testing.T) {
 	for _, tt := range cases {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
 			userRepoMock := tt.userRepositoryMock(mc)
 			logSrvMock := tt.logServiceMock(mc)
 			hashSrvMock := tt.hashServiceMock(mc)

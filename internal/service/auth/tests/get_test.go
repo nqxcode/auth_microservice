@@ -22,12 +22,10 @@ import (
 )
 
 func TestFind(t *testing.T) {
-	t.Parallel()
-
 	type userRepositoryMock func(mc *minimock.Controller) repository.UserRepository
 	type logServiceMock func(mc *minimock.Controller) service.LogService
 	type hashServiceMock func(mc *minimock.Controller) service.HashService
-	type cacheServiceMock func(mc *minimock.Controller) service.CacheUserService
+	type cacheUserServiceMock func(mc *minimock.Controller) service.CacheUserService
 
 	type input struct {
 		ctx    context.Context
@@ -69,14 +67,14 @@ func TestFind(t *testing.T) {
 	}
 
 	cases := []struct {
-		name               string
-		input              input
-		expected           expected
-		userRepositoryMock userRepositoryMock
-		logServiceMock     logServiceMock
-		hashServiceMock    hashServiceMock
-		cacheServiceMock   cacheServiceMock
-		txManagerFake      db.TxManager
+		name                 string
+		input                input
+		expected             expected
+		userRepositoryMock   userRepositoryMock
+		logServiceMock       logServiceMock
+		hashServiceMock      hashServiceMock
+		cacheUserServiceMock cacheUserServiceMock
+		txManagerFake        db.TxManager
 	}{
 		{
 			name: "success case",
@@ -105,6 +103,12 @@ func TestFind(t *testing.T) {
 				mock := serviceMocks.NewHashServiceMock(mc)
 				return mock
 			},
+			cacheUserServiceMock: func(mc *minimock.Controller) service.CacheUserService {
+				mock := serviceMocks.NewCacheUserServiceMock(mc)
+				mock.GetMock.Expect(ctx, id).Return(nil, nil)
+				mock.SetMock.Expect(ctx, user).Return(nil)
+				return mock
+			},
 			txManagerFake: testsSupport.NewTxManagerFake(),
 		},
 		{
@@ -130,6 +134,11 @@ func TestFind(t *testing.T) {
 				mock := serviceMocks.NewHashServiceMock(mc)
 				return mock
 			},
+			cacheUserServiceMock: func(mc *minimock.Controller) service.CacheUserService {
+				mock := serviceMocks.NewCacheUserServiceMock(mc)
+				mock.GetMock.Expect(ctx, id).Return(nil, nil)
+				return mock
+			},
 			txManagerFake: testsSupport.NewTxManagerFake(),
 		},
 	}
@@ -137,15 +146,13 @@ func TestFind(t *testing.T) {
 	for _, tt := range cases {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
 			userRepoMock := tt.userRepositoryMock(mc)
 			logSrvMock := tt.logServiceMock(mc)
 			hashSrvMock := tt.hashServiceMock(mc)
-			cacheSrvMock := tt.cacheServiceMock(mc)
+			cacheUserSrvMock := tt.cacheUserServiceMock(mc)
 			txMngFake := tt.txManagerFake
 
-			srv := auth.NewService(userRepoMock, logSrvMock, hashSrvMock, cacheSrvMock, txMngFake)
+			srv := auth.NewService(userRepoMock, logSrvMock, hashSrvMock, cacheUserSrvMock, txMngFake)
 
 			ar, err := srv.Get(tt.input.ctx, tt.input.userID)
 			require.Equal(t, tt.expected.err, err)
