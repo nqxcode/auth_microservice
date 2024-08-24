@@ -2,13 +2,10 @@ package auth
 
 import (
 	"context"
-	"errors"
 	"log"
 
 	"github.com/nqxcode/auth_microservice/internal/model"
 	"github.com/nqxcode/auth_microservice/internal/service/log/constants"
-
-	"github.com/redis/go-redis/v9"
 )
 
 func (s *service) Get(ctx context.Context, id int64) (*model.User, error) {
@@ -19,9 +16,7 @@ func (s *service) Get(ctx context.Context, id int64) (*model.User, error) {
 
 	user, err = s.cacheUserService.Get(ctx, id)
 	if err != nil {
-		if !errors.Is(err, redis.Nil) { // TODO check this comparison
-			return nil, err
-		}
+		return nil, err
 	}
 
 	if user != nil {

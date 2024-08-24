@@ -4,12 +4,9 @@ import (
 	"context"
 	"log"
 
+	"github.com/nqxcode/auth_microservice/internal/model"
 	"github.com/nqxcode/auth_microservice/internal/service/log/constants"
 	modelCommon "github.com/nqxcode/platform_common/model"
-	"github.com/pkg/errors"
-	"github.com/redis/go-redis/v9"
-
-	"github.com/nqxcode/auth_microservice/internal/model"
 	"github.com/nqxcode/platform_common/pagination"
 )
 
@@ -20,9 +17,7 @@ func (s *service) GetList(ctx context.Context, limit pagination.Limit) ([]model.
 	)
 	users, err = s.cacheUserService.GetList(ctx, limit)
 	if err != nil {
-		if !errors.Is(err, redis.Nil) { // TODO check this comparison
-			return nil, err
-		}
+		return nil, err
 	}
 
 	if len(users) > 0 {
