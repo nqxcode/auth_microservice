@@ -2,10 +2,9 @@ package auth
 
 import (
 	"context"
-	"log"
-
 	"github.com/nqxcode/auth_microservice/internal/model"
 	"github.com/nqxcode/auth_microservice/internal/service/log/constants"
+	"github.com/pkg/errors"
 )
 
 func (s *service) Delete(ctx context.Context, userID int64) error {
@@ -31,11 +30,12 @@ func (s *service) Delete(ctx context.Context, userID int64) error {
 		return err
 	}
 
-	s.asyncRunner.Run(func() {
+	s.asyncRunner.Run(ctx, func(ctx context.Context) error {
 		err = s.cacheUserService.Delete(ctx, userID)
 		if err != nil {
-			log.Println("cant delete user to cache:", err)
+			return errors.Errorf("cant delete user to cache: %v", err)
 		}
+		return nil
 	})
 
 	return nil

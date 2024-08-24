@@ -2,12 +2,11 @@ package auth
 
 import (
 	"context"
-	"log"
-
 	"github.com/nqxcode/auth_microservice/internal/model"
 	"github.com/nqxcode/auth_microservice/internal/service/log/constants"
 	modelCommon "github.com/nqxcode/platform_common/model"
 	"github.com/nqxcode/platform_common/pagination"
+	"github.com/pkg/errors"
 )
 
 func (s *service) GetList(ctx context.Context, limit pagination.Limit) ([]model.User, error) {
@@ -48,11 +47,12 @@ func (s *service) GetList(ctx context.Context, limit pagination.Limit) ([]model.
 	}
 
 	if len(users) > 0 {
-		s.asyncRunner.Run(func() {
+		s.asyncRunner.Run(ctx, func(ctx context.Context) error {
 			err = s.cacheUserService.SetList(ctx, users, limit)
 			if err != nil {
-				log.Println("cant set many users to cache:", err)
+				return errors.Errorf("cant set many users to cache: %v", err)
 			}
+			return nil
 		})
 	}
 
