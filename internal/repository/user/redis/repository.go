@@ -2,10 +2,8 @@ package redis
 
 import (
 	"context"
-	"runtime"
 	"strconv"
 	"strings"
-	"sync"
 
 	"github.com/nqxcode/auth_microservice/internal/model"
 	"github.com/nqxcode/auth_microservice/internal/repository"
@@ -74,19 +72,17 @@ func (r repo) Update(ctx context.Context, id int64, info *model.UpdateUserInfo) 
 	}
 
 	var changes bool
-	if info != nil {
-		if info.Role != nil {
-			if user.Role != *info.Role {
-				changes = true
-			}
-			user.Role = *info.Role
+	if info.Role != nil {
+		if user.Role != *info.Role {
+			changes = true
 		}
-		if info.Name != nil {
-			if user.Name != *info.Name {
-				changes = true
-			}
-			user.Name = *info.Name
+		user.Role = *info.Role
+	}
+	if info.Name != nil {
+		if user.Name != *info.Name {
+			changes = true
 		}
+		user.Name = *info.Name
 	}
 
 	if !changes {
@@ -133,6 +129,42 @@ func (r repo) Get(ctx context.Context, id int64) (*model.User, error) {
 	return converter.ToUserFromRepo(&user), nil
 }
 
+// GetByIDs get users by ids
+func (r repo) GetByIDs(ctx context.Context, ids []int64) ([]model.User, error) {
+	valuesList := make([]cache.Values, 0, len(ids))
+
+	valuesList, err := r.redisClient.MultiHGetAll(ctx, func(ids []int64) []string {
+		result := make([]string, len(ids))
+		for i := range ids {
+			idStr := strconv.FormatInt(ids[i], 10)
+			result[i] = buildCacheKey(idStr)
+		}
+		return result
+	}(ids))
+	if err != nil {
+		return nil, err
+	}
+
+	userMap := make(map[string]modelRepo.User, len(valuesList))
+	for _, v := range valuesList {
+		var user modelRepo.User
+		err = redigo.ScanStruct(v.Values, &user)
+		if err != nil {
+			return nil, err
+		}
+		userMap[v.Key] = user
+	}
+
+	users := make([]modelRepo.User, 0, len(userMap))
+	for _, v := range valuesList {
+		if user, ok := userMap[v.Key]; ok {
+			users = append(users, user)
+		}
+	}
+
+	return converter.ToManyUserFromRepo(users), nil
+}
+
 // GetList users
 func (r repo) GetList(ctx context.Context, limit pagination.Limit) ([]model.User, error) {
 	cacheKeyPrefix := buildCacheKeyPrefix()
@@ -163,67 +195,72 @@ func (r repo) GetList(ctx context.Context, limit pagination.Limit) ([]model.User
 
 	keys = keys[offset:end]
 
-	keysCh := make(chan string)
-	go func() {
-		for _, key := range keys {
-			keysCh <- key
-		}
-		close(keysCh)
-	}()
+	//keysCh := make(chan string)
+	//go func() {
+	//	for _, key := range keys {
+	//		keysCh <- key
+	//	}
+	//	close(keysCh)
+	//}()
 
-	type Values struct {
-		key    string
-		values []interface{}
-	}
+	//type Values struct {
+	//	key    string
+	//	values []interface{}
+	//}
 
-	valuesListCh := make(chan Values, len(keys))
-	errCh := make(chan error, len(keys))
+	//valuesListCh := make(chan Values, len(keys))
+	//errCh := make(chan error, len(keys))
 
-	var wg sync.WaitGroup
-	for i := 0; i < runtime.GOMAXPROCS(0); i++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for key := range keysCh {
-				values, hGetAllErr := r.redisClient.HGetAll(ctx, key)
-				if hGetAllErr != nil {
-					errCh <- hGetAllErr
-					continue
-				}
+	//var wg sync.WaitGroup
+	//for i := 0; i < runtime.GOMAXPROCS(0); i++ {
+	//	wg.Add(1)
+	//	go func() {
+	//		defer wg.Done()
+	//		for key := range keysCh {
+	//			values, hGetAllErr := r.redisClient.HGetAll(ctx, key)
+	//			if hGetAllErr != nil {
+	//				errCh <- hGetAllErr
+	//				continue
+	//			}
+	//
+	//			if len(values) == 0 {
+	//				errCh <- model.ErrorNoteNotFound
+	//				continue
+	//			}
+	//
+	//			valuesListCh <- Values{key: key, values: values}
+	//		}
+	//	}()
+	//}
+	//
+	//wg.Wait()
+	//close(errCh)
+	//close(valuesListCh)
+	//
+	//for err = range errCh {
+	//	if err != nil {
+	//		return nil, err
+	//	}
+	//}
 
-				if len(values) == 0 {
-					errCh <- model.ErrorNoteNotFound
-					continue
-				}
+	valuesList := make([]cache.Values, 0, len(keys))
+	//for v := range valuesListCh {
+	//	valuesList = append(valuesList, v)
+	//}
 
-				valuesListCh <- Values{key: key, values: values}
-			}
-		}()
-	}
-
-	wg.Wait()
-	close(errCh)
-	close(valuesListCh)
-
-	for err = range errCh {
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	valuesList := make([]Values, 0, len(keys))
-	for v := range valuesListCh {
-		valuesList = append(valuesList, v)
+	valuesList, err = r.redisClient.MultiHGetAll(ctx, keys)
+	if err != nil {
+		return nil, err
 	}
 
 	userMap := make(map[string]modelRepo.User, len(valuesList))
 	for _, v := range valuesList {
 		var user modelRepo.User
-		err = redigo.ScanStruct(v.values, &user)
+		err = redigo.ScanStruct(v.Values, &user)
 		if err != nil {
 			return nil, err
 		}
-		userMap[v.key] = user
+		userMap[v.Key] = user
 	}
 
 	users := make([]modelRepo.User, 0, len(userMap))

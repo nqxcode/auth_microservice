@@ -150,6 +150,33 @@ func (r *repo) Get(ctx context.Context, id int64) (*model.User, error) {
 	return converter.ToUserFromRepo(&user), nil
 }
 
+// GetByIDs get users by ids
+func (r *repo) GetByIDs(ctx context.Context, ids []int64) ([]model.User, error) {
+	builder := sq.Select(idColumn, nameColumn, emailColumn, roleColumn, passwordColumn, createdAtColumn, updatedAtColumn).
+		PlaceholderFormat(sq.Dollar).
+		From(escape(tableName)).
+		Where(sq.Eq{idColumn: ids}).
+		Limit(1)
+
+	query, args, err := builder.ToSql()
+	if err != nil {
+		return nil, err
+	}
+
+	q := db.Query{
+		Name:     tableName + "_repository.GetByIDs",
+		QueryRaw: query,
+	}
+
+	var users []modelRepo.User
+	err = r.db.DB().ScanAllContext(ctx, &users, q, args...)
+	if err != nil {
+		return nil, err
+	}
+
+	return converter.ToManyUserFromRepo(users), nil
+}
+
 func (r *repo) GetList(ctx context.Context, limit pagination.Limit) ([]model.User, error) {
 	builder := sq.Select(idColumn, nameColumn, emailColumn, roleColumn, passwordColumn, createdAtColumn, updatedAtColumn).
 		PlaceholderFormat(sq.Dollar).
