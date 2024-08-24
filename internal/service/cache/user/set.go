@@ -15,5 +15,10 @@ func (s *service) Set(ctx context.Context, user *model.User) error {
 		return err
 	}
 
+	err = s.invalidateLists(ctx)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
