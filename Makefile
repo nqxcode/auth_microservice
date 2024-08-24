@@ -2,6 +2,8 @@ ENV_FILE ?= .env
 
 include $(ENV_FILE)
 
+args=`arg="$(filter-out $@,$(MAKECMDGOALS))" && echo $${arg:-${1}}`
+
 LOCAL_BIN:=$(CURDIR)/bin
 
 LOCAL_MIGRATION_DIR=$(MIGRATION_DIR)
