@@ -21,7 +21,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestFind(t *testing.T) {
+func TestGet(t *testing.T) {
 	type userRepositoryMock func(mc *minimock.Controller) repository.UserRepository
 	type logServiceMock func(mc *minimock.Controller) service.LogService
 	type hashServiceMock func(mc *minimock.Controller) service.HashService

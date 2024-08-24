@@ -84,7 +84,7 @@ local-migration-down:
 .PHONY: test
 test:
 	go clean -testcache
-	go test ./... -covermode count -coverpkg=github.com/nqxcode/auth_microservice/internal/service/...,github.com/nqxcode/auth_microservice/internal/api/... -count 5
+	go test ./... -v -covermode count -coverpkg=github.com/nqxcode/auth_microservice/internal/service/...,github.com/nqxcode/auth_microservice/internal/api/... -count 5
 
 .PHONY: test-coverage
 test-coverage:
