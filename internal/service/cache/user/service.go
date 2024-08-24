@@ -1,14 +1,11 @@
 package user
 
 import (
-	"strconv"
 	"sync"
 
 	"github.com/nqxcode/auth_microservice/internal/repository"
-	"github.com/nqxcode/platform_common/client/cache"
-	"github.com/nqxcode/platform_common/pagination"
-
 	def "github.com/nqxcode/auth_microservice/internal/service"
+	"github.com/nqxcode/platform_common/client/cache"
 )
 
 const listCacheKey = "user-list"
@@ -25,12 +22,4 @@ func NewService(redisClient cache.RedisClient, userRepository repository.UserRep
 		redisClient:    redisClient,
 		userRepository: userRepository,
 	}
-}
-
-func buildListCacheKeyByLimit(limit pagination.Limit) string {
-	return buildListCacheKey(strconv.Itoa(int(limit.Offset)) + "-" + strconv.Itoa(int(limit.Limit)))
-}
-
-func buildListCacheKey(value string) string {
-	return listCacheKey + ":" + value
 }
