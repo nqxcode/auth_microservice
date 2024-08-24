@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+
 	"github.com/nqxcode/auth_microservice/internal/model"
 	"github.com/nqxcode/platform_common/helper/slice"
 	modelCommon "github.com/nqxcode/platform_common/model"
