@@ -25,5 +25,9 @@ func (s *service) GetList(ctx context.Context, limit pagination.Limit) ([]model.
 		return nil, err
 	}
 
+	if len(users) != len(ids) {
+		return nil, nil
+	}
+
 	return users, nil
 }

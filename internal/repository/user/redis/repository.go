@@ -148,6 +148,9 @@ func (r repo) GetByIDs(ctx context.Context, ids []int64) ([]model.User, error) {
 
 	users := make([]modelRepo.User, 0, len(valuesList))
 	for _, v := range valuesList {
+		if len(v.Values) == 0 {
+			continue
+		}
 		var user modelRepo.User
 		err = redigo.ScanStruct(v.Values, &user)
 		if err != nil {
