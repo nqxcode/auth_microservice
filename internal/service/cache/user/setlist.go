@@ -13,7 +13,12 @@ func (s *service) SetList(ctx context.Context, users []model.User, limit paginat
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	err := s.redisClient.RPush(ctx, buildListCacheKeyByLimit(limit), slice.ToAnySlice(modelCommon.ExtractIDs(users)))
+	err := s.redisClient.Delete(ctx, buildListCacheKeyByLimit(limit))
+	if err != nil {
+		return err
+	}
+
+	err = s.redisClient.RPush(ctx, buildListCacheKeyByLimit(limit), slice.ToAnySlice(modelCommon.ExtractIDs(users)))
 	if err != nil {
 		return err
 	}
