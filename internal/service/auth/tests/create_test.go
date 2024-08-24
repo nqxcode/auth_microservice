@@ -22,11 +22,10 @@ import (
 )
 
 func TestCreate(t *testing.T) {
-	t.Parallel()
 	type userRepositoryMock func(mc *minimock.Controller) repository.UserRepository
 	type logServiceMock func(mc *minimock.Controller) service.LogService
 	type hashServiceMock func(mc *minimock.Controller) service.HashService
-	type cacheServiceMock func(mc *minimock.Controller) service.CacheUserService
+	type cacheUserServiceMock func(mc *minimock.Controller) service.CacheUserService
 
 	type input struct {
 		ctx  context.Context
@@ -61,14 +60,14 @@ func TestCreate(t *testing.T) {
 	}
 
 	cases := []struct {
-		name               string
-		input              input
-		expected           expected
-		userRepositoryMock userRepositoryMock
-		logServiceMock     logServiceMock
-		hashServiceMock    hashServiceMock
-		cacheServiceMock   cacheServiceMock
-		txManagerFake      db.TxManager
+		name                 string
+		input                input
+		expected             expected
+		userRepositoryMock   userRepositoryMock
+		logServiceMock       logServiceMock
+		hashServiceMock      hashServiceMock
+		cacheUserServiceMock cacheUserServiceMock
+		txManagerFake        db.TxManager
 	}{
 		{
 			name: "success case",
@@ -86,19 +85,25 @@ func TestCreate(t *testing.T) {
 			userRepositoryMock: func(mc *minimock.Controller) repository.UserRepository {
 				mock := repoMocks.NewUserRepositoryMock(mc)
 				mock.CreateMock.Expect(ctx, &model.User{Info: info, Password: passwordHash}).Return(id, nil)
+				mock.GetMock.Expect(ctx, id).Return(&model.User{ID: id, Info: info, Password: passwordHash}, nil)
 				return mock
 			},
 			logServiceMock: func(mc *minimock.Controller) service.LogService {
 				mock := serviceMocks.NewLogServiceMock(mc)
 				mock.CreateMock.Expect(ctx, &model.Log{
 					Message: constants.UserCreated,
-					Payload: model.User{ID: id, Info: info},
+					Payload: &model.User{ID: id, Info: info, Password: passwordHash},
 				}).Return(nil)
 				return mock
 			},
 			hashServiceMock: func(mc *minimock.Controller) service.HashService {
 				mock := serviceMocks.NewHashServiceMock(mc)
 				mock.HashMock.Expect(ctx, password).Return(passwordHash, nil)
+				return mock
+			},
+			cacheUserServiceMock: func(mc *minimock.Controller) service.CacheUserService {
+				mock := serviceMocks.NewCacheUserServiceMock(mc)
+				mock.SetMock.Expect(ctx, &model.User{ID: id, Info: info, Password: passwordHash}).Return(nil)
 				return mock
 			},
 			txManagerFake: testsSupport.NewTxManagerFake(),
@@ -130,6 +135,10 @@ func TestCreate(t *testing.T) {
 				mock.HashMock.Expect(ctx, password).Return(passwordHash, nil)
 				return mock
 			},
+			cacheUserServiceMock: func(mc *minimock.Controller) service.CacheUserService {
+				mock := serviceMocks.NewCacheUserServiceMock(mc)
+				return mock
+			},
 			txManagerFake: testsSupport.NewTxManagerFake(),
 		},
 	}
@@ -137,12 +146,10 @@ func TestCreate(t *testing.T) {
 	for _, tt := range cases {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
 			userRepoMock := tt.userRepositoryMock(mc)
 			logSrvMock := tt.logServiceMock(mc)
 			hashSrvMock := tt.hashServiceMock(mc)
-			cacheSrvMock := tt.cacheServiceMock(mc)
+			cacheSrvMock := tt.cacheUserServiceMock(mc)
 			txMngFake := tt.txManagerFake
 
 			srv := auth.NewService(userRepoMock, logSrvMock, hashSrvMock, cacheSrvMock, txMngFake)

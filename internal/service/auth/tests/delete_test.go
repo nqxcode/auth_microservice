@@ -10,7 +10,7 @@ import (
 	repoMocks "github.com/nqxcode/auth_microservice/internal/repository/mocks"
 	"github.com/nqxcode/auth_microservice/internal/service"
 	"github.com/nqxcode/auth_microservice/internal/service/auth"
-	service2 "github.com/nqxcode/auth_microservice/internal/service/auth/tests/support"
+	serviceSupport "github.com/nqxcode/auth_microservice/internal/service/auth/tests/support"
 	"github.com/nqxcode/auth_microservice/internal/service/log/constants"
 	serviceMocks "github.com/nqxcode/auth_microservice/internal/service/mocks"
 	"github.com/nqxcode/platform_common/client/db"
@@ -25,7 +25,7 @@ func TestDelete(t *testing.T) {
 	type userRepositoryMock func(mc *minimock.Controller) repository.UserRepository
 	type logServiceMock func(mc *minimock.Controller) service.LogService
 	type hashServiceMock func(mc *minimock.Controller) service.HashService
-	type cacheServiceMock func(mc *minimock.Controller) service.CacheUserService
+	type cacheUserServiceMock func(mc *minimock.Controller) service.CacheUserService
 
 	type input struct {
 		ctx    context.Context
@@ -49,14 +49,14 @@ func TestDelete(t *testing.T) {
 	defer t.Cleanup(mc.Finish)
 
 	cases := []struct {
-		name               string
-		input              input
-		expected           expected
-		userRepositoryMock userRepositoryMock
-		logServiceMock     logServiceMock
-		hashServiceMock    hashServiceMock
-		cacheServiceMock   cacheServiceMock
-		txManagerFake      db.TxManager
+		name                 string
+		input                input
+		expected             expected
+		userRepositoryMock   userRepositoryMock
+		logServiceMock       logServiceMock
+		hashServiceMock      hashServiceMock
+		cacheUserServiceMock cacheUserServiceMock
+		txManagerFake        db.TxManager
 	}{
 		{
 			name: "success case",
@@ -85,7 +85,11 @@ func TestDelete(t *testing.T) {
 				mock := serviceMocks.NewHashServiceMock(mc)
 				return mock
 			},
-			txManagerFake: service2.NewTxManagerFake(),
+			cacheUserServiceMock: func(mc *minimock.Controller) service.CacheUserService {
+				mock := serviceMocks.NewCacheUserServiceMock(mc)
+				return mock
+			},
+			txManagerFake: serviceSupport.NewTxManagerFake(),
 		},
 		{
 			name: "service error case",
@@ -110,7 +114,11 @@ func TestDelete(t *testing.T) {
 				mock := serviceMocks.NewHashServiceMock(mc)
 				return mock
 			},
-			txManagerFake: service2.NewTxManagerFake(),
+			cacheUserServiceMock: func(mc *minimock.Controller) service.CacheUserService {
+				mock := serviceMocks.NewCacheUserServiceMock(mc)
+				return mock
+			},
+			txManagerFake: serviceSupport.NewTxManagerFake(),
 		},
 	}
 
@@ -122,7 +130,7 @@ func TestDelete(t *testing.T) {
 			userRepoMock := tt.userRepositoryMock(mc)
 			logSrvMock := tt.logServiceMock(mc)
 			hashSrvMock := tt.hashServiceMock(mc)
-			cacheSrvMock := tt.cacheServiceMock(mc)
+			cacheSrvMock := tt.cacheUserServiceMock(mc)
 			txMngFake := tt.txManagerFake
 
 			srv := auth.NewService(userRepoMock, logSrvMock, hashSrvMock, cacheSrvMock, txMngFake)

@@ -90,7 +90,7 @@ func TestFind(t *testing.T) {
 			},
 			userRepositoryMock: func(mc *minimock.Controller) repository.UserRepository {
 				mock := repoMocks.NewUserRepositoryMock(mc)
-				mock.FindMock.Expect(ctx, id).Return(user, nil)
+				mock.GetMock.Expect(ctx, id).Return(user, nil)
 				return mock
 			},
 			logServiceMock: func(mc *minimock.Controller) service.LogService {
@@ -119,7 +119,7 @@ func TestFind(t *testing.T) {
 			},
 			userRepositoryMock: func(mc *minimock.Controller) repository.UserRepository {
 				mock := repoMocks.NewUserRepositoryMock(mc)
-				mock.FindMock.Expect(ctx, id).Return(nil, repoErr)
+				mock.GetMock.Expect(ctx, id).Return(nil, repoErr)
 				return mock
 			},
 			logServiceMock: func(mc *minimock.Controller) service.LogService {
