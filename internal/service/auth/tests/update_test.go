@@ -10,7 +10,7 @@ import (
 	repoMocks "github.com/nqxcode/auth_microservice/internal/repository/mocks"
 	"github.com/nqxcode/auth_microservice/internal/service"
 	"github.com/nqxcode/auth_microservice/internal/service/auth"
-	service2 "github.com/nqxcode/auth_microservice/internal/service/auth/tests/support"
+	serviceSupport "github.com/nqxcode/auth_microservice/internal/service/auth/tests/support"
 	"github.com/nqxcode/auth_microservice/internal/service/log/constants"
 	serviceMocks "github.com/nqxcode/auth_microservice/internal/service/mocks"
 	desc "github.com/nqxcode/auth_microservice/pkg/auth_v1"
@@ -22,11 +22,10 @@ import (
 )
 
 func TestUpdate(t *testing.T) {
-	t.Parallel()
 	type userRepositoryMock func(mc *minimock.Controller) repository.UserRepository
 	type logServiceMock func(mc *minimock.Controller) service.LogService
 	type hashServiceMock func(mc *minimock.Controller) service.HashService
-	type cacheServiceMock func(mc *minimock.Controller) service.CacheUserService
+	type cacheUserServiceMock func(mc *minimock.Controller) service.CacheUserService
 
 	type input struct {
 		ctx    context.Context
@@ -57,14 +56,14 @@ func TestUpdate(t *testing.T) {
 	}
 
 	cases := []struct {
-		name               string
-		input              input
-		expected           expected
-		userRepositoryMock userRepositoryMock
-		logServiceMock     logServiceMock
-		hashServiceMock    hashServiceMock
-		cacheServiceMock   cacheServiceMock
-		txManagerFake      db.TxManager
+		name                 string
+		input                input
+		expected             expected
+		userRepositoryMock   userRepositoryMock
+		logServiceMock       logServiceMock
+		hashServiceMock      hashServiceMock
+		cacheUserServiceMock cacheUserServiceMock
+		txManagerFake        db.TxManager
 	}{
 		{
 			name: "success case",
@@ -96,7 +95,12 @@ func TestUpdate(t *testing.T) {
 				mock := serviceMocks.NewHashServiceMock(mc)
 				return mock
 			},
-			txManagerFake: service2.NewTxManagerFake(),
+			cacheUserServiceMock: func(mc *minimock.Controller) service.CacheUserService {
+				mock := serviceMocks.NewCacheUserServiceMock(mc)
+				mock.SetPartialMock.Expect(ctx, id, &model.UpdateUserInfo{Name: &name, Role: &role}).Return(nil)
+				return mock
+			},
+			txManagerFake: serviceSupport.NewTxManagerFake(),
 		},
 		{
 			name: "service error case",
@@ -117,26 +121,28 @@ func TestUpdate(t *testing.T) {
 				mock := serviceMocks.NewLogServiceMock(mc)
 				return mock
 			},
+			cacheUserServiceMock: func(mc *minimock.Controller) service.CacheUserService {
+				mock := serviceMocks.NewCacheUserServiceMock(mc)
+				return mock
+			},
 			hashServiceMock: func(mc *minimock.Controller) service.HashService {
 				mock := serviceMocks.NewHashServiceMock(mc)
 				return mock
 			},
-			txManagerFake: service2.NewTxManagerFake(),
+			txManagerFake: serviceSupport.NewTxManagerFake(),
 		},
 	}
 
 	for _, tt := range cases {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
 			userRepoMock := tt.userRepositoryMock(mc)
 			logSrvMock := tt.logServiceMock(mc)
 			hashSrvMock := tt.hashServiceMock(mc)
-			cacheSrvMock := tt.cacheServiceMock(mc)
+			cacheUserSrvMock := tt.cacheUserServiceMock(mc)
 			txMngFake := tt.txManagerFake
 
-			srv := auth.NewService(userRepoMock, logSrvMock, hashSrvMock, cacheSrvMock, txMngFake)
+			srv := auth.NewService(userRepoMock, logSrvMock, hashSrvMock, cacheUserSrvMock, txMngFake)
 
 			err := srv.Update(tt.input.ctx, tt.input.userID, tt.input.info)
 			require.Equal(t, tt.expected.err, err)
