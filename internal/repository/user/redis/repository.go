@@ -185,12 +185,19 @@ func (r repo) GetList(ctx context.Context, limit pagination.Limit) ([]model.User
 
 	users := make([]modelRepo.User, 0, len(valuesList))
 	for _, v := range valuesList {
+		if len(v.Values) == 0 {
+			continue
+		}
 		var user modelRepo.User
 		err = redigo.ScanStruct(v.Values, &user)
 		if err != nil {
 			return nil, err
 		}
 		users = append(users, user)
+	}
+
+	if len(users) != len(keys) {
+		return nil, nil
 	}
 
 	return converter.ToManyUserFromRepo(users), nil
