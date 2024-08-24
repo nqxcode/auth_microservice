@@ -146,21 +146,14 @@ func (r repo) GetByIDs(ctx context.Context, ids []int64) ([]model.User, error) {
 		return nil, err
 	}
 
-	userMap := make(map[string]modelRepo.User, len(valuesList))
+	users := make([]modelRepo.User, 0, len(valuesList))
 	for _, v := range valuesList {
 		var user modelRepo.User
 		err = redigo.ScanStruct(v.Values, &user)
 		if err != nil {
 			return nil, err
 		}
-		userMap[v.Key] = user
-	}
-
-	users := make([]modelRepo.User, 0, len(userMap))
-	for _, v := range valuesList {
-		if user, ok := userMap[v.Key]; ok {
-			users = append(users, user)
-		}
+		users = append(users, user)
 	}
 
 	return converter.ToManyUserFromRepo(users), nil
@@ -187,21 +180,14 @@ func (r repo) GetList(ctx context.Context, limit pagination.Limit) ([]model.User
 		return nil, err
 	}
 
-	userMap := make(map[string]modelRepo.User, len(valuesList))
+	users := make([]modelRepo.User, 0, len(valuesList))
 	for _, v := range valuesList {
 		var user modelRepo.User
 		err = redigo.ScanStruct(v.Values, &user)
 		if err != nil {
 			return nil, err
 		}
-		userMap[v.Key] = user
-	}
-
-	users := make([]modelRepo.User, 0, len(userMap))
-	for _, key := range keys {
-		if user, ok := userMap[key]; ok {
-			users = append(users, user)
-		}
+		users = append(users, user)
 	}
 
 	return converter.ToManyUserFromRepo(users), nil
