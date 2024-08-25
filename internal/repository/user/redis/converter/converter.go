@@ -8,6 +8,7 @@ import (
 	modelRepo "github.com/nqxcode/auth_microservice/internal/repository/user/redis/model"
 )
 
+// ToManyUserFromRepo convert to user model
 func ToManyUserFromRepo(users []modelRepo.User) []model.User {
 	result := make([]model.User, 0, len(users))
 
@@ -21,6 +22,7 @@ func ToManyUserFromRepo(users []modelRepo.User) []model.User {
 	return result
 }
 
+// ToUserFromRepo convert to user model
 func ToUserFromRepo(user *modelRepo.User) *model.User {
 	var updatedAt sql.NullTime
 	if user.UpdatedAtNs != nil {

@@ -2,4 +2,5 @@ package model
 
 import "github.com/pkg/errors"
 
-var ErrorNoteNotFound = errors.New("note not found")
+// ErrorUserNotFound user not fount error
+var ErrorUserNotFound = errors.New("user not found")

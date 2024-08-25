@@ -2,8 +2,9 @@ package support
 
 import (
 	"context"
-	"github.com/nqxcode/auth_microservice/internal/service/async"
 	"log"
+
+	"github.com/nqxcode/auth_microservice/internal/service/async"
 )
 
 type AsyncRunnerFake struct{}

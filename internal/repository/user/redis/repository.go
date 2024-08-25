@@ -63,7 +63,7 @@ func (r repo) Update(ctx context.Context, id int64, info *model.UpdateUserInfo) 
 	}
 
 	if len(values) == 0 {
-		return model.ErrorNoteNotFound
+		return model.ErrorUserNotFound
 	}
 
 	var user modelRepo.User
@@ -132,8 +132,6 @@ func (r repo) Get(ctx context.Context, id int64) (*model.User, error) {
 
 // GetByIDs get users by ids
 func (r repo) GetByIDs(ctx context.Context, ids []int64) ([]model.User, error) {
-	valuesList := make([]cache.Values, 0, len(ids))
-
 	valuesList, err := r.redisClient.MultiHGetAll(ctx, func(ids []int64) []string {
 		result := make([]string, len(ids))
 		for i := range ids {

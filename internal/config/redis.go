@@ -33,6 +33,7 @@ type redisConfig struct {
 	db int
 }
 
+// NewRedisConfig create redis config
 func NewRedisConfig() (*redisConfig, error) {
 	host := os.Getenv(redisHostEnvName)
 	if len(host) == 0 {

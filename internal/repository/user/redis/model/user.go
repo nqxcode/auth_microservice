@@ -1,5 +1,6 @@
 package model
 
+// User model
 type User struct {
 	ID          int64  `redis:"id"`
 	Name        string `redis:"name"`

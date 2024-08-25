@@ -41,7 +41,7 @@ func TestCreate(t *testing.T) {
 		id       = gofakeit.Int64()
 		name     = gofakeit.Name()
 		email    = gofakeit.Email()
-		role     = desc.Role(gofakeit.Number(int(desc.Role_ADMIN), int(desc.Role_ADMIN)))
+		role     = desc.Role(int32(gofakeit.Number(int(desc.Role_ADMIN), int(desc.Role_ADMIN))))
 		password = gofakeit.Password(true, true, true, true, true, 8)
 
 		serviceErr = fmt.Errorf("service error")

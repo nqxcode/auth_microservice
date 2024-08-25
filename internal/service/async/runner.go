@@ -5,8 +5,10 @@ import (
 	"log"
 )
 
+// Handler handler function type
 type Handler func(ctx context.Context) error
 
+// Runner runner interface
 type Runner interface {
 	Run(ctx context.Context, handler Handler)
 }
