@@ -136,6 +136,8 @@ jobs:
             POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
             POSTGRES_DB=${{ secrets.POSTGRES_DB }}
             HASHING_SALT="${{ secrets.HASHING_SALT }}"
+            REDIS_IMAGE_NAME="${{ env.REDIS_IMAGE_NAME }}"
+            REDIS_CONTAINER_NAME="${{ env.REDIS_CONTAINER_NAME }}"
             REDIS_CONNECTION_TIMEOUT_SEC="${{ secrets.REDIS_CONNECTION_TIMEOUT_SEC }}"
             REDIS_DB="${{ secrets.REDIS_DB }}"
             REDIS_IDLE_TIMEOUT_SEC="${{ secrets.REDIS_IDLE_TIMEOUT_SEC }}"
