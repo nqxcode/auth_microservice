@@ -2,6 +2,7 @@ package async
 
 import (
 	"context"
+	"fmt"
 	"log"
 )
 
@@ -23,6 +24,16 @@ func NewRunner() Runner {
 
 func (r *runner) Run(ctx context.Context, handler Handler) {
 	go func() {
+		defer func() {
+			if rr := recover(); rr != nil {
+				err, ok := rr.(error)
+				if !ok {
+					err = fmt.Errorf("%v", rr)
+				}
+				log.Println("Panic in handler:", err)
+			}
+		}()
+
 		err := handler(ctx)
 		if err != nil {
 			log.Println("Error in handler:", err)
