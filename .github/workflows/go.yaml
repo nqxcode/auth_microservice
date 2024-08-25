@@ -215,6 +215,7 @@ jobs:
                   - ${NETWORK}
                 depends_on:
                   - postgres-auth
+                  - redis-auth
                   - migrator-auth
 
             EOF
