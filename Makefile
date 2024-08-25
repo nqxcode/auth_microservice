@@ -96,4 +96,4 @@ test-coverage:
 	rm coverage.tmp.out
 	go tool cover -html=coverage.out;
 	go tool cover -func=./coverage.out | grep "total";
-	grep -sqFx "/coverage.out" .gitignore || echo "/coverage.out" >> .gitignore
+	grep -sqFx "/coverage.out" .gitignore || echo -e "\n/coverage.out" >> .gitignore
