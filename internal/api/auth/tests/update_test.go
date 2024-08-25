@@ -3,6 +3,7 @@ package tests
 import (
 	"context"
 	"fmt"
+	"math/rand/v2"
 	"testing"
 
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -40,9 +41,10 @@ func TestUpdate(t *testing.T) {
 		ctx = context.Background()
 		mc  = minimock.NewController(t)
 
-		id   = gofakeit.Int64()
-		name = gofakeit.Name()
-		role = desc.Role(gofakeit.Number(int(desc.Role_ADMIN), int(desc.Role_USER)))
+		id    = gofakeit.Int64()
+		name  = gofakeit.Name()
+		roles = []desc.Role{desc.Role_ADMIN, desc.Role_USER}
+		role  = roles[rand.Int32N(int32(len(roles))-1)] // nolint: gosec
 
 		serviceErr = fmt.Errorf("service error")
 

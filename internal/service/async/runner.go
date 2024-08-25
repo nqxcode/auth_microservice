@@ -16,6 +16,7 @@ type Runner interface {
 type runner struct {
 }
 
+// NewRunner new runner
 func NewRunner() Runner {
 	return &runner{}
 }

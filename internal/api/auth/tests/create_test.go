@@ -3,6 +3,7 @@ package tests
 import (
 	"context"
 	"fmt"
+	"math/rand/v2"
 	"testing"
 
 	"github.com/nqxcode/auth_microservice/internal/api/auth"
@@ -41,7 +42,8 @@ func TestCreate(t *testing.T) {
 		id       = gofakeit.Int64()
 		name     = gofakeit.Name()
 		email    = gofakeit.Email()
-		role     = desc.Role(int32(gofakeit.Number(int(desc.Role_ADMIN), int(desc.Role_ADMIN))))
+		roles    = []desc.Role{desc.Role_ADMIN, desc.Role_USER}
+		role     = roles[rand.Int32N(int32(len(roles))-1)] // nolint: gosec
 		password = gofakeit.Password(true, true, true, true, true, 8)
 
 		serviceErr = fmt.Errorf("service error")

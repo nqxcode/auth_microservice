@@ -14,6 +14,7 @@ type User struct {
 	UpdatedAt sql.NullTime
 }
 
+// GetID get user id
 func (u User) GetID() int64 {
 	return u.ID
 }

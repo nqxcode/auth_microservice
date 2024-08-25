@@ -3,6 +3,7 @@ package tests
 import (
 	"context"
 	"errors"
+	"math/rand/v2"
 	"testing"
 
 	"github.com/brianvoe/gofakeit/v6"
@@ -42,7 +43,8 @@ func TestGet(t *testing.T) {
 		id        = gofakeit.Int64()
 		name      = gofakeit.Name()
 		email     = gofakeit.Email()
-		role      = desc.Role(gofakeit.Number(int(desc.Role_ADMIN), int(desc.Role_ADMIN)))
+		roles     = []desc.Role{desc.Role_ADMIN, desc.Role_USER}
+		role      = roles[rand.Int32N(int32(len(roles))-1)] // nolint: gosec
 		createdAt = gofakeit.Date()
 
 		serviceErr = errors.New("user not found")

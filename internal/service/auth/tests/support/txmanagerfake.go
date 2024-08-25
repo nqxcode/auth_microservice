@@ -9,6 +9,7 @@ import (
 type txManagerFake struct {
 }
 
+// NewTxManagerFake new fake tx manager
 func NewTxManagerFake() db.TxManager {
 	return &txManagerFake{}
 }

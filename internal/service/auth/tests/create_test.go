@@ -3,6 +3,7 @@ package tests
 import (
 	"context"
 	"fmt"
+	"math/rand/v2"
 	"testing"
 
 	"github.com/nqxcode/auth_microservice/internal/model"
@@ -47,7 +48,8 @@ func TestCreate(t *testing.T) {
 		id           = gofakeit.Int64()
 		name         = gofakeit.Name()
 		email        = gofakeit.Email()
-		role         = int32(gofakeit.Number(int(desc.Role_ADMIN), int(desc.Role_USER)))
+		roles        = []desc.Role{desc.Role_ADMIN, desc.Role_USER}
+		role         = int32(roles[rand.Int32N(int32(len(roles))-1)]) // nolint: gosec
 		password     = gofakeit.Password(true, true, true, true, true, 8)
 		passwordHash = "HASH123"
 
