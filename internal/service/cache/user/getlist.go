@@ -18,7 +18,7 @@ func (s *service) GetList(ctx context.Context, limit pagination.Limit) ([]model.
 		return nil, err
 	}
 
-	ids = slice.SliceByLimit(ids, limit)
+	ids = slice.ByLimit(ids, limit)
 
 	users, err := s.userRepository.GetByIDs(ctx, ids)
 	if err != nil {

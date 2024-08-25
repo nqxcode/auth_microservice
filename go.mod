@@ -9,9 +9,8 @@ require (
 	github.com/golang/protobuf v1.5.4
 	github.com/gomodule/redigo v1.9.2
 	github.com/joho/godotenv v1.5.1
-	github.com/nqxcode/platform_common v0.0.0-20240824002548-0fea91a78179
+	github.com/nqxcode/platform_common v0.0.0-20240825072307-d237cf2efeef
 	github.com/pkg/errors v0.9.1
-	github.com/redis/go-redis/v9 v9.6.1
 	github.com/stretchr/testify v1.8.4
 	golang.org/x/crypto v0.24.0
 	google.golang.org/grpc v1.65.0
@@ -19,9 +18,7 @@ require (
 )
 
 require (
-	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/georgysavva/scany v1.2.2 // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
 	github.com/jackc/pgconn v1.14.3 // indirect

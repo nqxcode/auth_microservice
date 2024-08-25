@@ -38,7 +38,7 @@ func (r repo) Create(ctx context.Context, model *model.User) (int64, error) {
 		Role:        model.Info.Role,
 		Password:    model.Password,
 		CreatedAtNs: model.CreatedAt.UnixNano(),
-		UpdatedAtNs: time.ToUnixNanoFromSqlNullTime(model.UpdatedAt),
+		UpdatedAtNs: time.ToUnixNanoFromSQLNullTime(model.UpdatedAt),
 	}
 
 	idStr := strconv.FormatInt(id, 10)
@@ -176,7 +176,7 @@ func (r repo) GetList(ctx context.Context, limit pagination.Limit) ([]model.User
 		return nil, err
 	}
 
-	keys = slice.SliceByLimit(keys, limit)
+	keys = slice.ByLimit(keys, limit)
 
 	valuesList, err := r.redisClient.MultiHGetAll(ctx, keys)
 	if err != nil {
