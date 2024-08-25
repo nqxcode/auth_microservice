@@ -53,7 +53,7 @@ jobs:
           # Require: The version of golangci-lint to use.
           # When `install-mode` is `binary` (default) the value can be v1.2 or v1.2.3 or `latest` to use the latest version.
           # When `install-mode` is `goinstall` the value can be v1.2.3, `latest`, or the hash of a commit.
-          version: v1.59
+          version: v1.60
 
           # Optional: working directory, useful for monorepos
           # working-directory: somedir
@@ -143,6 +143,7 @@ jobs:
             REDIS_IDLE_TIMEOUT_SEC="${{ secrets.REDIS_IDLE_TIMEOUT_SEC }}"
             REDIS_MAX_IDLE="${{ secrets.REDIS_MAX_IDLE }}"
             REDIS_PASSWORD="${{ secrets.REDIS_PASSWORD }}"
+            REDIS_VOLUME="${{ env.REDIS_VOLUME }}"
             REDIS_PORT="${{ secrets.REDIS_PORT }}"
             EOF
             
