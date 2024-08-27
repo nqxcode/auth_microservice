@@ -2,8 +2,9 @@ package converter
 
 import (
 	"database/sql"
-	"github.com/samber/lo"
 	"time"
+
+	"github.com/samber/lo"
 
 	"github.com/nqxcode/auth_microservice/internal/model"
 	modelRepo "github.com/nqxcode/auth_microservice/internal/repository/user/redis/model"
