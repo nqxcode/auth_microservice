@@ -2,9 +2,10 @@ package converter
 
 import (
 	"github.com/nqxcode/auth_microservice/internal/model"
-	"google.golang.org/protobuf/types/known/timestamppb"
-
 	desc "github.com/nqxcode/auth_microservice/pkg/auth_v1"
+
+	"github.com/samber/lo"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 // ToUserFromService convert to user model
@@ -24,11 +25,9 @@ func ToUserFromService(user *model.User) *desc.User {
 
 // ToUsersFromService convert to users model
 func ToUsersFromService(users []model.User) []*desc.User {
-	userList := make([]*desc.User, 0, len(users))
-	for i := range users {
-		userList = append(userList, ToUserFromService(&users[i]))
-	}
-	return userList
+	return lo.Map(users, func(user model.User, _ int) *desc.User {
+		return ToUserFromService(&user)
+	})
 }
 
 // ToUserInfoFromService convert to user info model
