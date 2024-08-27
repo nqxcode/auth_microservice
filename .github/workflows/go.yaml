@@ -4,7 +4,7 @@ on:
   push:
     branches: [ main ]
   pull_request:
-    branches: [ main, week_1, week_2, week_3, week_4 ]
+    branches: [ main, week_1, week_2, week_3, week_4, week_5 ]
 
 env:
   REGISTRY: "cr.selcloud.ru/nqxcode"
