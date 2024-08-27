@@ -2,6 +2,7 @@ package converter
 
 import (
 	"database/sql"
+	"github.com/samber/lo"
 	"time"
 
 	"github.com/nqxcode/auth_microservice/internal/model"
@@ -10,16 +11,9 @@ import (
 
 // ToManyUserFromRepo convert to user model
 func ToManyUserFromRepo(users []modelRepo.User) []model.User {
-	result := make([]model.User, 0, len(users))
-
-	for i := range users {
-		m := ToUserFromRepo(&users[i])
-		if m != nil {
-			result = append(result, *m)
-		}
-	}
-
-	return result
+	return lo.Map(users, func(user modelRepo.User, _ int) model.User {
+		return *ToUserFromRepo(&user)
+	})
 }
 
 // ToUserFromRepo convert to user model
