@@ -29,6 +29,7 @@ func NewRepository(db db.Client) repository.LogRepository {
 	return &repo{db: db}
 }
 
+// Create log
 func (r *repo) Create(ctx context.Context, model *model.Log) error {
 	builder := sq.Insert(tableName).
 		PlaceholderFormat(sq.Dollar).

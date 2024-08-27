@@ -36,6 +36,7 @@ func NewRepository(db db.Client) repository.UserRepository {
 	return &repo{db: db}
 }
 
+// Create user
 func (r *repo) Create(ctx context.Context, model *model.User) (int64, error) {
 	if model == nil {
 		return 0, errors.New("model is nil")
