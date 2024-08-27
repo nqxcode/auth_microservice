@@ -7,14 +7,15 @@ import (
 
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/gojuno/minimock/v3"
-	"github.com/nqxcode/auth_microservice/internal/api/auth"
-	"github.com/nqxcode/auth_microservice/internal/service"
-	serviceMocks "github.com/nqxcode/auth_microservice/internal/service/mocks"
-	desc "github.com/nqxcode/auth_microservice/pkg/auth_v1"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
+
+	"github.com/nqxcode/auth_microservice/internal/api/auth"
+	"github.com/nqxcode/auth_microservice/internal/service"
+	serviceMocks "github.com/nqxcode/auth_microservice/internal/service/mocks"
+	desc "github.com/nqxcode/auth_microservice/pkg/auth_v1"
 )
 
 func TestDelete(t *testing.T) {

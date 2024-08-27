@@ -4,11 +4,11 @@ import (
 	"context"
 	"log"
 
-	"github.com/golang/protobuf/ptypes/empty"
-	desc "github.com/nqxcode/auth_microservice/pkg/auth_v1"
-
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	"github.com/golang/protobuf/ptypes/empty"
+	desc "github.com/nqxcode/auth_microservice/pkg/auth_v1"
 )
 
 // Delete user by id

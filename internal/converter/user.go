@@ -1,11 +1,11 @@
 package converter
 
 import (
-	"github.com/nqxcode/auth_microservice/internal/model"
-	desc "github.com/nqxcode/auth_microservice/pkg/auth_v1"
-
 	"github.com/samber/lo"
 	"google.golang.org/protobuf/types/known/timestamppb"
+
+	"github.com/nqxcode/auth_microservice/internal/model"
+	desc "github.com/nqxcode/auth_microservice/pkg/auth_v1"
 )
 
 // ToUserFromService convert to user model

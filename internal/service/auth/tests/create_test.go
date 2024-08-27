@@ -6,6 +6,11 @@ import (
 	"math/rand/v2"
 	"testing"
 
+	"github.com/brianvoe/gofakeit/v6"
+	"github.com/gojuno/minimock/v3"
+	"github.com/nqxcode/platform_common/client/db"
+	"github.com/stretchr/testify/require"
+
 	"github.com/nqxcode/auth_microservice/internal/model"
 	"github.com/nqxcode/auth_microservice/internal/repository"
 	repoMocks "github.com/nqxcode/auth_microservice/internal/repository/mocks"
@@ -16,11 +21,6 @@ import (
 	"github.com/nqxcode/auth_microservice/internal/service/log/constants"
 	serviceMocks "github.com/nqxcode/auth_microservice/internal/service/mocks"
 	desc "github.com/nqxcode/auth_microservice/pkg/auth_v1"
-
-	"github.com/brianvoe/gofakeit/v6"
-	"github.com/gojuno/minimock/v3"
-	"github.com/nqxcode/platform_common/client/db"
-	"github.com/stretchr/testify/require"
 )
 
 func TestCreate(t *testing.T) {

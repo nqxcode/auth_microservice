@@ -2,6 +2,7 @@ package validator
 
 import (
 	"context"
+
 	"github.com/nqxcode/auth_microservice/internal/model"
 )
 

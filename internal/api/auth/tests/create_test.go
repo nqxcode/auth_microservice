@@ -6,18 +6,18 @@ import (
 	"math/rand/v2"
 	"testing"
 
-	"github.com/nqxcode/auth_microservice/internal/api/auth"
-	"github.com/nqxcode/auth_microservice/internal/converter"
-	"github.com/nqxcode/auth_microservice/internal/service"
-	serviceMocks "github.com/nqxcode/auth_microservice/internal/service/mocks"
-	desc "github.com/nqxcode/auth_microservice/pkg/auth_v1"
-
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/gojuno/minimock/v3"
 	helperGob "github.com/nqxcode/platform_common/helper/gob"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	"github.com/nqxcode/auth_microservice/internal/api/auth"
+	"github.com/nqxcode/auth_microservice/internal/converter"
+	"github.com/nqxcode/auth_microservice/internal/service"
+	serviceMocks "github.com/nqxcode/auth_microservice/internal/service/mocks"
+	desc "github.com/nqxcode/auth_microservice/pkg/auth_v1"
 )
 
 func TestCreate(t *testing.T) {

@@ -3,11 +3,11 @@ package log
 import (
 	"context"
 
-	"github.com/nqxcode/auth_microservice/internal/model"
-	"github.com/nqxcode/auth_microservice/internal/repository"
-
 	sq "github.com/Masterminds/squirrel"
 	"github.com/nqxcode/platform_common/client/db"
+
+	"github.com/nqxcode/auth_microservice/internal/model"
+	"github.com/nqxcode/auth_microservice/internal/repository"
 )
 
 const (
