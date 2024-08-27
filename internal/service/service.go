@@ -38,6 +38,7 @@ type CacheUserService interface {
 	Delete(ctx context.Context, userID int64) error
 }
 
+// ValidatorService validator service
 type ValidatorService interface {
 	ValidateUser(ctx context.Context, userInfo model.UserInfo, password, passwordConfirm string) error
 }

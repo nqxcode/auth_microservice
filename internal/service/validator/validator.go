@@ -7,6 +7,7 @@ type ValidationError struct {
 	message string
 }
 
+// NewValidationError new validation error
 func NewValidationError(message string) *ValidationError {
 	return &ValidationError{message: message}
 }
