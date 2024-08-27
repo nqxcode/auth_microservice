@@ -15,9 +15,9 @@ import (
 	repoMocks "github.com/nqxcode/auth_microservice/internal/repository/mocks"
 	"github.com/nqxcode/auth_microservice/internal/service"
 	"github.com/nqxcode/auth_microservice/internal/service/async"
+	"github.com/nqxcode/auth_microservice/internal/service/audit_log/constants"
 	"github.com/nqxcode/auth_microservice/internal/service/auth"
 	serviceSupport "github.com/nqxcode/auth_microservice/internal/service/auth/tests/support"
-	"github.com/nqxcode/auth_microservice/internal/service/log/constants"
 	serviceMocks "github.com/nqxcode/auth_microservice/internal/service/mocks"
 )
 
@@ -26,7 +26,7 @@ func TestDelete(t *testing.T) {
 
 	type userRepositoryMock func(mc *minimock.Controller) repository.UserRepository
 	type validatorServiceMock func(mc *minimock.Controller) service.ValidatorService
-	type logServiceMock func(mc *minimock.Controller) service.LogService
+	type logServiceMock func(mc *minimock.Controller) service.AuditLogService
 	type hashServiceMock func(mc *minimock.Controller) service.HashService
 	type cacheUserServiceMock func(mc *minimock.Controller) service.CacheUserService
 
@@ -76,8 +76,8 @@ func TestDelete(t *testing.T) {
 				mock.DeleteMock.Expect(ctx, id).Return(nil)
 				return mock
 			},
-			logServiceMock: func(mc *minimock.Controller) service.LogService {
-				mock := serviceMocks.NewLogServiceMock(mc)
+			logServiceMock: func(mc *minimock.Controller) service.AuditLogService {
+				mock := serviceMocks.NewAuditLogServiceMock(mc)
 				mock.CreateMock.Expect(ctx, &model.Log{
 					Message: constants.UserDeleted,
 					Payload: id,
@@ -115,8 +115,8 @@ func TestDelete(t *testing.T) {
 				mock.DeleteMock.Expect(ctx, id).Return(repoErr)
 				return mock
 			},
-			logServiceMock: func(mc *minimock.Controller) service.LogService {
-				mock := serviceMocks.NewLogServiceMock(mc)
+			logServiceMock: func(mc *minimock.Controller) service.AuditLogService {
+				mock := serviceMocks.NewAuditLogServiceMock(mc)
 				return mock
 			},
 			hashServiceMock: func(mc *minimock.Controller) service.HashService {

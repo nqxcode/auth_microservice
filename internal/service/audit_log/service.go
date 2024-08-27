@@ -1,4 +1,4 @@
-package log
+package audit_log
 
 import (
 	"github.com/nqxcode/auth_microservice/internal/repository"
@@ -9,8 +9,8 @@ type service struct {
 	logRepository repository.LogRepository
 }
 
-// NewService new log service
-func NewService(logRepository repository.LogRepository) def.LogService {
+// NewService new audit log service
+func NewService(logRepository repository.LogRepository) def.AuditLogService {
 	return &service{
 		logRepository: logRepository,
 	}

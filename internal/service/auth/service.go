@@ -11,7 +11,7 @@ import (
 type service struct {
 	userRepository   repository.UserRepository
 	validatorService def.ValidatorService
-	logService       def.LogService
+	logService       def.AuditLogService
 	hashService      def.HashService
 	cacheUserService def.CacheUserService
 	txManager        db.TxManager
@@ -22,7 +22,7 @@ type service struct {
 func NewService(
 	userRepository repository.UserRepository,
 	validatorService def.ValidatorService,
-	logService def.LogService,
+	logService def.AuditLogService,
 	hashService def.HashService,
 	cacheUserService def.CacheUserService,
 	txManager db.TxManager,

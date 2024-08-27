@@ -17,8 +17,8 @@ type AuthService interface {
 	Delete(ctx context.Context, id int64) error
 }
 
-// LogService log service
-type LogService interface {
+// AuditLogService audit log service
+type AuditLogService interface {
 	Create(ctx context.Context, message *model.Log) error
 }
 

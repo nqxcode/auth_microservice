@@ -6,7 +6,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/nqxcode/auth_microservice/internal/model"
-	"github.com/nqxcode/auth_microservice/internal/service/log/constants"
+	"github.com/nqxcode/auth_microservice/internal/service/audit_log/constants"
 )
 
 // Get user by id

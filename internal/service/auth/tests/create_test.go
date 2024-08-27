@@ -16,9 +16,9 @@ import (
 	repoMocks "github.com/nqxcode/auth_microservice/internal/repository/mocks"
 	"github.com/nqxcode/auth_microservice/internal/service"
 	"github.com/nqxcode/auth_microservice/internal/service/async"
+	"github.com/nqxcode/auth_microservice/internal/service/audit_log/constants"
 	"github.com/nqxcode/auth_microservice/internal/service/auth"
 	serviceSupport "github.com/nqxcode/auth_microservice/internal/service/auth/tests/support"
-	"github.com/nqxcode/auth_microservice/internal/service/log/constants"
 	serviceMocks "github.com/nqxcode/auth_microservice/internal/service/mocks"
 	desc "github.com/nqxcode/auth_microservice/pkg/auth_v1"
 )
@@ -27,7 +27,7 @@ func TestCreate(t *testing.T) {
 	t.Parallel()
 
 	type userRepositoryMock func(mc *minimock.Controller) repository.UserRepository
-	type logServiceMock func(mc *minimock.Controller) service.LogService
+	type logServiceMock func(mc *minimock.Controller) service.AuditLogService
 	type hashServiceMock func(mc *minimock.Controller) service.HashService
 	type cacheUserServiceMock func(mc *minimock.Controller) service.CacheUserService
 	type validatorServiceMock func(mc *minimock.Controller) service.ValidatorService
@@ -97,8 +97,8 @@ func TestCreate(t *testing.T) {
 				mock.GetMock.Expect(ctx, id).Return(&model.User{ID: id, Info: info, Password: passwordHash}, nil)
 				return mock
 			},
-			logServiceMock: func(mc *minimock.Controller) service.LogService {
-				mock := serviceMocks.NewLogServiceMock(mc)
+			logServiceMock: func(mc *minimock.Controller) service.AuditLogService {
+				mock := serviceMocks.NewAuditLogServiceMock(mc)
 				mock.CreateMock.Expect(ctx, &model.Log{
 					Message: constants.UserCreated,
 					Payload: &model.User{ID: id, Info: info, Password: passwordHash},
@@ -138,8 +138,8 @@ func TestCreate(t *testing.T) {
 				mock.CreateMock.Expect(ctx, &model.User{Info: info, Password: passwordHash}).Return(0, repoErr)
 				return mock
 			},
-			logServiceMock: func(mc *minimock.Controller) service.LogService {
-				mock := serviceMocks.NewLogServiceMock(mc)
+			logServiceMock: func(mc *minimock.Controller) service.AuditLogService {
+				mock := serviceMocks.NewAuditLogServiceMock(mc)
 				return mock
 			},
 			hashServiceMock: func(mc *minimock.Controller) service.HashService {
