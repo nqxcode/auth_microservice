@@ -8,6 +8,7 @@ import (
 	"github.com/pkg/errors"
 )
 
+// Get user by id
 func (s *service) Get(ctx context.Context, id int64) (*model.User, error) {
 	var (
 		user *model.User

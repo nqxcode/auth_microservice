@@ -66,9 +66,9 @@ func ToUserFromDesc(info *desc.UserInfo, password, passwordConfirm string) *mode
 	)
 
 	if info != nil {
-		name = info.Name
-		email = info.Email
-		role = int32(info.Role)
+		name = info.GetName()
+		email = info.GetEmail()
+		role = int32(info.GetRole())
 	}
 
 	return &model.User{

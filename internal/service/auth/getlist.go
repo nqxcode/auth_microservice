@@ -10,6 +10,7 @@ import (
 	"github.com/pkg/errors"
 )
 
+// GetList get user list
 func (s *service) GetList(ctx context.Context, limit pagination.Limit) ([]model.User, error) {
 	var (
 		users []model.User

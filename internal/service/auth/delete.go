@@ -8,6 +8,7 @@ import (
 	"github.com/pkg/errors"
 )
 
+// Delete user by id
 func (s *service) Delete(ctx context.Context, userID int64) error {
 	err := s.txManager.ReadCommitted(ctx, func(ctx context.Context) error {
 		errTx := s.userRepository.Delete(ctx, userID)

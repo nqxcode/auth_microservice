@@ -9,6 +9,7 @@ import (
 	"github.com/nqxcode/auth_microservice/internal/service/log/constants"
 )
 
+// Update user
 func (s *service) Update(ctx context.Context, userID int64, info *model.UpdateUserInfo) error {
 	if info == nil {
 		return errors.New("info is nil")

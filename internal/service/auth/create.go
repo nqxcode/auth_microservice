@@ -8,6 +8,7 @@ import (
 	"github.com/pkg/errors"
 )
 
+// Create user
 func (s *service) Create(ctx context.Context, user *model.User) (int64, error) {
 	if user == nil {
 		return 0, errors.New("user is nil")
