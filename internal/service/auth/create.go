@@ -41,7 +41,6 @@ func (s *service) Create(ctx context.Context, user *model.User) (int64, error) {
 			Message: constants.UserCreated,
 			Payload: user,
 		})
-
 		if err != nil {
 			return err
 		}
