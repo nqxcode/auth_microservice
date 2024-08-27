@@ -30,6 +30,7 @@ func TestCreate(t *testing.T) {
 	type logServiceMock func(mc *minimock.Controller) service.LogService
 	type hashServiceMock func(mc *minimock.Controller) service.HashService
 	type cacheUserServiceMock func(mc *minimock.Controller) service.CacheUserService
+	type validatorServiceMock func(mc *minimock.Controller) service.ValidatorService
 
 	type input struct {
 		ctx  context.Context
@@ -62,6 +63,12 @@ func TestCreate(t *testing.T) {
 		Role:  role,
 	}
 
+	user := &model.User{
+		Info:            info,
+		Password:        password,
+		PasswordConfirm: password,
+	}
+
 	cases := []struct {
 		name                 string
 		input                input
@@ -70,17 +77,15 @@ func TestCreate(t *testing.T) {
 		logServiceMock       logServiceMock
 		hashServiceMock      hashServiceMock
 		cacheUserServiceMock cacheUserServiceMock
+		validatorServiceMock validatorServiceMock
 		txManagerFake        db.TxManager
 		asyncRunnerFake      async.Runner
 	}{
 		{
 			name: "success case",
 			input: input{
-				ctx: ctx,
-				user: &model.User{
-					Info:     info,
-					Password: password,
-				},
+				ctx:  ctx,
+				user: user,
 			},
 			expected: expected{
 				err:  nil,
@@ -112,15 +117,17 @@ func TestCreate(t *testing.T) {
 			},
 			txManagerFake:   serviceSupport.NewTxManagerFake(),
 			asyncRunnerFake: serviceSupport.NewAsyncRunnerFake(),
+			validatorServiceMock: func(mc *minimock.Controller) service.ValidatorService {
+				mock := serviceMocks.NewValidatorServiceMock(mc)
+				mock.ValidateUserMock.Expect(ctx, info, password, password).Return(nil)
+				return mock
+			},
 		},
 		{
 			name: "service error case",
 			input: input{
-				ctx: ctx,
-				user: &model.User{
-					Info:     info,
-					Password: password,
-				},
+				ctx:  ctx,
+				user: user,
 			},
 			expected: expected{
 				err:  repoErr,
@@ -146,6 +153,11 @@ func TestCreate(t *testing.T) {
 			},
 			txManagerFake:   serviceSupport.NewTxManagerFake(),
 			asyncRunnerFake: serviceSupport.NewAsyncRunnerFake(),
+			validatorServiceMock: func(mc *minimock.Controller) service.ValidatorService {
+				mock := serviceMocks.NewValidatorServiceMock(mc)
+				mock.ValidateUserMock.Expect(ctx, info, password, password).Return(nil)
+				return mock
+			},
 		},
 	}
 
@@ -155,13 +167,14 @@ func TestCreate(t *testing.T) {
 			t.Parallel()
 
 			userRepoMock := tt.userRepositoryMock(mc)
+			validatorSrvMock := tt.validatorServiceMock(mc)
 			logSrvMock := tt.logServiceMock(mc)
 			hashSrvMock := tt.hashServiceMock(mc)
 			cacheSrvMock := tt.cacheUserServiceMock(mc)
 			txMngFake := tt.txManagerFake
 			asyncRunnerFake := tt.asyncRunnerFake
 
-			srv := auth.NewService(userRepoMock, logSrvMock, hashSrvMock, cacheSrvMock, txMngFake, asyncRunnerFake)
+			srv := auth.NewService(userRepoMock, validatorSrvMock, logSrvMock, hashSrvMock, cacheSrvMock, txMngFake, asyncRunnerFake)
 
 			ar, err := srv.Create(tt.input.ctx, tt.input.user)
 			require.Equal(t, tt.expected.err, err)

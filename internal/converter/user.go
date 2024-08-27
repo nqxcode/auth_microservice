@@ -59,7 +59,7 @@ func ToUpdateUserInfoFromDesc(info *desc.UpdateUserInfo) *model.UpdateUserInfo {
 }
 
 // ToUserFromDesc to user model
-func ToUserFromDesc(info *desc.UserInfo, password string) *model.User {
+func ToUserFromDesc(info *desc.UserInfo, password, passwordConfirm string) *model.User {
 	var (
 		name, email string
 		role        int32
@@ -72,7 +72,8 @@ func ToUserFromDesc(info *desc.UserInfo, password string) *model.User {
 	}
 
 	return &model.User{
-		Password: password,
+		Password:        password,
+		PasswordConfirm: passwordConfirm,
 		Info: model.UserInfo{
 			Name:  name,
 			Email: email,

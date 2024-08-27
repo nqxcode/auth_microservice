@@ -27,6 +27,7 @@ func TestUpdate(t *testing.T) {
 	t.Parallel()
 
 	type userRepositoryMock func(mc *minimock.Controller) repository.UserRepository
+	type validatorServiceMock func(mc *minimock.Controller) service.ValidatorService
 	type logServiceMock func(mc *minimock.Controller) service.LogService
 	type hashServiceMock func(mc *minimock.Controller) service.HashService
 	type cacheUserServiceMock func(mc *minimock.Controller) service.CacheUserService
@@ -63,6 +64,7 @@ func TestUpdate(t *testing.T) {
 		input                input
 		expected             expected
 		userRepositoryMock   userRepositoryMock
+		validatorServiceMock validatorServiceMock
 		logServiceMock       logServiceMock
 		hashServiceMock      hashServiceMock
 		cacheUserServiceMock cacheUserServiceMock
@@ -106,6 +108,10 @@ func TestUpdate(t *testing.T) {
 			},
 			txManagerFake:   serviceSupport.NewTxManagerFake(),
 			asyncRunnerFake: serviceSupport.NewAsyncRunnerFake(),
+			validatorServiceMock: func(mc *minimock.Controller) service.ValidatorService {
+				mock := serviceMocks.NewValidatorServiceMock(mc)
+				return mock
+			},
 		},
 		{
 			name: "service error case",
@@ -136,6 +142,10 @@ func TestUpdate(t *testing.T) {
 			},
 			txManagerFake:   serviceSupport.NewTxManagerFake(),
 			asyncRunnerFake: serviceSupport.NewAsyncRunnerFake(),
+			validatorServiceMock: func(mc *minimock.Controller) service.ValidatorService {
+				mock := serviceMocks.NewValidatorServiceMock(mc)
+				return mock
+			},
 		},
 	}
 
@@ -145,13 +155,14 @@ func TestUpdate(t *testing.T) {
 			t.Parallel()
 
 			userRepoMock := tt.userRepositoryMock(mc)
+			validatorSrvMock := tt.validatorServiceMock(mc)
 			logSrvMock := tt.logServiceMock(mc)
 			hashSrvMock := tt.hashServiceMock(mc)
 			cacheUserSrvMock := tt.cacheUserServiceMock(mc)
 			txMngFake := tt.txManagerFake
 			asyncRunnerFake := tt.asyncRunnerFake
 
-			srv := auth.NewService(userRepoMock, logSrvMock, hashSrvMock, cacheUserSrvMock, txMngFake, asyncRunnerFake)
+			srv := auth.NewService(userRepoMock, validatorSrvMock, logSrvMock, hashSrvMock, cacheUserSrvMock, txMngFake, asyncRunnerFake)
 
 			err := srv.Update(tt.input.ctx, tt.input.userID, tt.input.info)
 			require.Equal(t, tt.expected.err, err)

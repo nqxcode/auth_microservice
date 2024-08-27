@@ -63,6 +63,51 @@ func TestCreate(t *testing.T) {
 		}
 	)
 
+	invalidEmailReq := func() *desc.CreateRequest {
+		var invalidReq *desc.CreateRequest
+		helperGob.DeepClone(req, &invalidReq)
+
+		invalidReq.Info.Email = "invalid email"
+
+		return invalidReq
+	}
+
+	emptyEmailReq := func() *desc.CreateRequest {
+		var invalidReq *desc.CreateRequest
+		helperGob.DeepClone(req, &invalidReq)
+
+		invalidReq.Info.Email = ""
+
+		return invalidReq
+	}
+
+	emptyNameReq := func() *desc.CreateRequest {
+		var invalidReq *desc.CreateRequest
+		helperGob.DeepClone(req, &invalidReq)
+
+		invalidReq.Info.Name = ""
+
+		return invalidReq
+	}
+
+	diffPasswordReq := func() *desc.CreateRequest {
+		var invalidReq *desc.CreateRequest
+		helperGob.DeepClone(req, &invalidReq)
+
+		invalidReq.PasswordConfirm = "321"
+
+		return invalidReq
+	}
+
+	nilInfoReq := func() *desc.CreateRequest {
+		var invalidReq *desc.CreateRequest
+		helperGob.DeepClone(req, &invalidReq)
+
+		invalidReq.Info = nil
+
+		return invalidReq
+	}
+
 	cases := []struct {
 		name                string
 		input               input
@@ -80,7 +125,7 @@ func TestCreate(t *testing.T) {
 			},
 			authServiceMockFunc: func(mc *minimock.Controller) service.AuthService {
 				mock := serviceMocks.NewAuthServiceMock(mc)
-				mock.CreateMock.Expect(ctx, converter.ToUserFromDesc(req.GetInfo(), req.GetPassword())).Return(id, nil)
+				mock.CreateMock.Expect(ctx, converter.ToUserFromDesc(req.GetInfo(), req.GetPassword(), req.GetPasswordConfirm())).Return(id, nil)
 				return mock
 			},
 		},
@@ -88,20 +133,14 @@ func TestCreate(t *testing.T) {
 			name: "invalid input case - invalid email",
 			input: input{
 				ctx: ctx,
-				req: func() *desc.CreateRequest {
-					var invalidReq *desc.CreateRequest
-					helperGob.DeepClone(req, &invalidReq)
-
-					invalidReq.Info.Email = "invalid email"
-
-					return invalidReq
-				}(),
+				req: invalidEmailReq(),
 			},
 			expected: expected{
-				err: status.Error(codes.InvalidArgument, "invalid email format"),
+				err: status.Error(codes.Internal, "invalid email format"),
 			},
 			authServiceMockFunc: func(mc *minimock.Controller) service.AuthService {
 				mock := serviceMocks.NewAuthServiceMock(mc)
+				mock.CreateMock.Expect(ctx, converter.ToUserFromDesc(invalidEmailReq().GetInfo(), invalidEmailReq().GetPassword(), invalidEmailReq().GetPasswordConfirm())).Return(0, status.Error(codes.Internal, "invalid email format"))
 				return mock
 			},
 		},
@@ -119,10 +158,11 @@ func TestCreate(t *testing.T) {
 				}(),
 			},
 			expected: expected{
-				err: status.Error(codes.InvalidArgument, "email is required"),
+				err: status.Error(codes.Internal, "email is required"),
 			},
 			authServiceMockFunc: func(mc *minimock.Controller) service.AuthService {
 				mock := serviceMocks.NewAuthServiceMock(mc)
+				mock.CreateMock.Expect(ctx, converter.ToUserFromDesc(emptyEmailReq().GetInfo(), emptyEmailReq().GetPassword(), emptyEmailReq().GetPasswordConfirm())).Return(0, status.Error(codes.Internal, "email is required"))
 				return mock
 			},
 		},
@@ -130,41 +170,14 @@ func TestCreate(t *testing.T) {
 			name: "invalid input case - empty name",
 			input: input{
 				ctx: ctx,
-				req: func() *desc.CreateRequest {
-					var invalidReq *desc.CreateRequest
-					helperGob.DeepClone(req, &invalidReq)
-
-					invalidReq.Info.Name = ""
-
-					return invalidReq
-				}(),
+				req: emptyNameReq(),
 			},
 			expected: expected{
-				err: status.Error(codes.InvalidArgument, "name is required"),
+				err: status.Error(codes.Internal, "name is required"),
 			},
 			authServiceMockFunc: func(mc *minimock.Controller) service.AuthService {
 				mock := serviceMocks.NewAuthServiceMock(mc)
-				return mock
-			},
-		},
-		{
-			name: "invalid input case - empty role",
-			input: input{
-				ctx: ctx,
-				req: func() *desc.CreateRequest {
-					var invalidReq *desc.CreateRequest
-					helperGob.DeepClone(req, &invalidReq)
-
-					invalidReq.Info.Role = 0
-
-					return invalidReq
-				}(),
-			},
-			expected: expected{
-				err: status.Error(codes.InvalidArgument, "role is required"),
-			},
-			authServiceMockFunc: func(mc *minimock.Controller) service.AuthService {
-				mock := serviceMocks.NewAuthServiceMock(mc)
+				mock.CreateMock.Expect(ctx, converter.ToUserFromDesc(emptyNameReq().GetInfo(), emptyNameReq().GetPassword(), emptyNameReq().GetPasswordConfirm())).Return(0, status.Error(codes.Internal, "name is required"))
 				return mock
 			},
 		},
@@ -172,21 +185,15 @@ func TestCreate(t *testing.T) {
 			name: "invalid input case - passwords do not match",
 			input: input{
 				ctx: ctx,
-				req: func() *desc.CreateRequest {
-					var invalidReq *desc.CreateRequest
-					helperGob.DeepClone(req, &invalidReq)
-
-					invalidReq.Password = "123"
-					invalidReq.PasswordConfirm = "321"
-
-					return invalidReq
-				}(),
+				req: diffPasswordReq(),
 			},
 			expected: expected{
-				err: status.Error(codes.InvalidArgument, "passwords do not match"),
+				err: status.Error(codes.Internal, "passwords do not match"),
 			},
 			authServiceMockFunc: func(mc *minimock.Controller) service.AuthService {
 				mock := serviceMocks.NewAuthServiceMock(mc)
+				mock.CreateMock.Expect(ctx, converter.ToUserFromDesc(diffPasswordReq().GetInfo(), diffPasswordReq().GetPassword(), diffPasswordReq().GetPasswordConfirm())).Return(0, status.Error(codes.Internal, "passwords do not match"))
+
 				return mock
 			},
 		},
@@ -194,20 +201,14 @@ func TestCreate(t *testing.T) {
 			name: "invalid input case - nil info",
 			input: input{
 				ctx: ctx,
-				req: func() *desc.CreateRequest {
-					var invalidReq *desc.CreateRequest
-					helperGob.DeepClone(req, &invalidReq)
-
-					invalidReq.Info = nil
-
-					return invalidReq
-				}(),
+				req: nilInfoReq(),
 			},
 			expected: expected{
-				err: status.Error(codes.InvalidArgument, "info is required"),
+				err: status.Error(codes.Internal, "info is required"),
 			},
 			authServiceMockFunc: func(mc *minimock.Controller) service.AuthService {
 				mock := serviceMocks.NewAuthServiceMock(mc)
+				mock.CreateMock.Expect(ctx, converter.ToUserFromDesc(nilInfoReq().GetInfo(), nilInfoReq().GetPassword(), nilInfoReq().GetPasswordConfirm())).Return(0, status.Error(codes.Internal, "info is required"))
 				return mock
 			},
 		},
@@ -218,11 +219,11 @@ func TestCreate(t *testing.T) {
 				req: req,
 			},
 			expected: expected{
-				err: status.Error(codes.Internal, serviceErr.Error()),
+				err: serviceErr,
 			},
 			authServiceMockFunc: func(mc *minimock.Controller) service.AuthService {
 				mock := serviceMocks.NewAuthServiceMock(mc)
-				mock.CreateMock.Expect(ctx, converter.ToUserFromDesc(req.GetInfo(), req.GetPassword())).Return(0, serviceErr)
+				mock.CreateMock.Expect(ctx, converter.ToUserFromDesc(req.GetInfo(), req.GetPassword(), req.GetPasswordConfirm())).Return(0, serviceErr)
 				return mock
 			},
 		},

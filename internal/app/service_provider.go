@@ -4,11 +4,6 @@ import (
 	"context"
 	"log"
 
-	"github.com/nqxcode/auth_microservice/internal/service/async"
-	cacheUserService "github.com/nqxcode/auth_microservice/internal/service/cache/user"
-
-	"github.com/nqxcode/platform_common/client/cache/redis"
-
 	"github.com/nqxcode/auth_microservice/internal/api/auth"
 	"github.com/nqxcode/auth_microservice/internal/config"
 	"github.com/nqxcode/auth_microservice/internal/repository"
@@ -16,10 +11,14 @@ import (
 	pgUserRepository "github.com/nqxcode/auth_microservice/internal/repository/user/pg"
 	redisUserRepository "github.com/nqxcode/auth_microservice/internal/repository/user/redis"
 	"github.com/nqxcode/auth_microservice/internal/service"
+	"github.com/nqxcode/auth_microservice/internal/service/async"
 	authService "github.com/nqxcode/auth_microservice/internal/service/auth"
+	cacheUserService "github.com/nqxcode/auth_microservice/internal/service/cache/user"
 	hashService "github.com/nqxcode/auth_microservice/internal/service/hash"
 	logService "github.com/nqxcode/auth_microservice/internal/service/log"
+	"github.com/nqxcode/auth_microservice/internal/service/validator"
 	"github.com/nqxcode/platform_common/client/cache"
+	"github.com/nqxcode/platform_common/client/cache/redis"
 	"github.com/nqxcode/platform_common/client/db"
 	"github.com/nqxcode/platform_common/client/db/pg"
 	"github.com/nqxcode/platform_common/client/db/transaction"
@@ -50,6 +49,7 @@ type serviceProvider struct {
 	hashService      service.HashService
 	authService      service.AuthService
 	cacheUserService service.CacheUserService
+	validatorService service.ValidatorService
 
 	authImpl *auth.Implementation
 }
@@ -221,6 +221,7 @@ func (s *serviceProvider) AuthService(ctx context.Context) service.AuthService {
 	if s.authService == nil {
 		s.authService = authService.NewService(
 			s.UserRepository(ctx),
+			s.ValidatorService(),
 			s.LogService(ctx),
 			s.HashService(ctx),
 			s.CacheUserService(),
@@ -241,6 +242,14 @@ func (s *serviceProvider) CacheUserService() service.CacheUserService {
 	}
 
 	return s.cacheUserService
+}
+
+func (s *serviceProvider) ValidatorService() service.ValidatorService {
+	if s.validatorService == nil {
+		s.validatorService = validator.NewValidator()
+	}
+
+	return s.validatorService
 }
 
 func (s *serviceProvider) AuthImpl(ctx context.Context) *auth.Implementation {

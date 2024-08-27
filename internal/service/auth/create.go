@@ -2,7 +2,6 @@ package auth
 
 import (
 	"context"
-
 	"github.com/nqxcode/auth_microservice/internal/model"
 	"github.com/nqxcode/auth_microservice/internal/service/log/constants"
 
@@ -12,6 +11,10 @@ import (
 func (s *service) Create(ctx context.Context, user *model.User) (int64, error) {
 	if user == nil {
 		return 0, errors.New("user is nil")
+	}
+
+	if err := s.validatorService.ValidateUser(ctx, user.Info, user.Password, user.PasswordConfirm); err != nil {
+		return 0, err
 	}
 
 	var userID int64

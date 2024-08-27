@@ -36,3 +36,7 @@ type CacheUserService interface {
 	GetList(ctx context.Context, limit pagination.Limit) ([]model.User, error)
 	Delete(ctx context.Context, userID int64) error
 }
+
+type ValidatorService interface {
+	ValidateUser(ctx context.Context, userInfo model.UserInfo, password, passwordConfirm string) error
+}

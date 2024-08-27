@@ -9,6 +9,7 @@ import (
 
 type service struct {
 	userRepository   repository.UserRepository
+	validatorService def.ValidatorService
 	logService       def.LogService
 	hashService      def.HashService
 	cacheUserService def.CacheUserService
@@ -19,6 +20,7 @@ type service struct {
 // NewService new auth service
 func NewService(
 	userRepository repository.UserRepository,
+	validatorService def.ValidatorService,
 	logService def.LogService,
 	hashService def.HashService,
 	cacheUserService def.CacheUserService,
@@ -27,6 +29,7 @@ func NewService(
 ) def.AuthService {
 	return &service{
 		userRepository:   userRepository,
+		validatorService: validatorService,
 		logService:       logService,
 		hashService:      hashService,
 		cacheUserService: cacheUserService,
