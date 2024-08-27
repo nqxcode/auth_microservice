@@ -5,9 +5,9 @@ import (
 
 	"github.com/nqxcode/auth_microservice/internal/model"
 	"github.com/nqxcode/auth_microservice/internal/repository"
-	"github.com/nqxcode/platform_common/client/db"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/nqxcode/platform_common/client/db"
 )
 
 const (

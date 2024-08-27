@@ -8,10 +8,10 @@ import (
 	"github.com/nqxcode/auth_microservice/internal/repository"
 	"github.com/nqxcode/auth_microservice/internal/repository/user/pg/converter"
 	modelRepo "github.com/nqxcode/auth_microservice/internal/repository/user/pg/model"
-	"github.com/nqxcode/platform_common/client/db"
-	"github.com/nqxcode/platform_common/pagination"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/nqxcode/platform_common/client/db"
+	"github.com/nqxcode/platform_common/pagination"
 	"github.com/pkg/errors"
 )
 

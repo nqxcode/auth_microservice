@@ -17,14 +17,14 @@ import (
 	hashService "github.com/nqxcode/auth_microservice/internal/service/hash"
 	logService "github.com/nqxcode/auth_microservice/internal/service/log"
 	"github.com/nqxcode/auth_microservice/internal/service/validator"
+
+	redigo "github.com/gomodule/redigo/redis"
 	"github.com/nqxcode/platform_common/client/cache"
 	"github.com/nqxcode/platform_common/client/cache/redis"
 	"github.com/nqxcode/platform_common/client/db"
 	"github.com/nqxcode/platform_common/client/db/pg"
 	"github.com/nqxcode/platform_common/client/db/transaction"
 	"github.com/nqxcode/platform_common/closer"
-
-	redigo "github.com/gomodule/redigo/redis"
 )
 
 type serviceProvider struct {

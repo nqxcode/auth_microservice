@@ -16,10 +16,10 @@ import (
 	"github.com/nqxcode/auth_microservice/internal/service/log/constants"
 	serviceMocks "github.com/nqxcode/auth_microservice/internal/service/mocks"
 	desc "github.com/nqxcode/auth_microservice/pkg/auth_v1"
-	"github.com/nqxcode/platform_common/client/db"
 
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/gojuno/minimock/v3"
+	"github.com/nqxcode/platform_common/client/db"
 	"github.com/stretchr/testify/require"
 )
 

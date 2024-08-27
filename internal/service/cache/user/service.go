@@ -5,6 +5,7 @@ import (
 
 	"github.com/nqxcode/auth_microservice/internal/repository"
 	def "github.com/nqxcode/auth_microservice/internal/service"
+
 	"github.com/nqxcode/platform_common/client/cache"
 )
 

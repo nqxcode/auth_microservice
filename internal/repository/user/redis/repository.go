@@ -9,12 +9,12 @@ import (
 	"github.com/nqxcode/auth_microservice/internal/repository"
 	"github.com/nqxcode/auth_microservice/internal/repository/user/redis/converter"
 	modelRepo "github.com/nqxcode/auth_microservice/internal/repository/user/redis/model"
+
+	redigo "github.com/gomodule/redigo/redis"
 	"github.com/nqxcode/platform_common/client/cache"
 	"github.com/nqxcode/platform_common/helper/slice"
 	"github.com/nqxcode/platform_common/helper/time"
 	"github.com/nqxcode/platform_common/pagination"
-
-	redigo "github.com/gomodule/redigo/redis"
 )
 
 const cacheKey = "user"

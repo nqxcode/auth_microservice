@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 
 	"github.com/nqxcode/auth_microservice/internal/model"
+
 	"github.com/nqxcode/platform_common/helper/grpc"
 )
 

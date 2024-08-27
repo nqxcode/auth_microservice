@@ -5,6 +5,7 @@ import (
 
 	"github.com/nqxcode/auth_microservice/internal/model"
 	"github.com/nqxcode/auth_microservice/internal/service/log/constants"
+
 	modelCommon "github.com/nqxcode/platform_common/model"
 	"github.com/nqxcode/platform_common/pagination"
 	"github.com/pkg/errors"
