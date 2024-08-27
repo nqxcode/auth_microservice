@@ -7,6 +7,7 @@ import (
 	"github.com/nqxcode/auth_microservice/pkg/hashing"
 )
 
+// Hash get hash for password
 func (s *service) Hash(_ context.Context, password string) (string, error) {
 	password, err := hashing.HashPasswordWithSalt(password, s.salt)
 	if err != nil {
