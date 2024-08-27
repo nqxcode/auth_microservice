@@ -9,6 +9,7 @@ import (
 	"github.com/nqxcode/platform_common/helper/grpc"
 )
 
+// Create audit log
 func (s *service) Create(ctx context.Context, log *model.Log) error {
 	ip, _ := grpc.ClientIP(ctx)
 	jsonPayload, _ := json.Marshal(log.Payload)
