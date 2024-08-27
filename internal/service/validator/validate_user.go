@@ -7,7 +7,7 @@ import (
 )
 
 // ValidateUser validates the user info
-func (v *validator) ValidateUser(ctx context.Context, userInfo model.UserInfo, password, passwordConfirm string) error {
+func (v *validator) ValidateUser(_ context.Context, userInfo model.UserInfo, password, passwordConfirm string) error {
 	if userInfo.Name == "" {
 		return NewValidationError("name is required")
 	}
