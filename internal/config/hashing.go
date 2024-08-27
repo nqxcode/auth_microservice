@@ -1,6 +1,7 @@
 package config
 
 import (
+	"context"
 	"os"
 
 	"github.com/pkg/errors"
@@ -10,7 +11,7 @@ const hashingSaltEnvName = "HASHING_SALT"
 
 // HashingConfig hashing config
 type HashingConfig interface {
-	Salt() string
+	Salt(ctx context.Context) string
 }
 
 type hashingConfig struct {
@@ -30,6 +31,6 @@ func NewHashingConfig() (HashingConfig, error) {
 }
 
 // Salt get salt for password hashing
-func (hc *hashingConfig) Salt() string {
+func (hc *hashingConfig) Salt(_ context.Context) string {
 	return hc.salt
 }

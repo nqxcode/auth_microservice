@@ -2,9 +2,9 @@ name: Go
 
 on:
   push:
-    branches: [ main, master, week_1, week_2 ]
+    branches: [ main ]
   pull_request:
-    branches: [ main, master, week_1, week_2 ]
+    branches: [ main, week_1, week_2, week_3, week_4 ]
 
 env:
   REGISTRY: "cr.selcloud.ru/nqxcode"
@@ -15,9 +15,11 @@ env:
   POSTGRES_IMAGE_NAME: "postgres:14-alpine3.17"
   POSTGRES_CONTAINER_NAME: "auth-postgres"
   POSTGRES_VOLUME: "auth-postgres-volume"
+  REDIS_IMAGE_NAME: "redis:7.2.5-alpine3.20"
+  REDIS_CONTAINER_NAME: "auth-redis"
+  REDIS_VOLUME: "auth-redis-volume"
   NETWORK: "auth-network"
   GRPC_PORT: "50051"
-  
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
@@ -51,7 +53,7 @@ jobs:
           # Require: The version of golangci-lint to use.
           # When `install-mode` is `binary` (default) the value can be v1.2 or v1.2.3 or `latest` to use the latest version.
           # When `install-mode` is `goinstall` the value can be v1.2.3, `latest`, or the hash of a commit.
-          version: v1.59
+          version: v1.60
 
           # Optional: working directory, useful for monorepos
           # working-directory: somedir
@@ -133,6 +135,16 @@ jobs:
             POSTGRES_USER=${{ secrets.POSTGRES_USER }}
             POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
             POSTGRES_DB=${{ secrets.POSTGRES_DB }}
+            HASHING_SALT="${{ secrets.HASHING_SALT }}"
+            REDIS_IMAGE_NAME="${{ env.REDIS_IMAGE_NAME }}"
+            REDIS_CONTAINER_NAME="${{ env.REDIS_CONTAINER_NAME }}"
+            REDIS_CONNECTION_TIMEOUT_SEC="${{ secrets.REDIS_CONNECTION_TIMEOUT_SEC }}"
+            REDIS_DB="${{ secrets.REDIS_DB }}"
+            REDIS_IDLE_TIMEOUT_SEC="${{ secrets.REDIS_IDLE_TIMEOUT_SEC }}"
+            REDIS_MAX_IDLE="${{ secrets.REDIS_MAX_IDLE }}"
+            REDIS_PASSWORD="${{ secrets.REDIS_PASSWORD }}"
+            REDIS_VOLUME="${{ env.REDIS_VOLUME }}"
+            REDIS_PORT="${{ secrets.REDIS_PORT }}"
             EOF
             
             source .env.auth
@@ -142,6 +154,7 @@ jobs:
             version: '3'
             volumes:
               ${POSTGRES_VOLUME}:
+              ${REDIS_VOLUME}:
             
             networks:
               ${NETWORK}:
@@ -160,6 +173,16 @@ jobs:
                 networks:
                   - ${NETWORK}
 
+              redis-auth:
+                image: ${REDIS_IMAGE_NAME}
+                container_name: ${REDIS_CONTAINER_NAME}
+                command: >
+                  --requirepass ${REDIS_PASSWORD}
+                volumes:
+                  - ${REDIS_VOLUME}:/data
+                networks:
+                  - ${NETWORK}
+            
               migrator-auth:
                 image: ${REGISTRY}/${MIGRATION_IMAGE_NAME}:${TAG_NAME}
                 container_name: ${MIGRATION_CONTAINER_NAME}
@@ -179,13 +202,21 @@ jobs:
                   PG_DSN: "${PG_DSN}"
                   GRPC_HOST: 0.0.0.0
                   GRPC_PORT: ${GRPC_PORT}
-                  HASHING_SALT: ${{ secrets.HASHING_SALT }}
+                  HASHING_SALT: ${HASHING_SALT}
+                  REDIS_CONNECTION_TIMEOUT_SEC: ${REDIS_CONNECTION_TIMEOUT_SEC}
+                  REDIS_DB: ${REDIS_DB}
+                  REDIS_HOST: 0.0.0.0
+                  REDIS_IDLE_TIMEOUT_SEC: ${REDIS_IDLE_TIMEOUT_SEC}
+                  REDIS_MAX_IDLE: ${REDIS_MAX_IDLE}
+                  REDIS_PASSWORD: ${REDIS_PASSWORD}
+                  REDIS_PORT: ${REDIS_PORT}
                 ports:
                   - "${GRPC_PORT}:${GRPC_PORT}"
                 networks:
                   - ${NETWORK}
                 depends_on:
                   - postgres-auth
+                  - redis-auth
                   - migrator-auth
 
             EOF
