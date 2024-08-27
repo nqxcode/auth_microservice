@@ -9,6 +9,7 @@ import (
 	"github.com/nqxcode/platform_common/pagination"
 )
 
+// SetList set list of users to cache
 func (s *service) SetList(ctx context.Context, users []model.User, limit pagination.Limit) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()

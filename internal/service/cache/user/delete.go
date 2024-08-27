@@ -2,6 +2,7 @@ package user
 
 import "context"
 
+// Delete user by id
 func (s *service) Delete(ctx context.Context, userID int64) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()

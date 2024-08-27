@@ -6,6 +6,7 @@ import (
 	"github.com/nqxcode/auth_microservice/internal/model"
 )
 
+// Set user to cache
 func (s *service) Set(ctx context.Context, user *model.User) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()

@@ -9,6 +9,7 @@ import (
 	"github.com/nqxcode/platform_common/pagination"
 )
 
+// GetList of users from cache
 func (s *service) GetList(ctx context.Context, limit pagination.Limit) ([]model.User, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
