@@ -67,6 +67,7 @@ func (r *repo) Create(ctx context.Context, model *model.User) (int64, error) {
 	return id, nil
 }
 
+// Update user
 func (r *repo) Update(ctx context.Context, id int64, info *model.UpdateUserInfo) error {
 	if info == nil {
 		return nil
@@ -102,6 +103,7 @@ func (r *repo) Update(ctx context.Context, id int64, info *model.UpdateUserInfo)
 	return nil
 }
 
+// Delete user by id
 func (r *repo) Delete(ctx context.Context, id int64) error {
 	builder := sq.Delete(escape(tableName)).
 		PlaceholderFormat(sq.Dollar).
@@ -125,6 +127,7 @@ func (r *repo) Delete(ctx context.Context, id int64) error {
 	return nil
 }
 
+// Get user by id
 func (r *repo) Get(ctx context.Context, id int64) (*model.User, error) {
 	builder := sq.Select(idColumn, nameColumn, emailColumn, roleColumn, passwordColumn, createdAtColumn, updatedAtColumn).
 		PlaceholderFormat(sq.Dollar).
@@ -178,6 +181,7 @@ func (r *repo) GetByIDs(ctx context.Context, ids []int64) ([]model.User, error) 
 	return converter.ToManyUserFromRepo(users), nil
 }
 
+// GetList get users with limit
 func (r *repo) GetList(ctx context.Context, limit pagination.Limit) ([]model.User, error) {
 	builder := sq.Select(idColumn, nameColumn, emailColumn, roleColumn, passwordColumn, createdAtColumn, updatedAtColumn).
 		PlaceholderFormat(sq.Dollar).
