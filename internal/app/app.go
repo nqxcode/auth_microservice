@@ -7,6 +7,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"sync"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/nqxcode/platform_common/closer"
@@ -55,7 +56,39 @@ func (a *App) Run() error {
 		closer.Wait()
 	}()
 
-	return a.runGRPCServer()
+	wg := sync.WaitGroup{}
+	wg.Add(3)
+
+	go func() {
+		defer wg.Done()
+
+		err := a.runGRPCServer()
+		if err != nil {
+			log.Fatalf("failed to run GRPC server: %v", err)
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+
+		err := a.runHTTPServer()
+		if err != nil {
+			log.Fatalf("failed to run HTTP server: %v", err)
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+
+		err := a.runSwaggerServer()
+		if err != nil {
+			log.Fatalf("failed to run Swagger server: %v", err)
+		}
+	}()
+
+	wg.Wait()
+
+	return nil
 }
 
 func (a *App) initDeps(ctx context.Context) error {
