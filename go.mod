@@ -8,11 +8,14 @@ require (
 	github.com/gojuno/minimock/v3 v3.3.14
 	github.com/golang/protobuf v1.5.4
 	github.com/gomodule/redigo v1.9.2
+	github.com/grpc-ecosystem/grpc-gateway/v2 v2.22.0
 	github.com/joho/godotenv v1.5.1
 	github.com/nqxcode/platform_common v0.0.0-20240825072307-d237cf2efeef
 	github.com/pkg/errors v0.9.1
+	github.com/samber/lo v1.47.0
 	github.com/stretchr/testify v1.8.4
 	golang.org/x/crypto v0.24.0
+	google.golang.org/genproto/googleapis/api v0.0.0-20240814211410-ddb44dafa142
 	google.golang.org/grpc v1.65.0
 	google.golang.org/protobuf v1.34.2
 )
@@ -32,10 +35,10 @@ require (
 	github.com/lann/builder v0.0.0-20180802200727-47ae307949d0 // indirect
 	github.com/lann/ps v0.0.0-20150810152359-62de8c46ede0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/samber/lo v1.47.0 // indirect
+	github.com/rogpeppe/go-internal v1.12.0 // indirect
 	golang.org/x/net v0.26.0 // indirect
 	golang.org/x/sys v0.21.0 // indirect
-	golang.org/x/text v0.16.0 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20240604185151-ef581f913117 // indirect
+	golang.org/x/text v0.17.0 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20240814211410-ddb44dafa142 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
