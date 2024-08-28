@@ -20,7 +20,7 @@ import (
 	"github.com/nqxcode/auth_microservice/internal/config"
 	"github.com/nqxcode/auth_microservice/internal/interceptor"
 	desc "github.com/nqxcode/auth_microservice/pkg/auth_v1"
-	_ "github.com/nqxcode/auth_microservice/pkg/statik"
+	_ "github.com/nqxcode/auth_microservice/pkg/statik" // nolint: revive
 )
 
 var configPath string
@@ -154,8 +154,11 @@ func (a *App) initHTTPServer(ctx context.Context) error {
 	})
 
 	a.httpServer = &http.Server{
-		Addr:    a.serviceProvider.HTTPConfig().Address(),
-		Handler: corsMiddleware.Handler(mux),
+		Addr:         a.serviceProvider.HTTPConfig().Address(),
+		ReadTimeout:  a.serviceProvider.HTTPConfig().ReadTimeout(),
+		WriteTimeout: a.serviceProvider.HTTPConfig().WriteTimeout(),
+		IdleTimeout:  a.serviceProvider.HTTPConfig().IdleTimeout(),
+		Handler:      corsMiddleware.Handler(mux),
 	}
 
 	return nil
@@ -172,8 +175,11 @@ func (a *App) initSwaggerServer(_ context.Context) error {
 	mux.HandleFunc("/api.swagger.json", serveSwaggerFile("/api.swagger.json"))
 
 	a.swaggerServer = &http.Server{
-		Addr:    a.serviceProvider.SwaggerConfig().Address(),
-		Handler: mux,
+		Addr:         a.serviceProvider.SwaggerConfig().Address(),
+		ReadTimeout:  a.serviceProvider.SwaggerConfig().ReadTimeout(),
+		WriteTimeout: a.serviceProvider.SwaggerConfig().WriteTimeout(),
+		IdleTimeout:  a.serviceProvider.SwaggerConfig().IdleTimeout(),
+		Handler:      mux,
 	}
 
 	return nil
@@ -218,7 +224,7 @@ func (a *App) runSwaggerServer() error {
 }
 
 func serveSwaggerFile(path string) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, _ *http.Request) {
 		log.Printf("Serving swagger file: %s", path)
 
 		statikFs, err := fs.New()
@@ -234,7 +240,7 @@ func serveSwaggerFile(path string) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		defer file.Close()
+		defer file.Close() // nolint: errcheck
 
 		log.Printf("Read swagger file: %s", path)
 
