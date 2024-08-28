@@ -20,6 +20,8 @@ env:
   REDIS_VOLUME: "auth-redis-volume"
   NETWORK: "auth-network"
   GRPC_PORT: "50051"
+  HTTP_PORT: "8080"
+  SWAGGER_PORT: "8090"
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
@@ -130,6 +132,8 @@ jobs:
             POSTGRES_VOLUME=${{ env.POSTGRES_VOLUME }}
             NETWORK=${{ env.NETWORK }}
             GRPC_PORT=${{ env.GRPC_PORT }}
+            HTTP_PORT=${{ env.HTTP_PORT }}
+            SWAGGER_PORT=${{ env.SWAGGER_PORT }}
             MIGRATION_DSN="${{ secrets.MIGRATION_DSN }}"
             PG_DSN="${{ secrets.PG_DSN }}"
             POSTGRES_USER=${{ secrets.POSTGRES_USER }}
@@ -202,6 +206,10 @@ jobs:
                   PG_DSN: "${PG_DSN}"
                   GRPC_HOST: 0.0.0.0
                   GRPC_PORT: ${GRPC_PORT}
+                  HTTP_HOST: 0.0.0.0
+                  HTTP_PORT: ${HTTP_PORT}
+                  SWAGGER_HOST: 0.0.0.0
+                  SWAGGER_PORT: ${SWAGGER_PORT}
                   HASHING_SALT: ${HASHING_SALT}
                   REDIS_CONNECTION_TIMEOUT_SEC: ${REDIS_CONNECTION_TIMEOUT_SEC}
                   REDIS_DB: ${REDIS_DB}
@@ -212,6 +220,8 @@ jobs:
                   REDIS_PORT: ${REDIS_PORT}
                 ports:
                   - "${GRPC_PORT}:${GRPC_PORT}"
+                  - "${HTTP_PORT}:${HTTP_PORT}"
+                  - "${SWAGGER_PORT}:${SWAGGER_PORT}"
                 networks:
                   - ${NETWORK}
                 depends_on:
