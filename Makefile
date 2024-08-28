@@ -53,7 +53,9 @@ vendor-proto:
 		fi
 
 generate:
+	mkdir -p pkg/swagger
 	make generate-auth-api
+	$(LOCAL_BIN)/statik -dest=pkg -src=pkg/swagger/ -include='*.css,*.html,*.js,*.json,*.png'
 
 generate-auth-api:
 	mkdir -p pkg/auth_v1

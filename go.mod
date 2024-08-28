@@ -12,6 +12,8 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/nqxcode/platform_common v0.0.0-20240825072307-d237cf2efeef
 	github.com/pkg/errors v0.9.1
+	github.com/rakyll/statik v0.1.7
+	github.com/rs/cors v1.11.0
 	github.com/samber/lo v1.47.0
 	github.com/stretchr/testify v1.8.4
 	golang.org/x/crypto v0.24.0
