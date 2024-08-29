@@ -10,24 +10,28 @@ import (
 )
 
 // Create user
-func (s *service) Create(ctx context.Context, user *model.User) (int64, error) {
-	if user == nil {
-		return 0, errors.New("user is nil")
+func (s *service) Create(ctx context.Context, info *model.UserInfo, password, passwordConfirm string) (int64, error) {
+	if info == nil {
+		return 0, errors.New("user info is nil")
 	}
 
-	if err := s.validatorService.ValidateUser(ctx, user.Info, user.Password, user.PasswordConfirm); err != nil {
+	if err := s.validatorService.ValidateUser(ctx, *info, password, passwordConfirm); err != nil {
 		return 0, err
 	}
 
-	var userID int64
+	var (
+		user   *model.User
+		userID int64
+	)
+
 	err := s.txManager.ReadCommitted(ctx, func(ctx context.Context) error {
-		password, errHash := s.hashService.Hash(ctx, user.Password)
+		passwordHash, errHash := s.hashService.Hash(ctx, password)
 		if errHash != nil {
 			return errHash
 		}
 
 		var errTx error
-		userID, errTx = s.userRepository.Create(ctx, &model.User{Info: user.Info, Password: password})
+		userID, errTx = s.userRepository.Create(ctx, &model.User{Info: *info, Password: passwordHash})
 		if errTx != nil {
 			return errTx
 		}

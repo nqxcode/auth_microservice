@@ -125,7 +125,7 @@ func TestCreate(t *testing.T) {
 			},
 			authServiceMockFunc: func(mc *minimock.Controller) service.AuthService {
 				mock := serviceMocks.NewAuthServiceMock(mc)
-				mock.CreateMock.Expect(ctx, converter.ToUserFromDesc(req.GetInfo(), req.GetPassword(), req.GetPasswordConfirm())).Return(id, nil)
+				mock.CreateMock.Expect(ctx, converter.ToUserInfoFromDesc(req.GetInfo()), req.GetPassword(), req.GetPasswordConfirm()).Return(id, nil)
 				return mock
 			},
 		},
@@ -140,7 +140,7 @@ func TestCreate(t *testing.T) {
 			},
 			authServiceMockFunc: func(mc *minimock.Controller) service.AuthService {
 				mock := serviceMocks.NewAuthServiceMock(mc)
-				mock.CreateMock.Expect(ctx, converter.ToUserFromDesc(invalidEmailReq().GetInfo(), invalidEmailReq().GetPassword(), invalidEmailReq().GetPasswordConfirm())).Return(0, status.Error(codes.Internal, "invalid email format"))
+				mock.CreateMock.Expect(ctx, converter.ToUserInfoFromDesc(invalidEmailReq().GetInfo()), invalidEmailReq().GetPassword(), invalidEmailReq().GetPasswordConfirm()).Return(0, status.Error(codes.Internal, "invalid email format"))
 				return mock
 			},
 		},
@@ -162,7 +162,7 @@ func TestCreate(t *testing.T) {
 			},
 			authServiceMockFunc: func(mc *minimock.Controller) service.AuthService {
 				mock := serviceMocks.NewAuthServiceMock(mc)
-				mock.CreateMock.Expect(ctx, converter.ToUserFromDesc(emptyEmailReq().GetInfo(), emptyEmailReq().GetPassword(), emptyEmailReq().GetPasswordConfirm())).Return(0, status.Error(codes.Internal, "email is required"))
+				mock.CreateMock.Expect(ctx, converter.ToUserInfoFromDesc(emptyEmailReq().GetInfo()), emptyEmailReq().GetPassword(), emptyEmailReq().GetPasswordConfirm()).Return(0, status.Error(codes.Internal, "email is required"))
 				return mock
 			},
 		},
@@ -177,7 +177,7 @@ func TestCreate(t *testing.T) {
 			},
 			authServiceMockFunc: func(mc *minimock.Controller) service.AuthService {
 				mock := serviceMocks.NewAuthServiceMock(mc)
-				mock.CreateMock.Expect(ctx, converter.ToUserFromDesc(emptyNameReq().GetInfo(), emptyNameReq().GetPassword(), emptyNameReq().GetPasswordConfirm())).Return(0, status.Error(codes.Internal, "name is required"))
+				mock.CreateMock.Expect(ctx, converter.ToUserInfoFromDesc(emptyNameReq().GetInfo()), emptyNameReq().GetPassword(), emptyNameReq().GetPasswordConfirm()).Return(0, status.Error(codes.Internal, "name is required"))
 				return mock
 			},
 		},
@@ -192,7 +192,7 @@ func TestCreate(t *testing.T) {
 			},
 			authServiceMockFunc: func(mc *minimock.Controller) service.AuthService {
 				mock := serviceMocks.NewAuthServiceMock(mc)
-				mock.CreateMock.Expect(ctx, converter.ToUserFromDesc(diffPasswordReq().GetInfo(), diffPasswordReq().GetPassword(), diffPasswordReq().GetPasswordConfirm())).Return(0, status.Error(codes.Internal, "passwords do not match"))
+				mock.CreateMock.Expect(ctx, converter.ToUserInfoFromDesc(diffPasswordReq().GetInfo()), diffPasswordReq().GetPassword(), diffPasswordReq().GetPasswordConfirm()).Return(0, status.Error(codes.Internal, "passwords do not match"))
 
 				return mock
 			},
@@ -208,7 +208,7 @@ func TestCreate(t *testing.T) {
 			},
 			authServiceMockFunc: func(mc *minimock.Controller) service.AuthService {
 				mock := serviceMocks.NewAuthServiceMock(mc)
-				mock.CreateMock.Expect(ctx, converter.ToUserFromDesc(nilInfoReq().GetInfo(), nilInfoReq().GetPassword(), nilInfoReq().GetPasswordConfirm())).Return(0, status.Error(codes.Internal, "info is required"))
+				mock.CreateMock.Expect(ctx, converter.ToUserInfoFromDesc(nilInfoReq().GetInfo()), nilInfoReq().GetPassword(), nilInfoReq().GetPasswordConfirm()).Return(0, status.Error(codes.Internal, "info is required"))
 				return mock
 			},
 		},
@@ -223,7 +223,7 @@ func TestCreate(t *testing.T) {
 			},
 			authServiceMockFunc: func(mc *minimock.Controller) service.AuthService {
 				mock := serviceMocks.NewAuthServiceMock(mc)
-				mock.CreateMock.Expect(ctx, converter.ToUserFromDesc(req.GetInfo(), req.GetPassword(), req.GetPasswordConfirm())).Return(0, serviceErr)
+				mock.CreateMock.Expect(ctx, converter.ToUserInfoFromDesc(req.GetInfo()), req.GetPassword(), req.GetPasswordConfirm()).Return(0, serviceErr)
 				return mock
 			},
 		},

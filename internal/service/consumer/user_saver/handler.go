@@ -3,6 +3,7 @@ package user_saver
 import (
 	"context"
 	"encoding/json"
+	"github.com/nqxcode/auth_microservice/internal/converter"
 	"log"
 
 	"github.com/IBM/sarama"
@@ -11,13 +12,13 @@ import (
 )
 
 func (s *service) UserSaveHandler(ctx context.Context, msg *sarama.ConsumerMessage) error {
-	user := &model.User{}
-	err := json.Unmarshal(msg.Value, user)
+	userMessage := &model.UserMessage{}
+	err := json.Unmarshal(msg.Value, userMessage)
 	if err != nil {
 		return err
 	}
 
-	id, err := s.authService.Create(ctx, user)
+	id, err := s.authService.Create(ctx, converter.ToUserInfoFromMessage(&userMessage.Info), userMessage.Password, userMessage.PasswordConfirm)
 	if err != nil {
 		log.Printf("Error creating user: %v", err)
 	} else {

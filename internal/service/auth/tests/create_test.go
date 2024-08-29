@@ -33,8 +33,10 @@ func TestCreate(t *testing.T) {
 	type validatorServiceMock func(mc *minimock.Controller) service.ValidatorService
 
 	type input struct {
-		ctx  context.Context
-		user *model.User
+		ctx             context.Context
+		info            *model.UserInfo
+		password        string
+		passwordConfirm string
 	}
 
 	type expected struct {
@@ -63,12 +65,6 @@ func TestCreate(t *testing.T) {
 		Role:  role,
 	}
 
-	user := &model.User{
-		Info:            info,
-		Password:        password,
-		PasswordConfirm: password,
-	}
-
 	cases := []struct {
 		name                 string
 		input                input
@@ -84,8 +80,10 @@ func TestCreate(t *testing.T) {
 		{
 			name: "success case",
 			input: input{
-				ctx:  ctx,
-				user: user,
+				ctx:             ctx,
+				info:            &info,
+				password:        password,
+				passwordConfirm: password,
 			},
 			expected: expected{
 				err:  nil,
@@ -126,8 +124,10 @@ func TestCreate(t *testing.T) {
 		{
 			name: "service error case",
 			input: input{
-				ctx:  ctx,
-				user: user,
+				ctx:             ctx,
+				info:            &info,
+				password:        password,
+				passwordConfirm: password,
 			},
 			expected: expected{
 				err:  repoErr,
@@ -176,7 +176,7 @@ func TestCreate(t *testing.T) {
 
 			srv := auth.NewService(userRepoMock, validatorSrvMock, logSrvMock, hashSrvMock, cacheSrvMock, txMngFake, asyncRunnerFake)
 
-			ar, err := srv.Create(tt.input.ctx, tt.input.user)
+			ar, err := srv.Create(tt.input.ctx, tt.input.info, tt.input.password, tt.input.passwordConfirm)
 			require.Equal(t, tt.expected.err, err)
 			require.Equal(t, tt.expected.resp, ar)
 		})

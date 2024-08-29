@@ -84,8 +84,10 @@ func TestGet(t *testing.T) {
 			authServiceMockFunc: func(mc *minimock.Controller) service.AuthService {
 				mock := serviceMocks.NewAuthServiceMock(mc)
 				mock.GetMock.Expect(ctx, req.GetId()).Return(func() *model.User {
-					user := converter.ToUserFromDesc(resp.GetUser().GetInfo(), "", "")
+					user := &model.User{}
+					info := converter.ToUserInfoFromDesc(resp.GetUser().GetInfo())
 					user.ID = id
+					user.Info = *info
 					user.CreatedAt = createdAt
 
 					return user

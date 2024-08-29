@@ -12,7 +12,7 @@ import (
 func (s *Implementation) Create(ctx context.Context, req *desc.CreateRequest) (*desc.CreateResponse, error) {
 	log.Printf("Create user: %+v", req.GetInfo())
 
-	userID, err := s.authService.Create(ctx, converter.ToUserFromDesc(req.GetInfo(), req.GetPassword(), req.GetPasswordConfirm()))
+	userID, err := s.authService.Create(ctx, converter.ToUserInfoFromDesc(req.GetInfo()), req.GetPassword(), req.GetPasswordConfirm())
 	if err != nil {
 		return nil, err
 	}

@@ -1,6 +1,7 @@
 package converter
 
 import (
+	"github.com/nqxcode/platform_common/pointer"
 	"github.com/samber/lo"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
@@ -43,12 +44,12 @@ func ToUserInfoFromService(user *model.User) *desc.UserInfo {
 func ToUpdateUserInfoFromDesc(info *desc.UpdateUserInfo) *model.UpdateUserInfo {
 	var name *string
 	if info.GetName() != nil {
-		name = toPtr(info.GetName().GetValue())
+		name = pointer.ToPtr(info.GetName().GetValue())
 	}
 
 	var role *int32
 	if info.GetRole() != 0 {
-		role = toPtr(int32(info.GetRole()))
+		role = lo.ToPtr(int32(info.GetRole()))
 	}
 
 	return &model.UpdateUserInfo{
@@ -57,8 +58,8 @@ func ToUpdateUserInfoFromDesc(info *desc.UpdateUserInfo) *model.UpdateUserInfo {
 	}
 }
 
-// ToUserFromDesc to user model
-func ToUserFromDesc(info *desc.UserInfo, password, passwordConfirm string) *model.User {
+// ToUserInfoFromDesc to user model
+func ToUserInfoFromDesc(info *desc.UserInfo) *model.UserInfo {
 	var (
 		name, email string
 		role        int32
@@ -70,17 +71,17 @@ func ToUserFromDesc(info *desc.UserInfo, password, passwordConfirm string) *mode
 		role = int32(info.GetRole())
 	}
 
-	return &model.User{
-		Password:        password,
-		PasswordConfirm: passwordConfirm,
-		Info: model.UserInfo{
-			Name:  name,
-			Email: email,
-			Role:  role,
-		},
+	return &model.UserInfo{
+		Name:  name,
+		Email: email,
+		Role:  role,
 	}
 }
 
-func toPtr[T any](s T) *T {
-	return &s
+func ToUserInfoFromMessage(info *model.UserInfoInMessage) *model.UserInfo {
+	return &model.UserInfo{
+		Name:  info.Name,
+		Email: info.Email,
+		Role:  info.Role,
+	}
 }
