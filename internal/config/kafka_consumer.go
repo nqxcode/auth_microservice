@@ -48,7 +48,7 @@ func (cfg *kafkaConsumerConfig) GroupID() string {
 // Config возвращает конфигурацию для sarama consumer
 func (cfg *kafkaConsumerConfig) Config() *sarama.Config {
 	config := sarama.NewConfig()
-	config.Version = sarama.V2_6_0_0
+	config.Version = sarama.V3_6_0_0
 	config.Consumer.Group.Rebalance.GroupStrategies = []sarama.BalanceStrategy{sarama.NewBalanceStrategyRoundRobin()}
 	config.Consumer.Offsets.Initial = sarama.OffsetOldest
 
