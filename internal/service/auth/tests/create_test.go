@@ -99,7 +99,7 @@ func TestCreate(t *testing.T) {
 				mock := serviceMocks.NewAuditLogServiceMock(mc)
 				mock.CreateMock.Expect(ctx, &model.Log{
 					Message: constants.UserCreated,
-					Payload: &model.User{ID: id, Info: info, Password: passwordHash},
+					Payload: &model.User{ID: id, Info: info, Password: "***"},
 				}).Return(nil)
 				return mock
 			},

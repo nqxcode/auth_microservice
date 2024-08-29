@@ -17,7 +17,7 @@ func (s *Implementation) GetList(ctx context.Context, req *desc.GetListRequest) 
 
 	users, err := s.authService.GetList(ctx, converter.ToLimitFromDesc(req.GetLimit()))
 	if err != nil {
-		return nil, status.Error(codes.Internal, "cant get users")
+		return nil, status.Errorf(codes.Internal, "cant get users: %v", err)
 	}
 
 	return &desc.GetListResponse{

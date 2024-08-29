@@ -102,7 +102,7 @@ func TestGet(t *testing.T) {
 				req: req,
 			},
 			expected: expected{
-				err: status.Error(codes.NotFound, serviceErr.Error()),
+				err: status.Errorf(codes.Internal, "cant get user: %v", serviceErr),
 			},
 			authServiceMockFunc: func(mc *minimock.Controller) service.AuthService {
 				mock := serviceMocks.NewAuthServiceMock(mc)
