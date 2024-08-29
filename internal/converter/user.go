@@ -11,6 +11,10 @@ import (
 
 // ToUserFromService convert to user model
 func ToUserFromService(user *model.User) *desc.User {
+	if user == nil {
+		return nil
+	}
+
 	var updatedAt *timestamppb.Timestamp
 	if user.UpdatedAt.Valid {
 		updatedAt = timestamppb.New(user.UpdatedAt.Time)
@@ -18,7 +22,7 @@ func ToUserFromService(user *model.User) *desc.User {
 
 	return &desc.User{
 		Id:        user.ID,
-		Info:      ToUserInfoFromService(user),
+		Info:      ToUserInfoFromService(&user.Info),
 		CreatedAt: timestamppb.New(user.CreatedAt),
 		UpdatedAt: updatedAt,
 	}
@@ -32,16 +36,24 @@ func ToUsersFromService(users []model.User) []*desc.User {
 }
 
 // ToUserInfoFromService convert to user info model
-func ToUserInfoFromService(user *model.User) *desc.UserInfo {
+func ToUserInfoFromService(info *model.UserInfo) *desc.UserInfo {
+	if info == nil {
+		return nil
+	}
+
 	return &desc.UserInfo{
-		Name:  user.Info.Name,
-		Email: user.Info.Email,
-		Role:  desc.Role(user.Info.Role),
+		Name:  info.Name,
+		Email: info.Email,
+		Role:  desc.Role(info.Role),
 	}
 }
 
 // ToUpdateUserInfoFromDesc to user info model
 func ToUpdateUserInfoFromDesc(info *desc.UpdateUserInfo) *model.UpdateUserInfo {
+	if info == nil {
+		return nil
+	}
+
 	var name *string
 	if info.GetName() != nil {
 		name = pointer.ToPtr(info.GetName().GetValue())
@@ -60,21 +72,14 @@ func ToUpdateUserInfoFromDesc(info *desc.UpdateUserInfo) *model.UpdateUserInfo {
 
 // ToUserInfoFromDesc to user model
 func ToUserInfoFromDesc(info *desc.UserInfo) *model.UserInfo {
-	var (
-		name, email string
-		role        int32
-	)
-
-	if info != nil {
-		name = info.GetName()
-		email = info.GetEmail()
-		role = int32(info.GetRole())
+	if info == nil {
+		return nil
 	}
 
 	return &model.UserInfo{
-		Name:  name,
-		Email: email,
-		Role:  role,
+		Name:  info.GetName(),
+		Email: info.GetEmail(),
+		Role:  int32(info.GetRole()),
 	}
 }
 

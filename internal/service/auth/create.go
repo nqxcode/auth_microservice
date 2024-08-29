@@ -3,6 +3,7 @@ package auth
 import (
 	"context"
 
+	"github.com/nqxcode/platform_common/helper/gob"
 	"github.com/pkg/errors"
 
 	"github.com/nqxcode/auth_microservice/internal/model"
@@ -43,7 +44,17 @@ func (s *service) Create(ctx context.Context, info *model.UserInfo, password, pa
 
 		err := s.auditLogService.Create(ctx, &model.Log{
 			Message: constants.UserCreated,
-			Payload: user,
+			Payload: func() any {
+				if user == nil {
+					return nil
+				}
+
+				var u *model.User
+				gob.DeepClone(user, &u)
+				u.Password = "***"
+
+				return u
+			}(),
 		})
 		if err != nil {
 			return err
