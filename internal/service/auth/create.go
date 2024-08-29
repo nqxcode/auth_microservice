@@ -37,7 +37,7 @@ func (s *service) Create(ctx context.Context, user *model.User) (int64, error) {
 			return errTx
 		}
 
-		err := s.logService.Create(ctx, &model.Log{
+		err := s.auditLogService.Create(ctx, &model.Log{
 			Message: constants.UserCreated,
 			Payload: user,
 		})

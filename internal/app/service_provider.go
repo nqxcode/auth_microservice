@@ -4,7 +4,10 @@ import (
 	"context"
 	"log"
 
+	"github.com/IBM/sarama"
 	redigo "github.com/gomodule/redigo/redis"
+	"github.com/nqxcode/platform_common/client/broker/kafka"
+	kafkaConsumer "github.com/nqxcode/platform_common/client/broker/kafka/consumer"
 	"github.com/nqxcode/platform_common/client/cache"
 	"github.com/nqxcode/platform_common/client/cache/redis"
 	"github.com/nqxcode/platform_common/client/db"
@@ -20,38 +23,45 @@ import (
 	redisUserRepository "github.com/nqxcode/auth_microservice/internal/repository/user/redis"
 	"github.com/nqxcode/auth_microservice/internal/service"
 	"github.com/nqxcode/auth_microservice/internal/service/async"
-	logService "github.com/nqxcode/auth_microservice/internal/service/audit_log"
+	auditLogService "github.com/nqxcode/auth_microservice/internal/service/audit_log"
 	authService "github.com/nqxcode/auth_microservice/internal/service/auth"
 	cacheUserService "github.com/nqxcode/auth_microservice/internal/service/cache/user"
+	userSaverConsumer "github.com/nqxcode/auth_microservice/internal/service/consumer/user_saver"
 	hashService "github.com/nqxcode/auth_microservice/internal/service/hash"
 	"github.com/nqxcode/auth_microservice/internal/service/validator"
 )
 
 type serviceProvider struct {
-	pgConfig      config.PGConfig
-	grpcConfig    config.GRPCConfig
-	httpConfig    config.HTTPConfig
-	swaggerConfig config.SwaggerConfig
-	hashingConfig config.HashingConfig
-	redisConfig   cache.RedisConfig
+	pgConfig            config.PGConfig
+	grpcConfig          config.GRPCConfig
+	httpConfig          config.HTTPConfig
+	swaggerConfig       config.SwaggerConfig
+	hashingConfig       config.HashingConfig
+	redisConfig         cache.RedisConfig
+	kafkaConsumerConfig kafka.ConsumerConfig
 
-	dbClient    db.Client
-	txManager   db.TxManager
-	asyncRunner async.Runner
+	dbClient  db.Client
+	txManager db.TxManager
 
 	redisPool   *redigo.Pool
 	redisClient cache.RedisClient
 
-	userRepository repository.UserRepository
-	logRepository  repository.LogRepository
+	consumer             kafka.Consumer
+	consumerGroup        sarama.ConsumerGroup
+	consumerGroupHandler *kafkaConsumer.GroupHandler
 
+	asyncRunner async.Runner
+
+	userRepository      repository.UserRepository
+	logRepository       repository.LogRepository
 	cacheUserRepository repository.UserRepository
 
-	logService       service.AuditLogService
-	hashService      service.HashService
-	authService      service.AuthService
-	cacheUserService service.CacheUserService
-	validatorService service.ValidatorService
+	auditLogService   service.AuditLogService
+	hashService       service.HashService
+	authService       service.AuthService
+	cacheUserService  service.CacheUserService
+	validatorService  service.ValidatorService
+	userSaverConsumer service.ConsumerService
 
 	authImpl *auth.Implementation
 }
@@ -136,6 +146,19 @@ func (s *serviceProvider) SwaggerConfig() config.SwaggerConfig {
 	}
 
 	return s.swaggerConfig
+}
+
+func (s *serviceProvider) KafkaConsumerConfig() kafka.ConsumerConfig {
+	if s.kafkaConsumerConfig == nil {
+		cfg, err := config.NewKafkaConsumerConfig()
+		if err != nil {
+			log.Fatalf("failed to get kafka consumer config: %s", err.Error())
+		}
+
+		s.kafkaConsumerConfig = cfg
+	}
+
+	return s.kafkaConsumerConfig
 }
 
 func (s *serviceProvider) DBClient(ctx context.Context) db.Client {
@@ -225,14 +248,14 @@ func (s *serviceProvider) CacheUserRepository() repository.UserRepository {
 	return s.cacheUserRepository
 }
 
-func (s *serviceProvider) LogService(ctx context.Context) service.AuditLogService {
-	if s.logService == nil {
-		s.logService = logService.NewService(
+func (s *serviceProvider) AuditLogService(ctx context.Context) service.AuditLogService {
+	if s.auditLogService == nil {
+		s.auditLogService = auditLogService.NewService(
 			s.LogRepository(ctx),
 		)
 	}
 
-	return s.logService
+	return s.auditLogService
 }
 
 func (s *serviceProvider) HashService(ctx context.Context) service.HashService {
@@ -250,7 +273,7 @@ func (s *serviceProvider) AuthService(ctx context.Context) service.AuthService {
 		s.authService = authService.NewService(
 			s.UserRepository(ctx),
 			s.ValidatorService(),
-			s.LogService(ctx),
+			s.AuditLogService(ctx),
 			s.HashService(ctx),
 			s.CacheUserService(),
 			s.TxManager(ctx),
@@ -278,6 +301,54 @@ func (s *serviceProvider) ValidatorService() service.ValidatorService {
 	}
 
 	return s.validatorService
+}
+
+func (s *serviceProvider) UserSaverConsumer(ctx context.Context) service.ConsumerService {
+	if s.userSaverConsumer == nil {
+		s.userSaverConsumer = userSaverConsumer.NewService(
+			s.UserRepository(ctx),
+			s.Consumer(),
+		)
+	}
+
+	return s.userSaverConsumer
+}
+
+func (s *serviceProvider) Consumer() kafka.Consumer {
+	if s.consumer == nil {
+		s.consumer = kafkaConsumer.NewConsumer(
+			s.ConsumerGroup(),
+			s.ConsumerGroupHandler(),
+		)
+		closer.Add(s.consumer.Close)
+	}
+
+	return s.consumer
+}
+
+func (s *serviceProvider) ConsumerGroup() sarama.ConsumerGroup {
+	if s.consumerGroup == nil {
+		consumerGroup, err := sarama.NewConsumerGroup(
+			s.KafkaConsumerConfig().Brokers(),
+			s.KafkaConsumerConfig().GroupID(),
+			s.KafkaConsumerConfig().Config(),
+		)
+		if err != nil {
+			log.Fatalf("failed to create consumer group: %v", err)
+		}
+
+		s.consumerGroup = consumerGroup
+	}
+
+	return s.consumerGroup
+}
+
+func (s *serviceProvider) ConsumerGroupHandler() *kafkaConsumer.GroupHandler {
+	if s.consumerGroupHandler == nil {
+		s.consumerGroupHandler = kafkaConsumer.NewGroupHandler()
+	}
+
+	return s.consumerGroupHandler
 }
 
 func (s *serviceProvider) AuthImpl(ctx context.Context) *auth.Implementation {

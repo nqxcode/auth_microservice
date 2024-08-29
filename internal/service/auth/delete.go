@@ -17,7 +17,7 @@ func (s *service) Delete(ctx context.Context, userID int64) error {
 			return errTx
 		}
 
-		err := s.logService.Create(ctx, &model.Log{
+		err := s.auditLogService.Create(ctx, &model.Log{
 			Message: constants.UserDeleted,
 			Payload: userID,
 		})

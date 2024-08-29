@@ -42,3 +42,8 @@ type CacheUserService interface {
 type ValidatorService interface {
 	ValidateUser(ctx context.Context, userInfo model.UserInfo, password, passwordConfirm string) error
 }
+
+// ConsumerService consumer service
+type ConsumerService interface {
+	RunConsumer(ctx context.Context) error
+}

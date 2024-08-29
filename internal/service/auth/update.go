@@ -21,7 +21,7 @@ func (s *service) Update(ctx context.Context, userID int64, info *model.UpdateUs
 			return errTx
 		}
 
-		err := s.logService.Create(ctx, &model.Log{
+		err := s.auditLogService.Create(ctx, &model.Log{
 			Message: constants.UserUpdated,
 			Payload: struct {
 				ID   int64

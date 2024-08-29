@@ -7,7 +7,10 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"os"
+	"os/signal"
 	"sync"
+	"syscall"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/nqxcode/platform_common/closer"
@@ -50,13 +53,15 @@ func NewApp(ctx context.Context) (*App, error) {
 }
 
 // Run run application
-func (a *App) Run() error {
+func (a *App) Run(ctx context.Context) error {
 	defer func() {
 		closer.CloseAll()
 		closer.Wait()
 	}()
 
-	wg := sync.WaitGroup{}
+	ctx, cancel := context.WithCancel(ctx)
+
+	wg := &sync.WaitGroup{}
 	wg.Add(3)
 
 	go func() {
@@ -86,7 +91,15 @@ func (a *App) Run() error {
 		}
 	}()
 
-	wg.Wait()
+	go func() {
+		defer wg.Done()
+		err := a.serviceProvider.UserSaverConsumer(ctx).RunConsumer(ctx)
+		if err != nil {
+			log.Printf("failed to run consumer: %s", err.Error())
+		}
+	}()
+
+	gracefulShutdown(ctx, cancel, wg)
 
 	return nil
 }
@@ -261,4 +274,24 @@ func serveSwaggerFile(path string) http.HandlerFunc {
 
 		log.Printf("Served swagger file: %s", path)
 	}
+}
+
+func gracefulShutdown(ctx context.Context, cancel context.CancelFunc, wg *sync.WaitGroup) {
+	select {
+	case <-ctx.Done():
+		log.Println("terminating: context cancelled")
+	case <-waitSignal():
+		log.Println("terminating: via signal")
+	}
+
+	cancel()
+	if wg != nil {
+		wg.Wait()
+	}
+}
+
+func waitSignal() chan os.Signal {
+	sigterm := make(chan os.Signal, 1)
+	signal.Notify(sigterm, syscall.SIGINT, syscall.SIGTERM)
+	return sigterm
 }
