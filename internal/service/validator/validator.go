@@ -1,6 +1,9 @@
 package validator
 
+import "github.com/nqxcode/auth_microservice/internal/repository"
+
 type validator struct {
+	userRepository repository.UserRepository
 }
 
 // ValidationError validation error
@@ -19,6 +22,8 @@ func (e *ValidationError) Error() string {
 }
 
 // NewValidator new validator
-func NewValidator() *validator {
-	return &validator{}
+func NewValidator(userRepository repository.UserRepository) *validator {
+	return &validator{
+		userRepository: userRepository,
+	}
 }

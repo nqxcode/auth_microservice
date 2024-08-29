@@ -7,7 +7,7 @@ import (
 )
 
 // ValidateUser validates the user info
-func (v *validator) ValidateUser(_ context.Context, userInfo model.UserInfo, password, passwordConfirm string) error {
+func (v *validator) ValidateUser(ctx context.Context, userInfo model.UserInfo, password, passwordConfirm string) error {
 	if userInfo.Name == "" {
 		return NewValidationError("name is required")
 	}
@@ -22,6 +22,15 @@ func (v *validator) ValidateUser(_ context.Context, userInfo model.UserInfo, pas
 
 	if password != passwordConfirm {
 		return NewValidationError("passwords do not match")
+	}
+
+	exists, err := v.userRepository.ExistsWithEmail(ctx, userInfo.Email)
+	if err != nil {
+		return err
+	}
+
+	if exists {
+		return NewValidationError("user already exists")
 	}
 
 	return nil

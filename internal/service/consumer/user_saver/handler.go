@@ -19,10 +19,10 @@ func (s *service) UserSaveHandler(ctx context.Context, msg *sarama.ConsumerMessa
 
 	id, err := s.authService.Create(ctx, user)
 	if err != nil {
-		return err
+		log.Printf("Error creating user: %v", err)
+	} else {
+		log.Printf("User with id %d created\n", id)
 	}
-
-	log.Printf("User with id %d created\n", id)
 
 	return nil
 }

@@ -17,6 +17,10 @@ func (s *Implementation) Get(ctx context.Context, req *desc.GetRequest) (*desc.G
 
 	user, err := s.authService.Get(ctx, req.GetId())
 	if err != nil {
+		return nil, status.Errorf(codes.Internal, "cant get user: %v", err)
+	}
+
+	if user == nil {
 		return nil, status.Error(codes.NotFound, "user not found")
 	}
 

@@ -51,6 +51,7 @@ services:
       - zookeeper # указывает, что Kafka зависит от сервиса Zookeeper и будет запущен после него
     ports:
       - "9092:9092" # порт для клиентских соединений Kafka
+      - "29092:29092" # порт для клиентских соединений Kafka
     environment:
       KAFKA_BROKER_ID: 1 # уникальный идентификатор брокера Kafka
       KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181' # адрес подключения к Zookeeper
@@ -69,6 +70,7 @@ services:
       - zookeeper # указывает, что Kafka зависит от сервиса Zookeeper и будет запущен после него
     ports:
       - "9093:9093" # порт для клиентских соединений Kafka
+      - "29093:29093" # порт для клиентских соединений Kafka
     environment:
       KAFKA_BROKER_ID: 2 # уникальный идентификатор брокера Kafka
       KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181' # адрес подключения к Zookeeper
@@ -87,6 +89,7 @@ services:
       - zookeeper # указывает, что Kafka зависит от сервиса Zookeeper и будет запущен после него
     ports:
       - "9094:9094" # порт для клиентских соединений Kafka
+      - "29094:29094" # порт для клиентских соединений Kafka
     environment:
       KAFKA_BROKER_ID: 3 # уникальный идентификатор брокера Kafka
       KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181' # адрес подключения к Zookeeper
@@ -103,4 +106,5 @@ services:
     ports:
       - "8082:8080" # порт для клиентских соединений Kafka UI
     environment:
-      DYNAMIC_CONFIG_ENABLED: true
+      - "KAFKA_CLUSTERS_0_NAME=auth"
+      - "KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka1:29092,kafka2:29093,kafka3:29094"

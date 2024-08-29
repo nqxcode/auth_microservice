@@ -272,7 +272,7 @@ func (s *serviceProvider) AuthService(ctx context.Context) service.AuthService {
 	if s.authService == nil {
 		s.authService = authService.NewService(
 			s.UserRepository(ctx),
-			s.ValidatorService(),
+			s.ValidatorService(ctx),
 			s.AuditLogService(ctx),
 			s.HashService(ctx),
 			s.CacheUserService(),
@@ -295,9 +295,9 @@ func (s *serviceProvider) CacheUserService() service.CacheUserService {
 	return s.cacheUserService
 }
 
-func (s *serviceProvider) ValidatorService() service.ValidatorService {
+func (s *serviceProvider) ValidatorService(ctx context.Context) service.ValidatorService {
 	if s.validatorService == nil {
-		s.validatorService = validator.NewValidator()
+		s.validatorService = validator.NewValidator(s.UserRepository(ctx))
 	}
 
 	return s.validatorService
@@ -306,7 +306,7 @@ func (s *serviceProvider) ValidatorService() service.ValidatorService {
 func (s *serviceProvider) UserSaverConsumer(ctx context.Context) service.ConsumerService {
 	if s.userSaverConsumer == nil {
 		s.userSaverConsumer = userSaverConsumer.NewService(
-			s.UserRepository(ctx),
+			s.AuthService(ctx),
 			s.Consumer(),
 		)
 	}
