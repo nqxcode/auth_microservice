@@ -3,11 +3,11 @@ package user_saver
 import (
 	"context"
 	"encoding/json"
-	"github.com/nqxcode/auth_microservice/internal/converter"
 	"log"
 
 	"github.com/IBM/sarama"
 
+	"github.com/nqxcode/auth_microservice/internal/converter"
 	"github.com/nqxcode/auth_microservice/internal/model"
 )
 

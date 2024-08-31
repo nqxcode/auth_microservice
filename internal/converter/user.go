@@ -1,6 +1,9 @@
 package converter
 
 import (
+	"database/sql"
+	"time"
+
 	"github.com/nqxcode/platform_common/pointer"
 	"github.com/samber/lo"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -88,5 +91,42 @@ func ToUserInfoFromMessage(info *model.UserInfoInMessage) *model.UserInfo {
 		Name:  info.Name,
 		Email: info.Email,
 		Role:  info.Role,
+	}
+}
+
+func ToLogUserMessageFromService(user *model.User) *model.LogUserMessage {
+	if user == nil {
+		return nil
+	}
+
+	return &model.LogUserMessage{
+		ID: user.ID,
+		Info: model.LogUserInfoInMessage{
+			Name:  user.Info.Name,
+			Email: user.Info.Email,
+			Role:  user.Info.Role,
+		},
+		Password:  user.Password,
+		CreatedAt: user.CreatedAt,
+		UpdatedAt: func(updatedAt sql.NullTime) *time.Time {
+			if updatedAt.Valid {
+				return &updatedAt.Time
+			}
+			return nil
+		}(user.UpdatedAt),
+	}
+}
+
+func ToLogUpdateUserMessageFromService(userID int64, info *model.UpdateUserInfo) *model.LogUpdateUserMessage {
+	var infoInMessage *model.LogUpdateUserInfoInMessage
+	if info != nil {
+		infoInMessage = &model.LogUpdateUserInfoInMessage{
+			Name: info.Name,
+			Role: info.Role,
+		}
+	}
+	return &model.LogUpdateUserMessage{
+		ID:   userID,
+		Info: infoInMessage,
 	}
 }

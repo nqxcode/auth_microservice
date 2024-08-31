@@ -8,6 +8,7 @@ import (
 	redigo "github.com/gomodule/redigo/redis"
 	"github.com/nqxcode/platform_common/client/broker/kafka"
 	kafkaConsumer "github.com/nqxcode/platform_common/client/broker/kafka/consumer"
+	"github.com/nqxcode/platform_common/client/broker/kafka/producer"
 	"github.com/nqxcode/platform_common/client/cache"
 	"github.com/nqxcode/platform_common/client/cache/redis"
 	"github.com/nqxcode/platform_common/client/db"
@@ -28,6 +29,7 @@ import (
 	cacheUserService "github.com/nqxcode/auth_microservice/internal/service/cache/user"
 	userSaverConsumer "github.com/nqxcode/auth_microservice/internal/service/consumer/user_saver"
 	hashService "github.com/nqxcode/auth_microservice/internal/service/hash"
+	auditLogSender "github.com/nqxcode/auth_microservice/internal/service/producer/audit_log_sender"
 	"github.com/nqxcode/auth_microservice/internal/service/validator"
 )
 
@@ -39,6 +41,7 @@ type serviceProvider struct {
 	hashingConfig       config.HashingConfig
 	redisConfig         cache.RedisConfig
 	kafkaConsumerConfig kafka.ConsumerConfig
+	kafkaProducerConfig kafka.ProducerConfig
 
 	dbClient  db.Client
 	txManager db.TxManager
@@ -49,6 +52,7 @@ type serviceProvider struct {
 	consumer             kafka.Consumer
 	consumerGroup        sarama.ConsumerGroup
 	consumerGroupHandler *kafkaConsumer.GroupHandler
+	syncProducer         kafka.SyncProducer
 
 	asyncRunner async.Runner
 
@@ -56,12 +60,13 @@ type serviceProvider struct {
 	logRepository       repository.LogRepository
 	cacheUserRepository repository.UserRepository
 
-	auditLogService   service.AuditLogService
-	hashService       service.HashService
-	authService       service.AuthService
-	cacheUserService  service.CacheUserService
-	validatorService  service.ValidatorService
-	userSaverConsumer service.ConsumerService
+	auditLogService  service.AuditLogService
+	hashService      service.HashService
+	authService      service.AuthService
+	cacheUserService service.CacheUserService
+	validatorService service.ValidatorService
+	consumerService  service.ConsumerService
+	producerService  service.ProducerService
 
 	authImpl *auth.Implementation
 }
@@ -159,6 +164,19 @@ func (s *serviceProvider) KafkaConsumerConfig() kafka.ConsumerConfig {
 	}
 
 	return s.kafkaConsumerConfig
+}
+
+func (s *serviceProvider) KafkaProducerConfig() kafka.ProducerConfig {
+	if s.kafkaConsumerConfig == nil {
+		cfg, err := config.NewKafkaProducerConfig()
+		if err != nil {
+			log.Fatalf("failed to get kafka producer config: %s", err.Error())
+		}
+
+		s.kafkaProducerConfig = cfg
+	}
+
+	return s.kafkaProducerConfig
 }
 
 func (s *serviceProvider) DBClient(ctx context.Context) db.Client {
@@ -277,6 +295,7 @@ func (s *serviceProvider) AuthService(ctx context.Context) service.AuthService {
 			s.HashService(ctx),
 			s.CacheUserService(),
 			s.TxManager(ctx),
+			s.ProducerService(),
 			s.AsyncRunner(),
 		)
 	}
@@ -303,15 +322,15 @@ func (s *serviceProvider) ValidatorService(ctx context.Context) service.Validato
 	return s.validatorService
 }
 
-func (s *serviceProvider) UserSaverConsumer(ctx context.Context) service.ConsumerService {
-	if s.userSaverConsumer == nil {
-		s.userSaverConsumer = userSaverConsumer.NewService(
+func (s *serviceProvider) ConsumerService(ctx context.Context) service.ConsumerService {
+	if s.consumerService == nil {
+		s.consumerService = userSaverConsumer.NewService(
 			s.AuthService(ctx),
 			s.Consumer(),
 		)
 	}
 
-	return s.userSaverConsumer
+	return s.consumerService
 }
 
 func (s *serviceProvider) Consumer() kafka.Consumer {
@@ -349,6 +368,27 @@ func (s *serviceProvider) ConsumerGroupHandler() *kafkaConsumer.GroupHandler {
 	}
 
 	return s.consumerGroupHandler
+}
+
+func (s *serviceProvider) SyncProducer() kafka.SyncProducer {
+	if s.syncProducer == nil {
+		pr, err := producer.NewSyncProducer(
+			s.KafkaProducerConfig(),
+		)
+		if err != nil {
+			log.Fatalf("failed to create producer: %v", err)
+		}
+		s.syncProducer = pr
+		closer.Add(s.syncProducer.Close)
+	}
+
+	return s.syncProducer
+}
+
+func (s *serviceProvider) ProducerService() service.ProducerService {
+	return auditLogSender.NewService(
+		s.SyncProducer(),
+	)
 }
 
 func (s *serviceProvider) AuthImpl(ctx context.Context) *auth.Implementation {

@@ -31,17 +31,3 @@ type UpdateUserInfo struct {
 	Name *string
 	Role *int32
 }
-
-// UserMessage represents user info in message
-type UserMessage struct {
-	Info            UserInfoInMessage `json:"info"`
-	Password        string            `json:"password"`
-	PasswordConfirm string            `json:"passwordConfirm"`
-}
-
-// UserInfoInMessage represents user info in message
-type UserInfoInMessage struct {
-	Name  string `json:"name"`
-	Email string `json:"email"`
-	Role  int32  `json:"role"`
-}

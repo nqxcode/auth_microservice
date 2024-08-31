@@ -6,3 +6,10 @@ type Log struct {
 	Payload any
 	IP      string
 }
+
+// LogMessage represents log in message
+type LogMessage struct {
+	Message string `json:"message"`
+	Payload any    `json:"payload"`
+	IP      string `json:"ip"`
+}

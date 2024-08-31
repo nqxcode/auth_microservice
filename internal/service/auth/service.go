@@ -15,6 +15,7 @@ type service struct {
 	hashService      def.HashService
 	cacheUserService def.CacheUserService
 	txManager        db.TxManager
+	producerService  def.ProducerService
 	asyncRunner      async.Runner
 }
 
@@ -26,6 +27,7 @@ func NewService(
 	hashService def.HashService,
 	cacheUserService def.CacheUserService,
 	txManager db.TxManager,
+	producerService def.ProducerService,
 	asyncRunner async.Runner,
 ) def.AuthService {
 	return &service{
@@ -35,6 +37,7 @@ func NewService(
 		hashService:      hashService,
 		cacheUserService: cacheUserService,
 		txManager:        txManager,
+		producerService:  producerService,
 		asyncRunner:      asyncRunner,
 	}
 }

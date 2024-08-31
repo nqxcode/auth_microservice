@@ -173,8 +173,8 @@ github.com/mattn/go-isatty v0.0.8/go.mod h1:Iq45c/XA43vh69/j3iqttzPXn0bhXyGjM0Hd
 github.com/mattn/go-isatty v0.0.9/go.mod h1:YNRxwqDuOph6SZLI9vUUz6OYw3QyUt7WiY2yME+cCiQ=
 github.com/mattn/go-isatty v0.0.12/go.mod h1:cbi8OIDigv2wuxKPP5vlRcQ1OAZbq2CE4Kysco4FUpU=
 github.com/mattn/go-sqlite3 v1.14.6/go.mod h1:NyWgC/yNuGj7Q9rpYnZvas74GogHl5/Z4A/KQRfk6bU=
-github.com/nqxcode/platform_common v0.0.0-20240829103328-5c3527c352b4 h1:dN+LFv9EbNcbbsojFlN/Rje9ZZh3PlW+pHw1CtqvNUA=
-github.com/nqxcode/platform_common v0.0.0-20240829103328-5c3527c352b4/go.mod h1:oYrnngWLTj7V7t+H59Tft2sTIL4Xpr5Y0g+cyRfYGNA=
+github.com/nqxcode/platform_common v0.0.0-20240831202545-f534480c273b h1:Zpe6phDjN2/bVi0OFz3D5zC4+MhS5TLZdfhWt8FiBBU=
+github.com/nqxcode/platform_common v0.0.0-20240831202545-f534480c273b/go.mod h1:oYrnngWLTj7V7t+H59Tft2sTIL4Xpr5Y0g+cyRfYGNA=
 github.com/pierrec/lz4/v4 v4.1.21 h1:yOVMLb6qSIDP67pl/5F7RepeKYu/VmTyEXvuMI5d9mQ=
 github.com/pierrec/lz4/v4 v4.1.21/go.mod h1:gZWDp/Ze/IJXGXf23ltt2EXimqmTUXEy0GFuRQyBid4=
 github.com/pkg/errors v0.8.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=

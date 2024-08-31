@@ -47,3 +47,8 @@ type ValidatorService interface {
 type ConsumerService interface {
 	RunConsumer(ctx context.Context) error
 }
+
+// ProducerService producer service
+type ProducerService interface {
+	SendMessage(ctx context.Context, message model.LogMessage) error
+}
