@@ -10,6 +10,10 @@ import (
 	"github.com/nqxcode/auth_microservice/internal/service/audit_log/constants"
 )
 
+const (
+	hiddenPassword = "***"
+)
+
 // Create user
 func (s *service) Create(ctx context.Context, info *model.UserInfo, password, passwordConfirm string) (int64, error) {
 	if info == nil {
@@ -51,7 +55,7 @@ func (s *service) Create(ctx context.Context, info *model.UserInfo, password, pa
 
 				var u *model.User
 				gob.DeepClone(user, &u)
-				u.Password = "***"
+				u.Password = hiddenPassword
 
 				return u
 			}(),
