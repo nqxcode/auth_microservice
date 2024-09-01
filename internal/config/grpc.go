@@ -17,15 +17,15 @@ const (
 // GRPCConfig grpc server config
 type GRPCConfig interface {
 	Address() string
-	Cert() string
-	Key() string
+	Cert() []byte
+	Key() []byte
 }
 
 type grpcConfig struct {
 	host string
 	port string
-	cert string
-	key  string
+	cert []byte
+	key  []byte
 }
 
 // NewGRPCConfig create new grpc server config
@@ -53,8 +53,8 @@ func NewGRPCConfig() (GRPCConfig, error) {
 	return &grpcConfig{
 		host: host,
 		port: port,
-		cert: cert,
-		key:  key,
+		cert: []byte(cert),
+		key:  []byte(key),
 	}, nil
 }
 
@@ -63,12 +63,12 @@ func (cfg *grpcConfig) Address() string {
 	return net.JoinHostPort(cfg.host, cfg.port)
 }
 
-// Cert get cert
-func (cfg *grpcConfig) Cert() string {
+// Cert get service pem cert
+func (cfg *grpcConfig) Cert() []byte {
 	return cfg.cert
 }
 
-// Key get key
-func (cfg *grpcConfig) Key() string {
+// Key get service key
+func (cfg *grpcConfig) Key() []byte {
 	return cfg.key
 }

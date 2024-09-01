@@ -140,15 +140,12 @@ func (a *App) initServiceProvider(_ context.Context) error {
 }
 
 func (a *App) initGRPCServer(ctx context.Context) error {
-	certPEMBlock := []byte(a.serviceProvider.GRPCConfig().Cert())
-	keyPEMBlock := []byte(a.serviceProvider.GRPCConfig().Key())
-
-	cert, err := tls.X509KeyPair(certPEMBlock, keyPEMBlock)
+	tlsCert, err := tls.X509KeyPair(a.serviceProvider.GRPCConfig().Cert(), a.serviceProvider.GRPCConfig().Key())
 	if err != nil {
 		return err
 	}
 
-	creds := credentials.NewServerTLSFromCert(&cert)
+	creds := credentials.NewServerTLSFromCert(&tlsCert)
 
 	a.grpcServer = grpc.NewServer(grpc.Creds(creds), grpc.UnaryInterceptor(interceptor.ValidateInterceptor))
 
