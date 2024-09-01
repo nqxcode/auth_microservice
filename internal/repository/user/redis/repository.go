@@ -201,7 +201,7 @@ func (r repo) GetList(ctx context.Context, limit pagination.Limit) ([]model.User
 	return converter.ToManyUserFromRepo(users), nil
 }
 
-func (r repo) ExistsWithEmail(ctx context.Context, email string) (bool, error) {
+func (r repo) ExistsWithEmail(context.Context, string) (bool, error) {
 	panic("implement me")
 }
 

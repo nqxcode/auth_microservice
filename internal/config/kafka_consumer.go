@@ -18,6 +18,7 @@ type kafkaConsumerConfig struct {
 	groupID string
 }
 
+// NewKafkaConsumerConfig new kafka consumer config
 func NewKafkaConsumerConfig() (*kafkaConsumerConfig, error) {
 	brokersStr := os.Getenv(brokersEnvName)
 	if len(brokersStr) == 0 {

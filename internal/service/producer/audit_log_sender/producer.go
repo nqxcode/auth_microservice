@@ -3,6 +3,7 @@ package audit_log_sender
 import (
 	"context"
 	"fmt"
+
 	"github.com/nqxcode/platform_common/helper/grpc"
 
 	"github.com/nqxcode/auth_microservice/internal/model"
@@ -16,6 +17,7 @@ type service struct {
 	syncProducer kafka.SyncProducer
 }
 
+// NewService new producer service
 func NewService(syncProducer kafka.SyncProducer) def.ProducerService {
 	return &service{syncProducer: syncProducer}
 }

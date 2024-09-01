@@ -6,6 +6,7 @@ import (
 	"github.com/nqxcode/platform_common/helper/gob"
 )
 
+// MakeAuditCreatePayload make audit create payload
 func MakeAuditCreatePayload(user *model.User) any {
 	if user == nil {
 		return nil
@@ -18,6 +19,7 @@ func MakeAuditCreatePayload(user *model.User) any {
 	return converter.ToLogUserMessageFromService(u)
 }
 
+// MakeAuditUpdatePayload make audit update payload
 func MakeAuditUpdatePayload(userID int64, info *model.UpdateUserInfo) any {
 	return converter.ToLogUpdateUserMessageFromService(userID, info)
 }

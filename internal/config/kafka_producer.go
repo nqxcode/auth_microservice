@@ -23,6 +23,7 @@ type kafkaProducerConfig struct {
 	returnSuccesses bool
 }
 
+// NewKafkaProducerConfig new kafka producer config
 func NewKafkaProducerConfig() (*kafkaProducerConfig, error) {
 	brokersStr := os.Getenv(brokersEnvName)
 	if len(brokersStr) == 0 {

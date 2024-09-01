@@ -386,9 +386,13 @@ func (s *serviceProvider) SyncProducer() kafka.SyncProducer {
 }
 
 func (s *serviceProvider) ProducerService() service.ProducerService {
-	return auditLogSender.NewService(
-		s.SyncProducer(),
-	)
+	if s.producerService == nil {
+		s.producerService = auditLogSender.NewService(
+			s.SyncProducer(),
+		)
+	}
+
+	return s.producerService
 }
 
 func (s *serviceProvider) AuthImpl(ctx context.Context) *auth.Implementation {

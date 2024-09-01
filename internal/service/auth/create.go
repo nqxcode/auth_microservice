@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+
 	"github.com/pkg/errors"
 
 	"github.com/nqxcode/auth_microservice/internal/model"
@@ -9,6 +10,7 @@ import (
 )
 
 const (
+	// HiddenPassword hidden password
 	HiddenPassword = "***"
 )
 

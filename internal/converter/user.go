@@ -86,7 +86,12 @@ func ToUserInfoFromDesc(info *desc.UserInfo) *model.UserInfo {
 	}
 }
 
+// ToUserInfoFromMessage to user info from message
 func ToUserInfoFromMessage(info *model.UserInfoInMessage) *model.UserInfo {
+	if info == nil {
+		return nil
+	}
+
 	return &model.UserInfo{
 		Name:  info.Name,
 		Email: info.Email,
@@ -94,6 +99,7 @@ func ToUserInfoFromMessage(info *model.UserInfoInMessage) *model.UserInfo {
 	}
 }
 
+// ToLogUserMessageFromService to log user message
 func ToLogUserMessageFromService(user *model.User) *model.LogUserMessage {
 	if user == nil {
 		return nil
@@ -117,6 +123,7 @@ func ToLogUserMessageFromService(user *model.User) *model.LogUserMessage {
 	}
 }
 
+// ToLogUpdateUserMessageFromService convert to log update user message
 func ToLogUpdateUserMessageFromService(userID int64, info *model.UpdateUserInfo) *model.LogUpdateUserMessage {
 	var infoInMessage *model.LogUpdateUserInfoInMessage
 	if info != nil {

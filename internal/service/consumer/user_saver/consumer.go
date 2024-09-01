@@ -14,6 +14,7 @@ type service struct {
 	consumer    kafka.Consumer
 }
 
+// NewService new consumer service
 func NewService(
 	authService def.AuthService,
 	consumer kafka.Consumer,
