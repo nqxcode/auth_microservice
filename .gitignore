@@ -4,3 +4,9 @@
 /vendor.protogen/
 .env
 /coverage.out
+/ca.cert
+/ca.key
+/ca.srl
+/service.csr
+/service.key
+/service.pem
