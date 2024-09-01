@@ -2,16 +2,14 @@ package auth
 
 import (
 	"context"
-	"github.com/nqxcode/platform_common/helper/gob"
 	"github.com/pkg/errors"
 
-	"github.com/nqxcode/auth_microservice/internal/converter"
 	"github.com/nqxcode/auth_microservice/internal/model"
 	"github.com/nqxcode/auth_microservice/internal/service/audit_log/constants"
 )
 
 const (
-	hiddenPassword = "***"
+	HiddenPassword = "***"
 )
 
 // Create user
@@ -48,7 +46,7 @@ func (s *service) Create(ctx context.Context, info *model.UserInfo, password, pa
 
 		err := s.auditLogService.Create(ctx, &model.Log{
 			Message: constants.UserCreated,
-			Payload: makeAuditCreatePayload(user),
+			Payload: MakeAuditCreatePayload(user),
 		})
 		if err != nil {
 			return err
@@ -73,7 +71,7 @@ func (s *service) Create(ctx context.Context, info *model.UserInfo, password, pa
 		s.asyncRunner.Run(ctx, func(ctx context.Context) error {
 			err = s.producerService.SendMessage(ctx, model.LogMessage{
 				Message: constants.UserCreated,
-				Payload: makeAuditCreatePayload(user),
+				Payload: MakeAuditCreatePayload(user),
 			})
 			if err != nil {
 				return err
@@ -83,16 +81,4 @@ func (s *service) Create(ctx context.Context, info *model.UserInfo, password, pa
 	}
 
 	return userID, nil
-}
-
-func makeAuditCreatePayload(user *model.User) any {
-	if user == nil {
-		return nil
-	}
-
-	var u *model.User
-	gob.DeepClone(user, &u)
-	u.Password = hiddenPassword
-
-	return converter.ToLogUserMessageFromService(u)
 }
