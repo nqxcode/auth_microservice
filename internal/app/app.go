@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"crypto/tls"
 	"flag"
 	"io"
 	"log"
@@ -17,6 +18,7 @@ import (
 	"github.com/rakyll/statik/fs"
 	"github.com/rs/cors"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
 
@@ -138,7 +140,17 @@ func (a *App) initServiceProvider(_ context.Context) error {
 }
 
 func (a *App) initGRPCServer(ctx context.Context) error {
-	a.grpcServer = grpc.NewServer(grpc.Creds(insecure.NewCredentials()), grpc.UnaryInterceptor(interceptor.ValidateInterceptor))
+	certPEMBlock := []byte(a.serviceProvider.GRPCConfig().Cert())
+	keyPEMBlock := []byte(a.serviceProvider.GRPCConfig().Key())
+
+	cert, err := tls.X509KeyPair(certPEMBlock, keyPEMBlock)
+	if err != nil {
+		return err
+	}
+
+	creds := credentials.NewServerTLSFromCert(&cert)
+
+	a.grpcServer = grpc.NewServer(grpc.Creds(creds), grpc.UnaryInterceptor(interceptor.ValidateInterceptor))
 
 	reflection.Register(a.grpcServer)
 
