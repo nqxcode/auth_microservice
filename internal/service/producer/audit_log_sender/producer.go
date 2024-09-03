@@ -24,7 +24,7 @@ func NewService(syncProducer kafka.SyncProducer) def.ProducerService {
 
 func (s service) SendMessage(ctx context.Context, message model.LogMessage) error {
 	message.IP, _ = grpc.ClientIP(ctx)
-	_, _, err := s.syncProducer.Produce(ctx, "logs-topic", message)
+	_, _, err := s.syncProducer.Produce(ctx, LogsTopic, message)
 	if err != nil {
 		return fmt.Errorf("syncProducer.Produce %w", err)
 	}
