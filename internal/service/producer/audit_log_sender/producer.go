@@ -22,6 +22,7 @@ func NewService(syncProducer kafka.SyncProducer) def.ProducerService {
 	return &service{syncProducer: syncProducer}
 }
 
+// SendMessage send auth log message to logs topic
 func (s service) SendMessage(ctx context.Context, message model.LogMessage) error {
 	message.IP, _ = grpc.ClientIP(ctx)
 	_, _, err := s.syncProducer.Produce(ctx, LogsTopic, message)
