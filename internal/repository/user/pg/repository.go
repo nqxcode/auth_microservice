@@ -213,6 +213,7 @@ func (r *repo) GetList(ctx context.Context, limit pagination.Limit) ([]model.Use
 	return converter.ToManyUserFromRepo(users), nil
 }
 
+// ExistsWithEmail check user with email on existence
 func (r *repo) ExistsWithEmail(ctx context.Context, email string) (bool, error) {
 	builder := sq.Select(idColumn, nameColumn, emailColumn, roleColumn, passwordColumn, createdAtColumn, updatedAtColumn).
 		PlaceholderFormat(sq.Dollar).
