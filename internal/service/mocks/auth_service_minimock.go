@@ -19,8 +19,8 @@ import (
 type AuthServiceMock struct {
 	t minimock.Tester
 
-	funcCreate          func(ctx context.Context, user *model.User) (i1 int64, err error)
-	inspectFuncCreate   func(ctx context.Context, user *model.User)
+	funcCreate          func(ctx context.Context, info *model.UserInfo, password string, passwordConfirm string) (i1 int64, err error)
+	inspectFuncCreate   func(ctx context.Context, info *model.UserInfo, password string, passwordConfirm string)
 	afterCreateCounter  uint64
 	beforeCreateCounter uint64
 	CreateMock          mAuthServiceMockCreate
@@ -94,8 +94,10 @@ type AuthServiceMockCreateExpectation struct {
 
 // AuthServiceMockCreateParams contains parameters of the AuthService.Create
 type AuthServiceMockCreateParams struct {
-	ctx  context.Context
-	user *model.User
+	ctx             context.Context
+	info            *model.UserInfo
+	password        string
+	passwordConfirm string
 }
 
 // AuthServiceMockCreateResults contains results of the AuthService.Create
@@ -105,7 +107,7 @@ type AuthServiceMockCreateResults struct {
 }
 
 // Expect sets up expected params for AuthService.Create
-func (mmCreate *mAuthServiceMockCreate) Expect(ctx context.Context, user *model.User) *mAuthServiceMockCreate {
+func (mmCreate *mAuthServiceMockCreate) Expect(ctx context.Context, info *model.UserInfo, password string, passwordConfirm string) *mAuthServiceMockCreate {
 	if mmCreate.mock.funcCreate != nil {
 		mmCreate.mock.t.Fatalf("AuthServiceMock.Create mock is already set by Set")
 	}
@@ -114,7 +116,7 @@ func (mmCreate *mAuthServiceMockCreate) Expect(ctx context.Context, user *model.
 		mmCreate.defaultExpectation = &AuthServiceMockCreateExpectation{}
 	}
 
-	mmCreate.defaultExpectation.params = &AuthServiceMockCreateParams{ctx, user}
+	mmCreate.defaultExpectation.params = &AuthServiceMockCreateParams{ctx, info, password, passwordConfirm}
 	for _, e := range mmCreate.expectations {
 		if minimock.Equal(e.params, mmCreate.defaultExpectation.params) {
 			mmCreate.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmCreate.defaultExpectation.params)
@@ -125,7 +127,7 @@ func (mmCreate *mAuthServiceMockCreate) Expect(ctx context.Context, user *model.
 }
 
 // Inspect accepts an inspector function that has same arguments as the AuthService.Create
-func (mmCreate *mAuthServiceMockCreate) Inspect(f func(ctx context.Context, user *model.User)) *mAuthServiceMockCreate {
+func (mmCreate *mAuthServiceMockCreate) Inspect(f func(ctx context.Context, info *model.UserInfo, password string, passwordConfirm string)) *mAuthServiceMockCreate {
 	if mmCreate.mock.inspectFuncCreate != nil {
 		mmCreate.mock.t.Fatalf("Inspect function is already set for AuthServiceMock.Create")
 	}
@@ -149,7 +151,7 @@ func (mmCreate *mAuthServiceMockCreate) Return(i1 int64, err error) *AuthService
 }
 
 // Set uses given function f to mock the AuthService.Create method
-func (mmCreate *mAuthServiceMockCreate) Set(f func(ctx context.Context, user *model.User) (i1 int64, err error)) *AuthServiceMock {
+func (mmCreate *mAuthServiceMockCreate) Set(f func(ctx context.Context, info *model.UserInfo, password string, passwordConfirm string) (i1 int64, err error)) *AuthServiceMock {
 	if mmCreate.defaultExpectation != nil {
 		mmCreate.mock.t.Fatalf("Default expectation is already set for the AuthService.Create method")
 	}
@@ -164,14 +166,14 @@ func (mmCreate *mAuthServiceMockCreate) Set(f func(ctx context.Context, user *mo
 
 // When sets expectation for the AuthService.Create which will trigger the result defined by the following
 // Then helper
-func (mmCreate *mAuthServiceMockCreate) When(ctx context.Context, user *model.User) *AuthServiceMockCreateExpectation {
+func (mmCreate *mAuthServiceMockCreate) When(ctx context.Context, info *model.UserInfo, password string, passwordConfirm string) *AuthServiceMockCreateExpectation {
 	if mmCreate.mock.funcCreate != nil {
 		mmCreate.mock.t.Fatalf("AuthServiceMock.Create mock is already set by Set")
 	}
 
 	expectation := &AuthServiceMockCreateExpectation{
 		mock:   mmCreate.mock,
-		params: &AuthServiceMockCreateParams{ctx, user},
+		params: &AuthServiceMockCreateParams{ctx, info, password, passwordConfirm},
 	}
 	mmCreate.expectations = append(mmCreate.expectations, expectation)
 	return expectation
@@ -184,15 +186,15 @@ func (e *AuthServiceMockCreateExpectation) Then(i1 int64, err error) *AuthServic
 }
 
 // Create implements service.AuthService
-func (mmCreate *AuthServiceMock) Create(ctx context.Context, user *model.User) (i1 int64, err error) {
+func (mmCreate *AuthServiceMock) Create(ctx context.Context, info *model.UserInfo, password string, passwordConfirm string) (i1 int64, err error) {
 	mm_atomic.AddUint64(&mmCreate.beforeCreateCounter, 1)
 	defer mm_atomic.AddUint64(&mmCreate.afterCreateCounter, 1)
 
 	if mmCreate.inspectFuncCreate != nil {
-		mmCreate.inspectFuncCreate(ctx, user)
+		mmCreate.inspectFuncCreate(ctx, info, password, passwordConfirm)
 	}
 
-	mm_params := &AuthServiceMockCreateParams{ctx, user}
+	mm_params := &AuthServiceMockCreateParams{ctx, info, password, passwordConfirm}
 
 	// Record call args
 	mmCreate.CreateMock.mutex.Lock()
@@ -209,7 +211,7 @@ func (mmCreate *AuthServiceMock) Create(ctx context.Context, user *model.User) (
 	if mmCreate.CreateMock.defaultExpectation != nil {
 		mm_atomic.AddUint64(&mmCreate.CreateMock.defaultExpectation.Counter, 1)
 		mm_want := mmCreate.CreateMock.defaultExpectation.params
-		mm_got := AuthServiceMockCreateParams{ctx, user}
+		mm_got := AuthServiceMockCreateParams{ctx, info, password, passwordConfirm}
 		if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
 			mmCreate.t.Errorf("AuthServiceMock.Create got unexpected parameters, want: %#v, got: %#v%s\n", *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
 		}
@@ -221,9 +223,9 @@ func (mmCreate *AuthServiceMock) Create(ctx context.Context, user *model.User) (
 		return (*mm_results).i1, (*mm_results).err
 	}
 	if mmCreate.funcCreate != nil {
-		return mmCreate.funcCreate(ctx, user)
+		return mmCreate.funcCreate(ctx, info, password, passwordConfirm)
 	}
-	mmCreate.t.Fatalf("Unexpected call to AuthServiceMock.Create. %v %v", ctx, user)
+	mmCreate.t.Fatalf("Unexpected call to AuthServiceMock.Create. %v %v %v %v", ctx, info, password, passwordConfirm)
 	return
 }
 

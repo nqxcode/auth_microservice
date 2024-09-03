@@ -31,6 +31,7 @@ func TestGet(t *testing.T) {
 	type logServiceMock func(mc *minimock.Controller) service.AuditLogService
 	type hashServiceMock func(mc *minimock.Controller) service.HashService
 	type cacheUserServiceMock func(mc *minimock.Controller) service.CacheUserService
+	type producerServiceMock func(mc *minimock.Controller) service.ProducerService
 
 	type input struct {
 		ctx    context.Context
@@ -79,6 +80,7 @@ func TestGet(t *testing.T) {
 		logServiceMock       logServiceMock
 		hashServiceMock      hashServiceMock
 		cacheUserServiceMock cacheUserServiceMock
+		producerServiceMock  producerServiceMock
 		txManagerFake        db.TxManager
 		asyncRunnerFake      async.Runner
 	}{
@@ -113,6 +115,10 @@ func TestGet(t *testing.T) {
 				mock := serviceMocks.NewCacheUserServiceMock(mc)
 				mock.GetMock.Expect(ctx, id).Return(nil, nil)
 				mock.SetMock.Expect(ctx, user).Return(nil)
+				return mock
+			},
+			producerServiceMock: func(mc *minimock.Controller) service.ProducerService {
+				mock := serviceMocks.NewProducerServiceMock(mc)
 				return mock
 			},
 			txManagerFake:   serviceSupport.NewTxManagerFake(),
@@ -150,6 +156,10 @@ func TestGet(t *testing.T) {
 				mock.GetMock.Expect(ctx, id).Return(nil, nil)
 				return mock
 			},
+			producerServiceMock: func(mc *minimock.Controller) service.ProducerService {
+				mock := serviceMocks.NewProducerServiceMock(mc)
+				return mock
+			},
 			txManagerFake:   serviceSupport.NewTxManagerFake(),
 			asyncRunnerFake: serviceSupport.NewAsyncRunnerFake(),
 			validatorServiceMock: func(mc *minimock.Controller) service.ValidatorService {
@@ -170,9 +180,10 @@ func TestGet(t *testing.T) {
 			hashSrvMock := tt.hashServiceMock(mc)
 			cacheUserSrvMock := tt.cacheUserServiceMock(mc)
 			txMngFake := tt.txManagerFake
+			producerSrv := tt.producerServiceMock(mc)
 			asyncRunnerFake := tt.asyncRunnerFake
 
-			srv := auth.NewService(userRepoMock, validatorSrvMock, logSrvMock, hashSrvMock, cacheUserSrvMock, txMngFake, asyncRunnerFake)
+			srv := auth.NewService(userRepoMock, validatorSrvMock, logSrvMock, hashSrvMock, cacheUserSrvMock, txMngFake, producerSrv, asyncRunnerFake)
 
 			ar, err := srv.Get(tt.input.ctx, tt.input.userID)
 			require.Equal(t, tt.expected.err, err)

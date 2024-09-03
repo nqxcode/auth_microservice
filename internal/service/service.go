@@ -10,7 +10,7 @@ import (
 
 // AuthService auth service
 type AuthService interface {
-	Create(ctx context.Context, user *model.User) (int64, error)
+	Create(ctx context.Context, info *model.UserInfo, password, passwordConfirm string) (int64, error)
 	Get(ctx context.Context, id int64) (*model.User, error)
 	GetList(ctx context.Context, limit pagination.Limit) ([]model.User, error)
 	Update(ctx context.Context, id int64, info *model.UpdateUserInfo) error
@@ -41,4 +41,14 @@ type CacheUserService interface {
 // ValidatorService validator service
 type ValidatorService interface {
 	ValidateUser(ctx context.Context, userInfo model.UserInfo, password, passwordConfirm string) error
+}
+
+// ConsumerService consumer service
+type ConsumerService interface {
+	RunConsumer(ctx context.Context) error
+}
+
+// ProducerService producer service
+type ProducerService interface {
+	SendMessage(ctx context.Context, message model.LogMessage) error
 }

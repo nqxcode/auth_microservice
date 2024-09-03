@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/jackc/pgx/v4"
 	"github.com/nqxcode/platform_common/client/db"
 	"github.com/nqxcode/platform_common/pagination"
 	"github.com/pkg/errors"
@@ -148,6 +149,9 @@ func (r *repo) Get(ctx context.Context, id int64) (*model.User, error) {
 	var user modelRepo.User
 	err = r.db.DB().ScanOneContext(ctx, &user, q, args...)
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
 		return nil, err
 	}
 
@@ -207,6 +211,36 @@ func (r *repo) GetList(ctx context.Context, limit pagination.Limit) ([]model.Use
 	}
 
 	return converter.ToManyUserFromRepo(users), nil
+}
+
+// ExistsWithEmail check user with email on existence
+func (r *repo) ExistsWithEmail(ctx context.Context, email string) (bool, error) {
+	builder := sq.Select(idColumn, nameColumn, emailColumn, roleColumn, passwordColumn, createdAtColumn, updatedAtColumn).
+		PlaceholderFormat(sq.Dollar).
+		From(escape(tableName)).
+		Where(sq.Eq{emailColumn: email}).
+		Limit(1)
+
+	query, args, err := builder.ToSql()
+	if err != nil {
+		return false, err
+	}
+
+	q := db.Query{
+		Name:     tableName + "_repository.ExistsWithEmail",
+		QueryRaw: query,
+	}
+
+	var user modelRepo.User
+	err = r.db.DB().ScanOneContext(ctx, &user, q, args...)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return false, nil
+		}
+		return false, err
+	}
+
+	return true, nil
 }
 
 func escape(value string) string {

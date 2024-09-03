@@ -17,7 +17,7 @@ func (s *service) Delete(ctx context.Context, userID int64) error {
 			return errTx
 		}
 
-		err := s.logService.Create(ctx, &model.Log{
+		err := s.auditLogService.Create(ctx, &model.Log{
 			Message: constants.UserDeleted,
 			Payload: userID,
 		})
@@ -37,6 +37,17 @@ func (s *service) Delete(ctx context.Context, userID int64) error {
 		err = s.cacheUserService.Delete(ctx, userID)
 		if err != nil {
 			return errors.Errorf("cant delete user to cache: %v", err)
+		}
+		return nil
+	})
+
+	s.asyncRunner.Run(ctx, func(ctx context.Context) error {
+		err = s.producerService.SendMessage(ctx, model.LogMessage{
+			Message: constants.UserDeleted,
+			Payload: userID,
+		})
+		if err != nil {
+			return err
 		}
 		return nil
 	})

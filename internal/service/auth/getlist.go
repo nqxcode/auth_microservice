@@ -33,7 +33,7 @@ func (s *service) GetList(ctx context.Context, limit pagination.Limit) ([]model.
 			return errTx
 		}
 
-		errLog := s.logService.Create(ctx, &model.Log{
+		errLog := s.auditLogService.Create(ctx, &model.Log{
 			Message: constants.UserList,
 			Payload: modelCommon.ExtractIDs(users),
 		})

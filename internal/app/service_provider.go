@@ -4,7 +4,11 @@ import (
 	"context"
 	"log"
 
+	"github.com/IBM/sarama"
 	redigo "github.com/gomodule/redigo/redis"
+	"github.com/nqxcode/platform_common/client/broker/kafka"
+	kafkaConsumer "github.com/nqxcode/platform_common/client/broker/kafka/consumer"
+	"github.com/nqxcode/platform_common/client/broker/kafka/producer"
 	"github.com/nqxcode/platform_common/client/cache"
 	"github.com/nqxcode/platform_common/client/cache/redis"
 	"github.com/nqxcode/platform_common/client/db"
@@ -20,36 +24,49 @@ import (
 	redisUserRepository "github.com/nqxcode/auth_microservice/internal/repository/user/redis"
 	"github.com/nqxcode/auth_microservice/internal/service"
 	"github.com/nqxcode/auth_microservice/internal/service/async"
-	logService "github.com/nqxcode/auth_microservice/internal/service/audit_log"
+	auditLogService "github.com/nqxcode/auth_microservice/internal/service/audit_log"
 	authService "github.com/nqxcode/auth_microservice/internal/service/auth"
 	cacheUserService "github.com/nqxcode/auth_microservice/internal/service/cache/user"
+	userSaverConsumer "github.com/nqxcode/auth_microservice/internal/service/consumer/user_saver"
 	hashService "github.com/nqxcode/auth_microservice/internal/service/hash"
+	auditLogSender "github.com/nqxcode/auth_microservice/internal/service/producer/audit_log_sender"
 	"github.com/nqxcode/auth_microservice/internal/service/validator"
 )
 
 type serviceProvider struct {
-	pgConfig      config.PGConfig
-	grpcConfig    config.GRPCConfig
-	hashingConfig config.HashingConfig
-	redisConfig   cache.RedisConfig
+	pgConfig            config.PGConfig
+	grpcConfig          config.GRPCConfig
+	httpConfig          config.HTTPConfig
+	swaggerConfig       config.SwaggerConfig
+	hashingConfig       config.HashingConfig
+	redisConfig         cache.RedisConfig
+	kafkaConsumerConfig kafka.ConsumerConfig
+	kafkaProducerConfig kafka.ProducerConfig
 
-	dbClient    db.Client
-	txManager   db.TxManager
-	asyncRunner async.Runner
+	dbClient  db.Client
+	txManager db.TxManager
 
 	redisPool   *redigo.Pool
 	redisClient cache.RedisClient
 
-	userRepository repository.UserRepository
-	logRepository  repository.LogRepository
+	consumer             kafka.Consumer
+	consumerGroup        sarama.ConsumerGroup
+	consumerGroupHandler *kafkaConsumer.GroupHandler
+	syncProducer         kafka.SyncProducer
 
+	asyncRunner async.Runner
+
+	userRepository      repository.UserRepository
+	logRepository       repository.LogRepository
 	cacheUserRepository repository.UserRepository
 
-	logService       service.AuditLogService
+	auditLogService  service.AuditLogService
 	hashService      service.HashService
 	authService      service.AuthService
 	cacheUserService service.CacheUserService
 	validatorService service.ValidatorService
+	consumerService  service.ConsumerService
+	producerService  service.ProducerService
 
 	authImpl *auth.Implementation
 }
@@ -58,6 +75,7 @@ func newServiceProvider() *serviceProvider {
 	return &serviceProvider{}
 }
 
+// PGConfig config for pg
 func (s *serviceProvider) PGConfig() config.PGConfig {
 	if s.pgConfig == nil {
 		cfg, err := config.NewPGConfig()
@@ -71,6 +89,7 @@ func (s *serviceProvider) PGConfig() config.PGConfig {
 	return s.pgConfig
 }
 
+// GRPCConfig config for grpc
 func (s *serviceProvider) GRPCConfig() config.GRPCConfig {
 	if s.grpcConfig == nil {
 		cfg, err := config.NewGRPCConfig()
@@ -84,6 +103,7 @@ func (s *serviceProvider) GRPCConfig() config.GRPCConfig {
 	return s.grpcConfig
 }
 
+// HashingConfig config for hashing
 func (s *serviceProvider) HashingConfig() config.HashingConfig {
 	if s.hashingConfig == nil {
 		cfg, err := config.NewHashingConfig()
@@ -97,6 +117,7 @@ func (s *serviceProvider) HashingConfig() config.HashingConfig {
 	return s.hashingConfig
 }
 
+// RedisConfig config for redis
 func (s *serviceProvider) RedisConfig() cache.RedisConfig {
 	if s.redisConfig == nil {
 		cfg, err := config.NewRedisConfig()
@@ -110,6 +131,63 @@ func (s *serviceProvider) RedisConfig() cache.RedisConfig {
 	return s.redisConfig
 }
 
+// HTTPConfig config for http server
+func (s *serviceProvider) HTTPConfig() config.HTTPConfig {
+	if s.httpConfig == nil {
+		cfg, err := config.NewHTTPConfig()
+		if err != nil {
+			log.Fatalf("failed to get http config: %s", err.Error())
+		}
+
+		s.httpConfig = cfg
+	}
+
+	return s.httpConfig
+}
+
+// SwaggerConfig config for swagger
+func (s *serviceProvider) SwaggerConfig() config.SwaggerConfig {
+	if s.swaggerConfig == nil {
+		cfg, err := config.NewSwaggerConfig()
+		if err != nil {
+			log.Fatalf("failed to get swagger config: %s", err.Error())
+		}
+
+		s.swaggerConfig = cfg
+	}
+
+	return s.swaggerConfig
+}
+
+// KafkaConsumerConfig config for kafka consumer
+func (s *serviceProvider) KafkaConsumerConfig() kafka.ConsumerConfig {
+	if s.kafkaConsumerConfig == nil {
+		cfg, err := config.NewKafkaConsumerConfig()
+		if err != nil {
+			log.Fatalf("failed to get kafka consumer config: %s", err.Error())
+		}
+
+		s.kafkaConsumerConfig = cfg
+	}
+
+	return s.kafkaConsumerConfig
+}
+
+// KafkaProducerConfig config for kafka producer
+func (s *serviceProvider) KafkaProducerConfig() kafka.ProducerConfig {
+	if s.kafkaConsumerConfig == nil {
+		cfg, err := config.NewKafkaProducerConfig()
+		if err != nil {
+			log.Fatalf("failed to get kafka producer config: %s", err.Error())
+		}
+
+		s.kafkaProducerConfig = cfg
+	}
+
+	return s.kafkaProducerConfig
+}
+
+// DBClient client for pg database
 func (s *serviceProvider) DBClient(ctx context.Context) db.Client {
 	if s.dbClient == nil {
 		cl, err := pg.New(ctx, s.PGConfig().DSN())
@@ -129,6 +207,7 @@ func (s *serviceProvider) DBClient(ctx context.Context) db.Client {
 	return s.dbClient
 }
 
+// RedisPool redis pool
 func (s *serviceProvider) RedisPool() *redigo.Pool {
 	if s.redisPool == nil {
 		s.redisPool = &redigo.Pool{
@@ -149,6 +228,7 @@ func (s *serviceProvider) RedisPool() *redigo.Pool {
 	return s.redisPool
 }
 
+// RedisClient client for redis
 func (s *serviceProvider) RedisClient() cache.RedisClient {
 	if s.redisClient == nil {
 		s.redisClient = redis.NewClient(s.RedisPool(), s.RedisConfig())
@@ -157,6 +237,7 @@ func (s *serviceProvider) RedisClient() cache.RedisClient {
 	return s.redisClient
 }
 
+// TxManager tx manager
 func (s *serviceProvider) TxManager(ctx context.Context) db.TxManager {
 	if s.txManager == nil {
 		s.txManager = transaction.NewTransactionManager(s.DBClient(ctx).DB())
@@ -165,6 +246,7 @@ func (s *serviceProvider) TxManager(ctx context.Context) db.TxManager {
 	return s.txManager
 }
 
+// AsyncRunner runner to run handler in goroutine
 func (s *serviceProvider) AsyncRunner() async.Runner {
 	if s.asyncRunner == nil {
 		s.asyncRunner = async.NewRunner()
@@ -173,6 +255,7 @@ func (s *serviceProvider) AsyncRunner() async.Runner {
 	return s.asyncRunner
 }
 
+// UserRepository user repository
 func (s *serviceProvider) UserRepository(ctx context.Context) repository.UserRepository {
 	if s.userRepository == nil {
 		s.userRepository = pgUserRepository.NewRepository(s.DBClient(ctx))
@@ -181,6 +264,7 @@ func (s *serviceProvider) UserRepository(ctx context.Context) repository.UserRep
 	return s.userRepository
 }
 
+// LogRepository audit log repository
 func (s *serviceProvider) LogRepository(ctx context.Context) repository.LogRepository {
 	if s.logRepository == nil {
 		s.logRepository = logRepository.NewRepository(s.DBClient(ctx))
@@ -189,6 +273,7 @@ func (s *serviceProvider) LogRepository(ctx context.Context) repository.LogRepos
 	return s.logRepository
 }
 
+// CacheUserRepository cache user repository
 func (s *serviceProvider) CacheUserRepository() repository.UserRepository {
 	if s.cacheUserRepository == nil {
 		s.cacheUserRepository = redisUserRepository.NewRepository(s.RedisClient())
@@ -197,16 +282,18 @@ func (s *serviceProvider) CacheUserRepository() repository.UserRepository {
 	return s.cacheUserRepository
 }
 
-func (s *serviceProvider) LogService(ctx context.Context) service.AuditLogService {
-	if s.logService == nil {
-		s.logService = logService.NewService(
+// AuditLogService audit log service
+func (s *serviceProvider) AuditLogService(ctx context.Context) service.AuditLogService {
+	if s.auditLogService == nil {
+		s.auditLogService = auditLogService.NewService(
 			s.LogRepository(ctx),
 		)
 	}
 
-	return s.logService
+	return s.auditLogService
 }
 
+// HashService hashing service
 func (s *serviceProvider) HashService(ctx context.Context) service.HashService {
 	if s.hashService == nil {
 		s.hashService = hashService.NewService(
@@ -217,15 +304,17 @@ func (s *serviceProvider) HashService(ctx context.Context) service.HashService {
 	return s.hashService
 }
 
+// AuthService auth service
 func (s *serviceProvider) AuthService(ctx context.Context) service.AuthService {
 	if s.authService == nil {
 		s.authService = authService.NewService(
 			s.UserRepository(ctx),
-			s.ValidatorService(),
-			s.LogService(ctx),
+			s.ValidatorService(ctx),
+			s.AuditLogService(ctx),
 			s.HashService(ctx),
 			s.CacheUserService(),
 			s.TxManager(ctx),
+			s.ProducerService(),
 			s.AsyncRunner(),
 		)
 	}
@@ -233,6 +322,7 @@ func (s *serviceProvider) AuthService(ctx context.Context) service.AuthService {
 	return s.authService
 }
 
+// CacheUserService cache user service
 func (s *serviceProvider) CacheUserService() service.CacheUserService {
 	if s.cacheUserService == nil {
 		s.cacheUserService = cacheUserService.NewService(
@@ -244,14 +334,95 @@ func (s *serviceProvider) CacheUserService() service.CacheUserService {
 	return s.cacheUserService
 }
 
-func (s *serviceProvider) ValidatorService() service.ValidatorService {
+// ValidatorService validator service
+func (s *serviceProvider) ValidatorService(ctx context.Context) service.ValidatorService {
 	if s.validatorService == nil {
-		s.validatorService = validator.NewValidator()
+		s.validatorService = validator.NewValidator(s.UserRepository(ctx))
 	}
 
 	return s.validatorService
 }
 
+// ConsumerService kafka consumer service
+func (s *serviceProvider) ConsumerService(ctx context.Context) service.ConsumerService {
+	if s.consumerService == nil {
+		s.consumerService = userSaverConsumer.NewService(
+			s.AuthService(ctx),
+			s.Consumer(),
+		)
+	}
+
+	return s.consumerService
+}
+
+// Consumer kafka consumer
+func (s *serviceProvider) Consumer() kafka.Consumer {
+	if s.consumer == nil {
+		s.consumer = kafkaConsumer.NewConsumer(
+			s.ConsumerGroup(),
+			s.ConsumerGroupHandler(),
+		)
+		closer.Add(s.consumer.Close)
+	}
+
+	return s.consumer
+}
+
+// ConsumerGroup kafka consumer group
+func (s *serviceProvider) ConsumerGroup() sarama.ConsumerGroup {
+	if s.consumerGroup == nil {
+		consumerGroup, err := sarama.NewConsumerGroup(
+			s.KafkaConsumerConfig().Brokers(),
+			s.KafkaConsumerConfig().GroupID(),
+			s.KafkaConsumerConfig().Config(),
+		)
+		if err != nil {
+			log.Fatalf("failed to create consumer group: %v", err)
+		}
+
+		s.consumerGroup = consumerGroup
+	}
+
+	return s.consumerGroup
+}
+
+// ConsumerGroupHandler consumer group handler
+func (s *serviceProvider) ConsumerGroupHandler() *kafkaConsumer.GroupHandler {
+	if s.consumerGroupHandler == nil {
+		s.consumerGroupHandler = kafkaConsumer.NewGroupHandler()
+	}
+
+	return s.consumerGroupHandler
+}
+
+// SyncProducer kafka sync producer
+func (s *serviceProvider) SyncProducer() kafka.SyncProducer {
+	if s.syncProducer == nil {
+		pr, err := producer.NewSyncProducer(
+			s.KafkaProducerConfig(),
+		)
+		if err != nil {
+			log.Fatalf("failed to create producer: %v", err)
+		}
+		s.syncProducer = pr
+		closer.Add(s.syncProducer.Close)
+	}
+
+	return s.syncProducer
+}
+
+// ProducerService kafka producer service
+func (s *serviceProvider) ProducerService() service.ProducerService {
+	if s.producerService == nil {
+		s.producerService = auditLogSender.NewService(
+			s.SyncProducer(),
+		)
+	}
+
+	return s.producerService
+}
+
+// AuthImpl auth api implementation
 func (s *serviceProvider) AuthImpl(ctx context.Context) *auth.Implementation {
 	if s.authImpl == nil {
 		s.authImpl = auth.NewImplementation(s.AuthService(ctx))

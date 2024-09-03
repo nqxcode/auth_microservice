@@ -31,6 +31,7 @@ func TestUpdate(t *testing.T) {
 	type logServiceMock func(mc *minimock.Controller) service.AuditLogService
 	type hashServiceMock func(mc *minimock.Controller) service.HashService
 	type cacheUserServiceMock func(mc *minimock.Controller) service.CacheUserService
+	type producerServiceMock func(mc *minimock.Controller) service.ProducerService
 
 	type input struct {
 		ctx    context.Context
@@ -68,6 +69,7 @@ func TestUpdate(t *testing.T) {
 		logServiceMock       logServiceMock
 		hashServiceMock      hashServiceMock
 		cacheUserServiceMock cacheUserServiceMock
+		producerServiceMock  producerServiceMock
 		txManagerFake        db.TxManager
 		asyncRunnerFake      async.Runner
 	}{
@@ -90,10 +92,7 @@ func TestUpdate(t *testing.T) {
 				mock := serviceMocks.NewAuditLogServiceMock(mc)
 				mock.CreateMock.Expect(ctx, &model.Log{
 					Message: constants.UserUpdated,
-					Payload: struct {
-						ID   int64
-						Info *model.UpdateUserInfo
-					}{ID: id, Info: info},
+					Payload: auth.MakeAuditUpdatePayload(id, info),
 				}).Return(nil)
 				return mock
 			},
@@ -104,6 +103,11 @@ func TestUpdate(t *testing.T) {
 			cacheUserServiceMock: func(mc *minimock.Controller) service.CacheUserService {
 				mock := serviceMocks.NewCacheUserServiceMock(mc)
 				mock.SetPartialMock.Expect(ctx, id, &model.UpdateUserInfo{Name: &name, Role: &role}).Return(nil)
+				return mock
+			},
+			producerServiceMock: func(mc *minimock.Controller) service.ProducerService {
+				mock := serviceMocks.NewProducerServiceMock(mc)
+				mock.SendMessageMock.Expect(ctx, model.LogMessage{Message: constants.UserUpdated, Payload: auth.MakeAuditUpdatePayload(id, info)}).Return(nil)
 				return mock
 			},
 			txManagerFake:   serviceSupport.NewTxManagerFake(),
@@ -140,6 +144,10 @@ func TestUpdate(t *testing.T) {
 				mock := serviceMocks.NewHashServiceMock(mc)
 				return mock
 			},
+			producerServiceMock: func(mc *minimock.Controller) service.ProducerService {
+				mock := serviceMocks.NewProducerServiceMock(mc)
+				return mock
+			},
 			txManagerFake:   serviceSupport.NewTxManagerFake(),
 			asyncRunnerFake: serviceSupport.NewAsyncRunnerFake(),
 			validatorServiceMock: func(mc *minimock.Controller) service.ValidatorService {
@@ -160,9 +168,10 @@ func TestUpdate(t *testing.T) {
 			hashSrvMock := tt.hashServiceMock(mc)
 			cacheUserSrvMock := tt.cacheUserServiceMock(mc)
 			txMngFake := tt.txManagerFake
+			producerSrv := tt.producerServiceMock(mc)
 			asyncRunnerFake := tt.asyncRunnerFake
 
-			srv := auth.NewService(userRepoMock, validatorSrvMock, logSrvMock, hashSrvMock, cacheUserSrvMock, txMngFake, asyncRunnerFake)
+			srv := auth.NewService(userRepoMock, validatorSrvMock, logSrvMock, hashSrvMock, cacheUserSrvMock, txMngFake, producerSrv, asyncRunnerFake)
 
 			err := srv.Update(tt.input.ctx, tt.input.userID, tt.input.info)
 			require.Equal(t, tt.expected.err, err)

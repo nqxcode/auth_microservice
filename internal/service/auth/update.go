@@ -21,15 +21,9 @@ func (s *service) Update(ctx context.Context, userID int64, info *model.UpdateUs
 			return errTx
 		}
 
-		err := s.logService.Create(ctx, &model.Log{
+		err := s.auditLogService.Create(ctx, &model.Log{
 			Message: constants.UserUpdated,
-			Payload: struct {
-				ID   int64
-				Info *model.UpdateUserInfo
-			}{
-				ID:   userID,
-				Info: info,
-			},
+			Payload: MakeAuditUpdatePayload(userID, info),
 		})
 
 		if err != nil {
@@ -43,15 +37,24 @@ func (s *service) Update(ctx context.Context, userID int64, info *model.UpdateUs
 		return err
 	}
 
-	if info != nil {
-		s.asyncRunner.Run(ctx, func(ctx context.Context) error {
-			err = s.cacheUserService.SetPartial(ctx, userID, info)
-			if err != nil {
-				return errors.Errorf("cant set user to cache: %v", err)
-			}
-			return nil
+	s.asyncRunner.Run(ctx, func(ctx context.Context) error {
+		err = s.cacheUserService.SetPartial(ctx, userID, info)
+		if err != nil {
+			return errors.Errorf("cant set user to cache: %v", err)
+		}
+		return nil
+	})
+
+	s.asyncRunner.Run(ctx, func(ctx context.Context) error {
+		err = s.producerService.SendMessage(ctx, model.LogMessage{
+			Message: constants.UserUpdated,
+			Payload: MakeAuditUpdatePayload(userID, info),
 		})
-	}
+		if err != nil {
+			return err
+		}
+		return nil
+	})
 
 	return nil
 }

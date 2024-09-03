@@ -5,21 +5,62 @@ package auth_v1;
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
 import "google/protobuf/wrappers.proto";
+import "validate/validate.proto";
+import "google/api/annotations.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
 
 option go_package = "github.com/nqxcode/auth_microservice/pkg/auth_v1;auth_v1";
 
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+  info: {
+    title: "Auth API"
+    version: "1.0.0"
+    contact: {
+      name: "Andrey Pokoev"
+      email: "nc101ux@gmail.ru"
+    };
+  };
+
+  host: "localhost:8080",
+  schemes: HTTP,
+  schemes: HTTPS,
+  consumes: "application/json",
+  produces: "application/json",
+};
+
 service AuthV1 {
-  rpc Create(CreateRequest) returns (CreateResponse);
-  rpc Get(GetRequest) returns (GetResponse);
-  rpc GetList(GetListRequest) returns (GetListResponse);
-  rpc Update(UpdateRequest) returns (google.protobuf.Empty);
-  rpc Delete(DeleteRequest) returns (google.protobuf.Empty);
+  rpc Create(CreateRequest) returns (CreateResponse) {
+    option (google.api.http) = {
+      post: "/auth/v1/create"
+      body: "*"
+    };
+  };
+  rpc Get(GetRequest) returns (GetResponse) {
+    option (google.api.http) = {
+      get: "/auth/v1/get"
+    };
+  };
+  rpc GetList(GetListRequest) returns (GetListResponse) {
+    option (google.api.http) = {
+      get: "/auth/v1/get-list"
+    };
+  };
+  rpc Update(UpdateRequest) returns (google.protobuf.Empty) {
+    option(google.api.http) = {
+      patch: "/auth/v1/update"
+    };
+  };
+  rpc Delete(DeleteRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/auth/v1/delete"
+    };
+  };
 }
 
 message UserInfo {
-  string name = 1;
-  string email = 2;
-  Role role = 3;
+  string name = 1 [(validate.rules).string = {min_len: 1, max_len: 50}];
+  string email = 2 [(validate.rules).string = {email: true}];
+  Role role = 3 [(validate.rules).enum = {defined_only: true, in: [0, 1, 2]}];
 }
 
 enum Role {
@@ -36,14 +77,14 @@ message User {
 }
 
 message UpdateUserInfo {
-  google.protobuf.StringValue name = 1;
-  Role role = 2;
+  google.protobuf.StringValue name = 1 [(validate.rules).string = {min_len: 1, max_len: 50}];
+  Role role = 2 [(validate.rules).enum = {defined_only: true, in: [0, 1, 2]}];
 }
 
 message CreateRequest {
-  UserInfo info = 1;
-  string password = 3;
-  string password_confirm = 4;
+  UserInfo info = 1 [(validate.rules).message.required = true];
+  string password = 3 [(validate.rules).string = {min_len: 1, max_len: 128}];
+  string password_confirm = 4 [(validate.rules).string = {min_len: 1, max_len: 128}];
 }
 
 message CreateResponse {
@@ -51,7 +92,7 @@ message CreateResponse {
 }
 
 message GetRequest {
-  int64 id = 1;
+  int64 id = 1 [(validate.rules).int64 = {gt: 0}];
 }
 
 message GetResponse {
@@ -59,21 +100,21 @@ message GetResponse {
 }
 
 message UpdateRequest {
-  int64 id = 1;
-  UpdateUserInfo info = 2;
+  int64 id = 1 [(validate.rules).int64 = {gt: 0}];
+  UpdateUserInfo info = 2 [(validate.rules).message.required = true];
 }
 
 message DeleteRequest {
-  int64 id = 1;
+  int64 id = 1 [(validate.rules).int64 = {gt: 0}];
 }
 
 message Limit {
-  uint64 offset = 1;
-  uint64 limit = 2;
+  uint64 offset = 1 [(validate.rules).uint64 = {gte: 0}];
+  uint64 limit = 2 [(validate.rules).uint64 = {gte: 1, lte: 1000}];
 }
 
 message GetListRequest {
-  Limit limit = 1;
+  Limit limit = 1 [(validate.rules).message.required = true];
 }
 
 message GetListResponse {

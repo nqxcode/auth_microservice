@@ -29,6 +29,7 @@ func TestDelete(t *testing.T) {
 	type logServiceMock func(mc *minimock.Controller) service.AuditLogService
 	type hashServiceMock func(mc *minimock.Controller) service.HashService
 	type cacheUserServiceMock func(mc *minimock.Controller) service.CacheUserService
+	type producerServiceMock func(mc *minimock.Controller) service.ProducerService
 
 	type input struct {
 		ctx    context.Context
@@ -58,6 +59,7 @@ func TestDelete(t *testing.T) {
 		logServiceMock       logServiceMock
 		hashServiceMock      hashServiceMock
 		cacheUserServiceMock cacheUserServiceMock
+		producerServiceMock  producerServiceMock
 		txManagerFake        db.TxManager
 		asyncRunnerFake      async.Runner
 	}{
@@ -91,6 +93,11 @@ func TestDelete(t *testing.T) {
 			cacheUserServiceMock: func(mc *minimock.Controller) service.CacheUserService {
 				mock := serviceMocks.NewCacheUserServiceMock(mc)
 				mock.DeleteMock.Expect(ctx, id).Return(nil)
+				return mock
+			},
+			producerServiceMock: func(mc *minimock.Controller) service.ProducerService {
+				mock := serviceMocks.NewProducerServiceMock(mc)
+				mock.SendMessageMock.Expect(ctx, model.LogMessage{Message: constants.UserDeleted, Payload: id}).Return(nil)
 				return mock
 			},
 			txManagerFake:   serviceSupport.NewTxManagerFake(),
@@ -127,6 +134,10 @@ func TestDelete(t *testing.T) {
 				mock := serviceMocks.NewCacheUserServiceMock(mc)
 				return mock
 			},
+			producerServiceMock: func(mc *minimock.Controller) service.ProducerService {
+				mock := serviceMocks.NewProducerServiceMock(mc)
+				return mock
+			},
 			txManagerFake:   serviceSupport.NewTxManagerFake(),
 			asyncRunnerFake: serviceSupport.NewAsyncRunnerFake(),
 			validatorServiceMock: func(mc *minimock.Controller) service.ValidatorService {
@@ -147,9 +158,10 @@ func TestDelete(t *testing.T) {
 			hashSrvMock := tt.hashServiceMock(mc)
 			cacheSrvMock := tt.cacheUserServiceMock(mc)
 			txMngFake := tt.txManagerFake
+			producerSrv := tt.producerServiceMock(mc)
 			asyncRunnerFake := tt.asyncRunnerFake
 
-			srv := auth.NewService(userRepoMock, validatorSrvMock, logSrvMock, hashSrvMock, cacheSrvMock, txMngFake, asyncRunnerFake)
+			srv := auth.NewService(userRepoMock, validatorSrvMock, logSrvMock, hashSrvMock, cacheSrvMock, txMngFake, producerSrv, asyncRunnerFake)
 
 			err := srv.Delete(tt.input.ctx, tt.input.userID)
 			require.Equal(t, tt.expected.err, err)

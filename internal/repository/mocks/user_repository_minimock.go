@@ -31,6 +31,12 @@ type UserRepositoryMock struct {
 	beforeDeleteCounter uint64
 	DeleteMock          mUserRepositoryMockDelete
 
+	funcExistsWithEmail          func(ctx context.Context, email string) (b1 bool, err error)
+	inspectFuncExistsWithEmail   func(ctx context.Context, email string)
+	afterExistsWithEmailCounter  uint64
+	beforeExistsWithEmailCounter uint64
+	ExistsWithEmailMock          mUserRepositoryMockExistsWithEmail
+
 	funcGet          func(ctx context.Context, id int64) (up1 *model.User, err error)
 	inspectFuncGet   func(ctx context.Context, id int64)
 	afterGetCounter  uint64
@@ -68,6 +74,9 @@ func NewUserRepositoryMock(t minimock.Tester) *UserRepositoryMock {
 
 	m.DeleteMock = mUserRepositoryMockDelete{mock: m}
 	m.DeleteMock.callArgs = []*UserRepositoryMockDeleteParams{}
+
+	m.ExistsWithEmailMock = mUserRepositoryMockExistsWithEmail{mock: m}
+	m.ExistsWithEmailMock.callArgs = []*UserRepositoryMockExistsWithEmailParams{}
 
 	m.GetMock = mUserRepositoryMockGet{mock: m}
 	m.GetMock.callArgs = []*UserRepositoryMockGetParams{}
@@ -514,6 +523,223 @@ func (m *UserRepositoryMock) MinimockDeleteInspect() {
 	// if func was set then invocations count should be greater than zero
 	if m.funcDelete != nil && mm_atomic.LoadUint64(&m.afterDeleteCounter) < 1 {
 		m.t.Error("Expected call to UserRepositoryMock.Delete")
+	}
+}
+
+type mUserRepositoryMockExistsWithEmail struct {
+	mock               *UserRepositoryMock
+	defaultExpectation *UserRepositoryMockExistsWithEmailExpectation
+	expectations       []*UserRepositoryMockExistsWithEmailExpectation
+
+	callArgs []*UserRepositoryMockExistsWithEmailParams
+	mutex    sync.RWMutex
+}
+
+// UserRepositoryMockExistsWithEmailExpectation specifies expectation struct of the UserRepository.ExistsWithEmail
+type UserRepositoryMockExistsWithEmailExpectation struct {
+	mock    *UserRepositoryMock
+	params  *UserRepositoryMockExistsWithEmailParams
+	results *UserRepositoryMockExistsWithEmailResults
+	Counter uint64
+}
+
+// UserRepositoryMockExistsWithEmailParams contains parameters of the UserRepository.ExistsWithEmail
+type UserRepositoryMockExistsWithEmailParams struct {
+	ctx   context.Context
+	email string
+}
+
+// UserRepositoryMockExistsWithEmailResults contains results of the UserRepository.ExistsWithEmail
+type UserRepositoryMockExistsWithEmailResults struct {
+	b1  bool
+	err error
+}
+
+// Expect sets up expected params for UserRepository.ExistsWithEmail
+func (mmExistsWithEmail *mUserRepositoryMockExistsWithEmail) Expect(ctx context.Context, email string) *mUserRepositoryMockExistsWithEmail {
+	if mmExistsWithEmail.mock.funcExistsWithEmail != nil {
+		mmExistsWithEmail.mock.t.Fatalf("UserRepositoryMock.ExistsWithEmail mock is already set by Set")
+	}
+
+	if mmExistsWithEmail.defaultExpectation == nil {
+		mmExistsWithEmail.defaultExpectation = &UserRepositoryMockExistsWithEmailExpectation{}
+	}
+
+	mmExistsWithEmail.defaultExpectation.params = &UserRepositoryMockExistsWithEmailParams{ctx, email}
+	for _, e := range mmExistsWithEmail.expectations {
+		if minimock.Equal(e.params, mmExistsWithEmail.defaultExpectation.params) {
+			mmExistsWithEmail.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmExistsWithEmail.defaultExpectation.params)
+		}
+	}
+
+	return mmExistsWithEmail
+}
+
+// Inspect accepts an inspector function that has same arguments as the UserRepository.ExistsWithEmail
+func (mmExistsWithEmail *mUserRepositoryMockExistsWithEmail) Inspect(f func(ctx context.Context, email string)) *mUserRepositoryMockExistsWithEmail {
+	if mmExistsWithEmail.mock.inspectFuncExistsWithEmail != nil {
+		mmExistsWithEmail.mock.t.Fatalf("Inspect function is already set for UserRepositoryMock.ExistsWithEmail")
+	}
+
+	mmExistsWithEmail.mock.inspectFuncExistsWithEmail = f
+
+	return mmExistsWithEmail
+}
+
+// Return sets up results that will be returned by UserRepository.ExistsWithEmail
+func (mmExistsWithEmail *mUserRepositoryMockExistsWithEmail) Return(b1 bool, err error) *UserRepositoryMock {
+	if mmExistsWithEmail.mock.funcExistsWithEmail != nil {
+		mmExistsWithEmail.mock.t.Fatalf("UserRepositoryMock.ExistsWithEmail mock is already set by Set")
+	}
+
+	if mmExistsWithEmail.defaultExpectation == nil {
+		mmExistsWithEmail.defaultExpectation = &UserRepositoryMockExistsWithEmailExpectation{mock: mmExistsWithEmail.mock}
+	}
+	mmExistsWithEmail.defaultExpectation.results = &UserRepositoryMockExistsWithEmailResults{b1, err}
+	return mmExistsWithEmail.mock
+}
+
+// Set uses given function f to mock the UserRepository.ExistsWithEmail method
+func (mmExistsWithEmail *mUserRepositoryMockExistsWithEmail) Set(f func(ctx context.Context, email string) (b1 bool, err error)) *UserRepositoryMock {
+	if mmExistsWithEmail.defaultExpectation != nil {
+		mmExistsWithEmail.mock.t.Fatalf("Default expectation is already set for the UserRepository.ExistsWithEmail method")
+	}
+
+	if len(mmExistsWithEmail.expectations) > 0 {
+		mmExistsWithEmail.mock.t.Fatalf("Some expectations are already set for the UserRepository.ExistsWithEmail method")
+	}
+
+	mmExistsWithEmail.mock.funcExistsWithEmail = f
+	return mmExistsWithEmail.mock
+}
+
+// When sets expectation for the UserRepository.ExistsWithEmail which will trigger the result defined by the following
+// Then helper
+func (mmExistsWithEmail *mUserRepositoryMockExistsWithEmail) When(ctx context.Context, email string) *UserRepositoryMockExistsWithEmailExpectation {
+	if mmExistsWithEmail.mock.funcExistsWithEmail != nil {
+		mmExistsWithEmail.mock.t.Fatalf("UserRepositoryMock.ExistsWithEmail mock is already set by Set")
+	}
+
+	expectation := &UserRepositoryMockExistsWithEmailExpectation{
+		mock:   mmExistsWithEmail.mock,
+		params: &UserRepositoryMockExistsWithEmailParams{ctx, email},
+	}
+	mmExistsWithEmail.expectations = append(mmExistsWithEmail.expectations, expectation)
+	return expectation
+}
+
+// Then sets up UserRepository.ExistsWithEmail return parameters for the expectation previously defined by the When method
+func (e *UserRepositoryMockExistsWithEmailExpectation) Then(b1 bool, err error) *UserRepositoryMock {
+	e.results = &UserRepositoryMockExistsWithEmailResults{b1, err}
+	return e.mock
+}
+
+// ExistsWithEmail implements repository.UserRepository
+func (mmExistsWithEmail *UserRepositoryMock) ExistsWithEmail(ctx context.Context, email string) (b1 bool, err error) {
+	mm_atomic.AddUint64(&mmExistsWithEmail.beforeExistsWithEmailCounter, 1)
+	defer mm_atomic.AddUint64(&mmExistsWithEmail.afterExistsWithEmailCounter, 1)
+
+	if mmExistsWithEmail.inspectFuncExistsWithEmail != nil {
+		mmExistsWithEmail.inspectFuncExistsWithEmail(ctx, email)
+	}
+
+	mm_params := &UserRepositoryMockExistsWithEmailParams{ctx, email}
+
+	// Record call args
+	mmExistsWithEmail.ExistsWithEmailMock.mutex.Lock()
+	mmExistsWithEmail.ExistsWithEmailMock.callArgs = append(mmExistsWithEmail.ExistsWithEmailMock.callArgs, mm_params)
+	mmExistsWithEmail.ExistsWithEmailMock.mutex.Unlock()
+
+	for _, e := range mmExistsWithEmail.ExistsWithEmailMock.expectations {
+		if minimock.Equal(e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.b1, e.results.err
+		}
+	}
+
+	if mmExistsWithEmail.ExistsWithEmailMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmExistsWithEmail.ExistsWithEmailMock.defaultExpectation.Counter, 1)
+		mm_want := mmExistsWithEmail.ExistsWithEmailMock.defaultExpectation.params
+		mm_got := UserRepositoryMockExistsWithEmailParams{ctx, email}
+		if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmExistsWithEmail.t.Errorf("UserRepositoryMock.ExistsWithEmail got unexpected parameters, want: %#v, got: %#v%s\n", *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmExistsWithEmail.ExistsWithEmailMock.defaultExpectation.results
+		if mm_results == nil {
+			mmExistsWithEmail.t.Fatal("No results are set for the UserRepositoryMock.ExistsWithEmail")
+		}
+		return (*mm_results).b1, (*mm_results).err
+	}
+	if mmExistsWithEmail.funcExistsWithEmail != nil {
+		return mmExistsWithEmail.funcExistsWithEmail(ctx, email)
+	}
+	mmExistsWithEmail.t.Fatalf("Unexpected call to UserRepositoryMock.ExistsWithEmail. %v %v", ctx, email)
+	return
+}
+
+// ExistsWithEmailAfterCounter returns a count of finished UserRepositoryMock.ExistsWithEmail invocations
+func (mmExistsWithEmail *UserRepositoryMock) ExistsWithEmailAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmExistsWithEmail.afterExistsWithEmailCounter)
+}
+
+// ExistsWithEmailBeforeCounter returns a count of UserRepositoryMock.ExistsWithEmail invocations
+func (mmExistsWithEmail *UserRepositoryMock) ExistsWithEmailBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmExistsWithEmail.beforeExistsWithEmailCounter)
+}
+
+// Calls returns a list of arguments used in each call to UserRepositoryMock.ExistsWithEmail.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmExistsWithEmail *mUserRepositoryMockExistsWithEmail) Calls() []*UserRepositoryMockExistsWithEmailParams {
+	mmExistsWithEmail.mutex.RLock()
+
+	argCopy := make([]*UserRepositoryMockExistsWithEmailParams, len(mmExistsWithEmail.callArgs))
+	copy(argCopy, mmExistsWithEmail.callArgs)
+
+	mmExistsWithEmail.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockExistsWithEmailDone returns true if the count of the ExistsWithEmail invocations corresponds
+// the number of defined expectations
+func (m *UserRepositoryMock) MinimockExistsWithEmailDone() bool {
+	for _, e := range m.ExistsWithEmailMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	// if default expectation was set then invocations count should be greater than zero
+	if m.ExistsWithEmailMock.defaultExpectation != nil && mm_atomic.LoadUint64(&m.afterExistsWithEmailCounter) < 1 {
+		return false
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcExistsWithEmail != nil && mm_atomic.LoadUint64(&m.afterExistsWithEmailCounter) < 1 {
+		return false
+	}
+	return true
+}
+
+// MinimockExistsWithEmailInspect logs each unmet expectation
+func (m *UserRepositoryMock) MinimockExistsWithEmailInspect() {
+	for _, e := range m.ExistsWithEmailMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to UserRepositoryMock.ExistsWithEmail with params: %#v", *e.params)
+		}
+	}
+
+	// if default expectation was set then invocations count should be greater than zero
+	if m.ExistsWithEmailMock.defaultExpectation != nil && mm_atomic.LoadUint64(&m.afterExistsWithEmailCounter) < 1 {
+		if m.ExistsWithEmailMock.defaultExpectation.params == nil {
+			m.t.Error("Expected call to UserRepositoryMock.ExistsWithEmail")
+		} else {
+			m.t.Errorf("Expected call to UserRepositoryMock.ExistsWithEmail with params: %#v", *m.ExistsWithEmailMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcExistsWithEmail != nil && mm_atomic.LoadUint64(&m.afterExistsWithEmailCounter) < 1 {
+		m.t.Error("Expected call to UserRepositoryMock.ExistsWithEmail")
 	}
 }
 
@@ -1392,6 +1618,8 @@ func (m *UserRepositoryMock) MinimockFinish() {
 
 		m.MinimockDeleteInspect()
 
+		m.MinimockExistsWithEmailInspect()
+
 		m.MinimockGetInspect()
 
 		m.MinimockGetByIDsInspect()
@@ -1424,6 +1652,7 @@ func (m *UserRepositoryMock) minimockDone() bool {
 	return done &&
 		m.MinimockCreateDone() &&
 		m.MinimockDeleteDone() &&
+		m.MinimockExistsWithEmailDone() &&
 		m.MinimockGetDone() &&
 		m.MinimockGetByIDsDone() &&
 		m.MinimockGetListDone() &&

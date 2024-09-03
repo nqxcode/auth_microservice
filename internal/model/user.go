@@ -7,12 +7,11 @@ import (
 
 // User represents the user model
 type User struct {
-	ID              int64
-	Info            UserInfo
-	Password        string `json:"-"`
-	PasswordConfirm string `json:"-"`
-	CreatedAt       time.Time
-	UpdatedAt       sql.NullTime
+	ID        int64
+	Info      UserInfo
+	Password  string
+	CreatedAt time.Time
+	UpdatedAt sql.NullTime
 }
 
 // GetID get user id

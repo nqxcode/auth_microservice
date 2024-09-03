@@ -16,6 +16,7 @@ type UserRepository interface {
 	Get(ctx context.Context, id int64) (*model.User, error)
 	GetByIDs(ctx context.Context, id []int64) ([]model.User, error)
 	GetList(ctx context.Context, limit pagination.Limit) ([]model.User, error)
+	ExistsWithEmail(ctx context.Context, email string) (bool, error)
 }
 
 // LogRepository log repository
