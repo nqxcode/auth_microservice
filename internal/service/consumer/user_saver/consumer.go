@@ -25,6 +25,7 @@ func NewService(
 	}
 }
 
+// RunConsumer run kafka consumer
 func (s *service) RunConsumer(ctx context.Context) error {
 	for {
 		select {
