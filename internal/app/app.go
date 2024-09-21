@@ -64,37 +64,41 @@ func (a *App) Run(ctx context.Context) error {
 	ctx, cancel := context.WithCancel(ctx)
 
 	wg := &sync.WaitGroup{}
-	wg.Add(3)
 
+	wg.Add(1)
 	go func() {
 		defer wg.Done()
 
-		err := a.runGRPCServer()
+		err := a.runGRPCServer(ctx)
 		if err != nil {
-			log.Fatalf("failed to run GRPC server: %v", err)
+			log.Printf("failed to run GRPC server: %v", err)
 		}
 	}()
 
+	wg.Add(1)
 	go func() {
 		defer wg.Done()
 
-		err := a.runHTTPServer()
+		err := a.runHTTPServer(ctx)
 		if err != nil {
-			log.Fatalf("failed to run HTTP server: %v", err)
+			log.Printf("failed to run HTTP server: %v", err)
 		}
 	}()
 
+	wg.Add(1)
 	go func() {
 		defer wg.Done()
 
-		err := a.runSwaggerServer()
+		err := a.runSwaggerServer(ctx)
 		if err != nil {
-			log.Fatalf("failed to run Swagger server: %v", err)
+			log.Printf("failed to run Swagger server: %v", err)
 		}
 	}()
 
+	wg.Add(1)
 	go func() {
 		defer wg.Done()
+
 		err := a.serviceProvider.ConsumerService(ctx).RunConsumer(ctx)
 		if err != nil {
 			log.Printf("failed to run consumer: %s", err.Error())
@@ -207,8 +211,13 @@ func (a *App) initSwaggerServer(_ context.Context) error {
 	return nil
 }
 
-func (a *App) runGRPCServer() error {
+func (a *App) runGRPCServer(ctx context.Context) error {
 	log.Printf("GRPC server is running on %s", a.serviceProvider.GRPCConfig().Address())
+
+	go func() {
+		<-ctx.Done()
+		a.grpcServer.GracefulStop()
+	}()
 
 	listener, err := net.Listen("tcp", a.serviceProvider.GRPCConfig().Address())
 	if err != nil {
@@ -223,8 +232,18 @@ func (a *App) runGRPCServer() error {
 	return nil
 }
 
-func (a *App) runHTTPServer() error {
+func (a *App) runHTTPServer(ctx context.Context) error {
 	log.Printf("HTTP server is running on %s", a.serviceProvider.HTTPConfig().Address())
+
+	go func() {
+		<-ctx.Done()
+		if shutdownErr := a.httpServer.Shutdown(ctx); shutdownErr != nil {
+			log.Printf("http server shutdown err: %s", shutdownErr)
+			if closeErr := a.httpServer.Close(); shutdownErr != nil {
+				log.Fatalf("http server close err: %s", closeErr)
+			}
+		}
+	}()
 
 	err := a.httpServer.ListenAndServe()
 	if err != nil {
@@ -234,8 +253,18 @@ func (a *App) runHTTPServer() error {
 	return nil
 }
 
-func (a *App) runSwaggerServer() error {
+func (a *App) runSwaggerServer(ctx context.Context) error {
 	log.Printf("Swagger server is running on %s", a.serviceProvider.SwaggerConfig().Address())
+
+	go func() {
+		<-ctx.Done()
+		if shutdownErr := a.swaggerServer.Shutdown(ctx); shutdownErr != nil {
+			log.Printf("swagger server shutdown err: %s", shutdownErr)
+			if closeErr := a.swaggerServer.Close(); shutdownErr != nil {
+				log.Fatalf("swagger server close err: %s", closeErr)
+			}
+		}
+	}()
 
 	err := a.swaggerServer.ListenAndServe()
 	if err != nil {
