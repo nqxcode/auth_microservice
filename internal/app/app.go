@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"flag"
+	"fmt"
 	"io"
 	"log"
 	"net"
@@ -17,6 +18,7 @@ import (
 	"github.com/nqxcode/platform_common/closer"
 	"github.com/rakyll/statik/fs"
 	"github.com/rs/cors"
+	"go.uber.org/multierr"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
@@ -64,6 +66,7 @@ func (a *App) Run(ctx context.Context) error {
 	ctx, cancel := context.WithCancel(ctx)
 
 	wg := &sync.WaitGroup{}
+	errChan := make(chan error, 4)
 
 	wg.Add(1)
 	go func() {
@@ -71,7 +74,7 @@ func (a *App) Run(ctx context.Context) error {
 
 		err := a.runGRPCServer(ctx)
 		if err != nil {
-			log.Fatalf("failed to run GRPC server: %v", err)
+			errChan <- fmt.Errorf("failed to run GRPC server: %v", err)
 		}
 	}()
 
@@ -81,7 +84,7 @@ func (a *App) Run(ctx context.Context) error {
 
 		err := a.runHTTPServer(ctx)
 		if err != nil {
-			log.Fatalf("failed to run HTTP server: %v", err)
+			errChan <- fmt.Errorf("failed to run HTTP server: %v", err)
 		}
 	}()
 
@@ -91,7 +94,7 @@ func (a *App) Run(ctx context.Context) error {
 
 		err := a.runSwaggerServer(ctx)
 		if err != nil {
-			log.Fatalf("failed to run Swagger server: %v", err)
+			errChan <- fmt.Errorf("failed to run Swagger server: %v", err)
 		}
 	}()
 
@@ -101,13 +104,21 @@ func (a *App) Run(ctx context.Context) error {
 
 		err := a.serviceProvider.ConsumerService(ctx).RunConsumer(ctx)
 		if err != nil {
-			log.Fatalf("failed to run consumer: %s", err.Error())
+			errChan <- fmt.Errorf("failed to run consumer: %s", err.Error())
 		}
 	}()
 
 	gracefulShutdown(ctx, cancel, wg)
 
-	return nil
+	errs := make([]error, 0, len(errChan))
+	for i := 0; i < len(errChan); i++ {
+		err := <-errChan
+		if err != nil {
+			errs = append(errs, err)
+		}
+	}
+
+	return multierr.Combine(errs...)
 }
 
 func (a *App) initDeps(ctx context.Context) error {
