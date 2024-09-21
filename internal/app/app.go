@@ -71,7 +71,7 @@ func (a *App) Run(ctx context.Context) error {
 
 		err := a.runGRPCServer(ctx)
 		if err != nil {
-			log.Printf("failed to run GRPC server: %v", err)
+			log.Fatalf("failed to run GRPC server: %v", err)
 		}
 	}()
 
@@ -81,7 +81,7 @@ func (a *App) Run(ctx context.Context) error {
 
 		err := a.runHTTPServer(ctx)
 		if err != nil {
-			log.Printf("failed to run HTTP server: %v", err)
+			log.Fatalf("failed to run HTTP server: %v", err)
 		}
 	}()
 
@@ -91,7 +91,7 @@ func (a *App) Run(ctx context.Context) error {
 
 		err := a.runSwaggerServer(ctx)
 		if err != nil {
-			log.Printf("failed to run Swagger server: %v", err)
+			log.Fatalf("failed to run Swagger server: %v", err)
 		}
 	}()
 
@@ -101,7 +101,7 @@ func (a *App) Run(ctx context.Context) error {
 
 		err := a.serviceProvider.ConsumerService(ctx).RunConsumer(ctx)
 		if err != nil {
-			log.Printf("failed to run consumer: %s", err.Error())
+			log.Fatalf("failed to run consumer: %s", err.Error())
 		}
 	}()
 
