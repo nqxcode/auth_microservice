@@ -240,7 +240,7 @@ func (a *App) runHTTPServer(ctx context.Context) error {
 		if shutdownErr := a.httpServer.Shutdown(ctx); shutdownErr != nil {
 			log.Printf("http server shutdown err: %s", shutdownErr)
 			if closeErr := a.httpServer.Close(); shutdownErr != nil {
-				log.Fatalf("http server close err: %s", closeErr)
+				log.Printf("http server close err: %s", closeErr)
 			}
 		}
 	}()
@@ -261,7 +261,7 @@ func (a *App) runSwaggerServer(ctx context.Context) error {
 		if shutdownErr := a.swaggerServer.Shutdown(ctx); shutdownErr != nil {
 			log.Printf("swagger server shutdown err: %s", shutdownErr)
 			if closeErr := a.swaggerServer.Close(); shutdownErr != nil {
-				log.Fatalf("swagger server close err: %s", closeErr)
+				log.Printf("swagger server close err: %s", closeErr)
 			}
 		}
 	}()
