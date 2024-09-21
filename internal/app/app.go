@@ -228,6 +228,7 @@ func (a *App) runGRPCServer(ctx context.Context) error {
 	go func() {
 		<-ctx.Done()
 		a.grpcServer.GracefulStop()
+		log.Printf("GRPC server gracefully stopped")
 	}()
 
 	listener, err := net.Listen("tcp", a.serviceProvider.GRPCConfig().Address())
@@ -249,10 +250,12 @@ func (a *App) runHTTPServer(ctx context.Context) error {
 	go func() {
 		<-ctx.Done()
 		if shutdownErr := a.httpServer.Shutdown(ctx); shutdownErr != nil {
-			log.Printf("http server shutdown err: %s", shutdownErr)
+			log.Printf("HTTP server shutdown err: %s", shutdownErr)
 			if closeErr := a.httpServer.Close(); shutdownErr != nil {
-				log.Printf("http server close err: %s", closeErr)
+				log.Printf("HTTP server close err: %s", closeErr)
 			}
+		} else {
+			log.Printf("HTTP server gracefully stopped")
 		}
 	}()
 
@@ -270,10 +273,12 @@ func (a *App) runSwaggerServer(ctx context.Context) error {
 	go func() {
 		<-ctx.Done()
 		if shutdownErr := a.swaggerServer.Shutdown(ctx); shutdownErr != nil {
-			log.Printf("swagger server shutdown err: %s", shutdownErr)
+			log.Printf("Swagger server shutdown err: %s", shutdownErr)
 			if closeErr := a.swaggerServer.Close(); shutdownErr != nil {
-				log.Printf("swagger server close err: %s", closeErr)
+				log.Printf("Swagger server close err: %s", closeErr)
 			}
+		} else {
+			log.Printf("Swagger server gracefully stopped")
 		}
 	}()
 
