@@ -3,6 +3,8 @@ package tests
 import (
 	"context"
 	"fmt"
+	"github.com/nqxcode/auth_microservice/internal/config"
+	serviceMocks "github.com/nqxcode/auth_microservice/internal/service/mocks"
 	"math/rand/v2"
 	"testing"
 
@@ -19,7 +21,6 @@ import (
 	"github.com/nqxcode/auth_microservice/internal/service/audit_log/constants"
 	"github.com/nqxcode/auth_microservice/internal/service/auth"
 	serviceSupport "github.com/nqxcode/auth_microservice/internal/service/auth/tests/support"
-	serviceMocks "github.com/nqxcode/auth_microservice/internal/service/mocks"
 	desc "github.com/nqxcode/auth_microservice/pkg/auth_v1"
 )
 
@@ -83,6 +84,7 @@ func TestGet(t *testing.T) {
 		producerServiceMock  producerServiceMock
 		txManagerFake        db.TxManager
 		asyncRunnerFake      async.Runner
+		authConfig           config.AuthConfig
 	}{
 		{
 			name: "success case",
@@ -182,8 +184,9 @@ func TestGet(t *testing.T) {
 			txMngFake := tt.txManagerFake
 			producerSrv := tt.producerServiceMock(mc)
 			asyncRunnerFake := tt.asyncRunnerFake
+			authConfig := tt.authConfig
 
-			srv := auth.NewService(userRepoMock, validatorSrvMock, logSrvMock, hashSrvMock, cacheUserSrvMock, txMngFake, producerSrv, asyncRunnerFake)
+			srv := auth.NewService(userRepoMock, validatorSrvMock, logSrvMock, hashSrvMock, cacheUserSrvMock, txMngFake, producerSrv, asyncRunnerFake, authConfig)
 
 			ar, err := srv.Get(tt.input.ctx, tt.input.userID)
 			require.Equal(t, tt.expected.err, err)

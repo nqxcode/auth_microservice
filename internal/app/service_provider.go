@@ -42,6 +42,7 @@ type serviceProvider struct {
 	redisConfig         cache.RedisConfig
 	kafkaConsumerConfig kafka.ConsumerConfig
 	kafkaProducerConfig kafka.ProducerConfig
+	authConfig          config.AuthConfig
 
 	dbClient  db.Client
 	txManager db.TxManager
@@ -187,6 +188,20 @@ func (s *serviceProvider) KafkaProducerConfig() kafka.ProducerConfig {
 	return s.kafkaProducerConfig
 }
 
+// NewAuthConfig config for auth
+func (s *serviceProvider) NewAuthConfig() config.AuthConfig {
+	if s.kafkaConsumerConfig == nil {
+		cfg, err := config.NewAuthConfig()
+		if err != nil {
+			log.Fatalf("failed to get auth config: %s", err.Error())
+		}
+
+		s.authConfig = cfg
+	}
+
+	return s.authConfig
+}
+
 // DBClient client for pg database
 func (s *serviceProvider) DBClient(ctx context.Context) db.Client {
 	if s.dbClient == nil {
@@ -316,6 +331,7 @@ func (s *serviceProvider) AuthService(ctx context.Context) service.AuthService {
 			s.TxManager(ctx),
 			s.ProducerService(),
 			s.AsyncRunner(),
+			s.NewAuthConfig(),
 		)
 	}
 

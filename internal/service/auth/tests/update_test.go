@@ -3,6 +3,8 @@ package tests
 import (
 	"context"
 	"fmt"
+	"github.com/nqxcode/auth_microservice/internal/config"
+	configMocks "github.com/nqxcode/auth_microservice/internal/config/mocks"
 	"math/rand/v2"
 	"testing"
 
@@ -72,6 +74,7 @@ func TestUpdate(t *testing.T) {
 		producerServiceMock  producerServiceMock
 		txManagerFake        db.TxManager
 		asyncRunnerFake      async.Runner
+		authConfig           config.AuthConfig
 	}{
 		{
 			name: "success case",
@@ -116,6 +119,9 @@ func TestUpdate(t *testing.T) {
 				mock := serviceMocks.NewValidatorServiceMock(mc)
 				return mock
 			},
+			authConfig: func() config.AuthConfig {
+				return configMocks.NewAuthConfigMock(mc)
+			}(),
 		},
 		{
 			name: "service error case",
@@ -154,6 +160,9 @@ func TestUpdate(t *testing.T) {
 				mock := serviceMocks.NewValidatorServiceMock(mc)
 				return mock
 			},
+			authConfig: func() config.AuthConfig {
+				return configMocks.NewAuthConfigMock(mc)
+			}(),
 		},
 	}
 
@@ -170,8 +179,9 @@ func TestUpdate(t *testing.T) {
 			txMngFake := tt.txManagerFake
 			producerSrv := tt.producerServiceMock(mc)
 			asyncRunnerFake := tt.asyncRunnerFake
+			authConfig := tt.authConfig
 
-			srv := auth.NewService(userRepoMock, validatorSrvMock, logSrvMock, hashSrvMock, cacheUserSrvMock, txMngFake, producerSrv, asyncRunnerFake)
+			srv := auth.NewService(userRepoMock, validatorSrvMock, logSrvMock, hashSrvMock, cacheUserSrvMock, txMngFake, producerSrv, asyncRunnerFake, authConfig)
 
 			err := srv.Update(tt.input.ctx, tt.input.userID, tt.input.info)
 			require.Equal(t, tt.expected.err, err)

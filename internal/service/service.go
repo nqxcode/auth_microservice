@@ -15,9 +15,9 @@ type AuthService interface {
 	GetList(ctx context.Context, limit pagination.Limit) ([]model.User, error)
 	Update(ctx context.Context, id int64, info *model.UpdateUserInfo) error
 	Delete(ctx context.Context, id int64) error
-	Login(ctx context.Context, username, password string) (string, error)
+	Login(ctx context.Context, email, password string) (string, error)
 	Check(ctx context.Context, endpointAddress string) (bool, error)
-	GetRefreshToken(ctx context.Context, oldRefreshToken string) (string, error)
+	GetRefreshToken(ctx context.Context, refreshToken string) (string, error)
 	GetAccessToken(ctx context.Context, refreshToken string) (string, error)
 }
 
@@ -29,6 +29,7 @@ type AuditLogService interface {
 // HashService hash service
 type HashService interface {
 	Hash(ctx context.Context, password string) (string, error)
+	Check(ctx context.Context, password, hash string) bool
 	GenerateSalt(ctx context.Context) (string, error)
 }
 

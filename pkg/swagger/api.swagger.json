@@ -268,7 +268,7 @@
         },
         "parameters": [
           {
-            "name": "username",
+            "name": "email",
             "in": "query",
             "required": false,
             "type": "string"

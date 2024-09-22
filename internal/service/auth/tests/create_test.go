@@ -3,6 +3,7 @@ package tests
 import (
 	"context"
 	"fmt"
+	"github.com/nqxcode/auth_microservice/internal/config"
 	"math/rand/v2"
 	"testing"
 
@@ -11,6 +12,7 @@ import (
 	"github.com/nqxcode/platform_common/client/db"
 	"github.com/stretchr/testify/require"
 
+	configMocks "github.com/nqxcode/auth_microservice/internal/config/mocks"
 	"github.com/nqxcode/auth_microservice/internal/model"
 	"github.com/nqxcode/auth_microservice/internal/repository"
 	repoMocks "github.com/nqxcode/auth_microservice/internal/repository/mocks"
@@ -78,6 +80,7 @@ func TestCreate(t *testing.T) {
 		producerServiceMock  producerServiceMock
 		txManagerFake        db.TxManager
 		asyncRunnerFake      async.Runner
+		authConfig           config.AuthConfig
 	}{
 		{
 			name: "success case",
@@ -127,6 +130,9 @@ func TestCreate(t *testing.T) {
 				mock.ValidateUserMock.Expect(ctx, info, password, password).Return(nil)
 				return mock
 			},
+			authConfig: func() config.AuthConfig {
+				return configMocks.NewAuthConfigMock(mc)
+			}(),
 		},
 		{
 			name: "service error case",
@@ -169,6 +175,9 @@ func TestCreate(t *testing.T) {
 				mock.ValidateUserMock.Expect(ctx, info, password, password).Return(nil)
 				return mock
 			},
+			authConfig: func() config.AuthConfig {
+				return configMocks.NewAuthConfigMock(mc)
+			}(),
 		},
 	}
 
@@ -185,8 +194,9 @@ func TestCreate(t *testing.T) {
 			txMngFake := tt.txManagerFake
 			producerSrv := tt.producerServiceMock(mc)
 			asyncRunnerFake := tt.asyncRunnerFake
+			authConfig := tt.authConfig
 
-			srv := auth.NewService(userRepoMock, validatorSrvMock, logSrvMock, hashSrvMock, cacheSrvMock, txMngFake, producerSrv, asyncRunnerFake)
+			srv := auth.NewService(userRepoMock, validatorSrvMock, logSrvMock, hashSrvMock, cacheSrvMock, txMngFake, producerSrv, asyncRunnerFake, authConfig)
 
 			ar, err := srv.Create(tt.input.ctx, tt.input.info, tt.input.password, tt.input.passwordConfirm)
 			require.Equal(t, tt.expected.err, err)

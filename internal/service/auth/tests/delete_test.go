@@ -3,6 +3,8 @@ package tests
 import (
 	"context"
 	"fmt"
+	"github.com/nqxcode/auth_microservice/internal/config"
+	configMocks "github.com/nqxcode/auth_microservice/internal/config/mocks"
 	"testing"
 
 	"github.com/brianvoe/gofakeit/v6"
@@ -62,6 +64,7 @@ func TestDelete(t *testing.T) {
 		producerServiceMock  producerServiceMock
 		txManagerFake        db.TxManager
 		asyncRunnerFake      async.Runner
+		authConfig           config.AuthConfig
 	}{
 		{
 			name: "success case",
@@ -106,6 +109,9 @@ func TestDelete(t *testing.T) {
 				mock := serviceMocks.NewValidatorServiceMock(mc)
 				return mock
 			},
+			authConfig: func() config.AuthConfig {
+				return configMocks.NewAuthConfigMock(mc)
+			}(),
 		},
 		{
 			name: "service error case",
@@ -144,6 +150,9 @@ func TestDelete(t *testing.T) {
 				mock := serviceMocks.NewValidatorServiceMock(mc)
 				return mock
 			},
+			authConfig: func() config.AuthConfig {
+				return configMocks.NewAuthConfigMock(mc)
+			}(),
 		},
 	}
 
@@ -160,8 +169,9 @@ func TestDelete(t *testing.T) {
 			txMngFake := tt.txManagerFake
 			producerSrv := tt.producerServiceMock(mc)
 			asyncRunnerFake := tt.asyncRunnerFake
+			authConfig := tt.authConfig
 
-			srv := auth.NewService(userRepoMock, validatorSrvMock, logSrvMock, hashSrvMock, cacheSrvMock, txMngFake, producerSrv, asyncRunnerFake)
+			srv := auth.NewService(userRepoMock, validatorSrvMock, logSrvMock, hashSrvMock, cacheSrvMock, txMngFake, producerSrv, asyncRunnerFake, authConfig)
 
 			err := srv.Delete(tt.input.ctx, tt.input.userID)
 			require.Equal(t, tt.expected.err, err)

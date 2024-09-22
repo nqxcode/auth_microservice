@@ -36,7 +36,7 @@ func (s *service) Delete(ctx context.Context, userID int64) error {
 	s.asyncRunner.Run(ctx, func(ctx context.Context) error {
 		err = s.cacheUserService.Delete(ctx, userID)
 		if err != nil {
-			return errors.Errorf("cant delete user to cache: %v", err)
+			return errors.Errorf("cant delete user from cache: %v", err)
 		}
 		return nil
 	})

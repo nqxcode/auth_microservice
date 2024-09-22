@@ -7,3 +7,4 @@ package service
 //go:generate minimock -i CacheUserService -o ./mocks/ -s "_minimock.go"
 //go:generate minimock -i ValidatorService -o ./mocks/ -s "_minimock.go"
 //go:generate minimock -i ProducerService -o ./mocks/ -s "_minimock.go"
+//go:generate minimock -i AuthConfig -o ./mocks/ -s "_minimock.go"

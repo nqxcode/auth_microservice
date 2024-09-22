@@ -10,9 +10,9 @@ import (
 
 // Login user
 func (s *Implementation) Login(ctx context.Context, req *desc.LoginRequest) (*desc.LoginResponse, error) {
-	log.Printf("Login user: %+v", req.GetUsername())
+	log.Printf("Login user: %+v", req.GetEmail())
 
-	refreshToken, err := s.authService.Login(ctx, req.GetUsername(), req.GetPassword())
+	refreshToken, err := s.authService.Login(ctx, req.GetEmail(), req.GetPassword())
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "cant login user: %v", err)
 	}

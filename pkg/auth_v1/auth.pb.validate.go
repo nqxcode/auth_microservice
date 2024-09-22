@@ -1745,7 +1745,7 @@ func (m *LoginRequest) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Username
+	// no validation rules for Email
 
 	// no validation rules for Password
 

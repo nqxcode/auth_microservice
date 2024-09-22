@@ -130,6 +130,11 @@ func (r repo) Get(ctx context.Context, id int64) (*model.User, error) {
 	return converter.ToUserFromRepo(&user), nil
 }
 
+// GetByEmail get user by email
+func (r repo) GetByEmail(ctx context.Context, email string) (*model.User, error) {
+	panic("implement me")
+}
+
 // GetByIDs get users by ids
 func (r repo) GetByIDs(ctx context.Context, ids []int64) ([]model.User, error) {
 	valuesList, err := r.redisClient.MultiHGetAll(ctx, func(ids []int64) []string {
