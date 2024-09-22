@@ -19,6 +19,7 @@ import (
 	"github.com/nqxcode/auth_microservice/internal/api/auth"
 	"github.com/nqxcode/auth_microservice/internal/config"
 	"github.com/nqxcode/auth_microservice/internal/repository"
+	accessibleRoleRepository "github.com/nqxcode/auth_microservice/internal/repository/accessible_role"
 	logRepository "github.com/nqxcode/auth_microservice/internal/repository/log"
 	pgUserRepository "github.com/nqxcode/auth_microservice/internal/repository/user/pg"
 	redisUserRepository "github.com/nqxcode/auth_microservice/internal/repository/user/redis"
@@ -57,9 +58,10 @@ type serviceProvider struct {
 
 	asyncRunner async.Runner
 
-	userRepository      repository.UserRepository
-	logRepository       repository.LogRepository
-	cacheUserRepository repository.UserRepository
+	userRepository           repository.UserRepository
+	logRepository            repository.LogRepository
+	cacheUserRepository      repository.UserRepository
+	accessibleRoleRepository repository.AccessibleRoleRepository
 
 	auditLogService  service.AuditLogService
 	hashService      service.HashService
@@ -297,6 +299,15 @@ func (s *serviceProvider) CacheUserRepository() repository.UserRepository {
 	return s.cacheUserRepository
 }
 
+// AccessRoleRepository access role repository
+func (s *serviceProvider) AccessRoleRepository(ctx context.Context) repository.AccessibleRoleRepository {
+	if s.accessibleRoleRepository == nil {
+		s.accessibleRoleRepository = accessibleRoleRepository.NewRepository(s.DBClient(ctx))
+	}
+
+	return s.accessibleRoleRepository
+}
+
 // AuditLogService audit log service
 func (s *serviceProvider) AuditLogService(ctx context.Context) service.AuditLogService {
 	if s.auditLogService == nil {
@@ -324,6 +335,7 @@ func (s *serviceProvider) AuthService(ctx context.Context) service.AuthService {
 	if s.authService == nil {
 		s.authService = authService.NewService(
 			s.UserRepository(ctx),
+			s.AccessRoleRepository(ctx),
 			s.ValidatorService(ctx),
 			s.AuditLogService(ctx),
 			s.HashService(ctx),

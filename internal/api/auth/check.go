@@ -11,9 +11,9 @@ import (
 
 // Check user
 func (s *Implementation) Check(ctx context.Context, req *desc.CheckRequest) (*empty.Empty, error) {
-	log.Printf("check access token and enpoint address: %s, %s", req.GetAccessToken(), req.GetEndpointAddress())
+	log.Printf("check access token and enpoint address: %s", req.GetEndpointAddress())
 
-	checked, err := s.authService.Check(ctx, req.GetAccessToken(), req.GetEndpointAddress())
+	checked, err := s.authService.Check(ctx, req.GetEndpointAddress())
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "cant get access: %v", err)
 	}

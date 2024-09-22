@@ -24,3 +24,8 @@ type UserRepository interface {
 type LogRepository interface {
 	Create(ctx context.Context, model *model.Log) error
 }
+
+// AccessibleRoleRepository accessible role repository
+type AccessibleRoleRepository interface {
+	GetList(ctx context.Context) ([]model.AccessibleRole, error)
+}

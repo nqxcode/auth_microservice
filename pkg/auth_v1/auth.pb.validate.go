@@ -2366,8 +2366,6 @@ func (m *CheckRequest) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for AccessToken
-
 	// no validation rules for EndpointAddress
 
 	if len(errors) > 0 {

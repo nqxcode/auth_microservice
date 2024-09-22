@@ -167,6 +167,5 @@ message GetAccessTokenResponse {
 }
 
 message CheckRequest {
-  string access_token = 1;
   string endpoint_address = 2;
 }

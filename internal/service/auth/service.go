@@ -10,20 +10,23 @@ import (
 )
 
 type service struct {
-	userRepository   repository.UserRepository
-	validatorService def.ValidatorService
-	auditLogService  def.AuditLogService
-	hashService      def.HashService
-	cacheUserService def.CacheUserService
-	txManager        db.TxManager
-	producerService  def.ProducerService
-	asyncRunner      async.Runner
-	authConfig       config.AuthConfig
+	userRepository           repository.UserRepository
+	accessibleRoleRepository repository.AccessibleRoleRepository
+	validatorService         def.ValidatorService
+	auditLogService          def.AuditLogService
+	hashService              def.HashService
+	cacheUserService         def.CacheUserService
+	txManager                db.TxManager
+	producerService          def.ProducerService
+	asyncRunner              async.Runner
+	authConfig               config.AuthConfig
+	accessibleRoles          map[string]string
 }
 
 // NewService new auth service
 func NewService(
 	userRepository repository.UserRepository,
+	accessibleRoleRepository repository.AccessibleRoleRepository,
 	validatorService def.ValidatorService,
 	auditLogService def.AuditLogService,
 	hashService def.HashService,
@@ -34,14 +37,16 @@ func NewService(
 	authConfig config.AuthConfig,
 ) def.AuthService {
 	return &service{
-		userRepository:   userRepository,
-		validatorService: validatorService,
-		auditLogService:  auditLogService,
-		hashService:      hashService,
-		cacheUserService: cacheUserService,
-		txManager:        txManager,
-		producerService:  producerService,
-		asyncRunner:      asyncRunner,
-		authConfig:       authConfig,
+		userRepository:           userRepository,
+		accessibleRoleRepository: accessibleRoleRepository,
+		validatorService:         validatorService,
+		auditLogService:          auditLogService,
+		hashService:              hashService,
+		cacheUserService:         cacheUserService,
+		txManager:                txManager,
+		producerService:          producerService,
+		asyncRunner:              asyncRunner,
+		authConfig:               authConfig,
+		accessibleRoles:          make(map[string]string),
 	}
 }

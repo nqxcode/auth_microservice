@@ -45,12 +45,6 @@
         },
         "parameters": [
           {
-            "name": "accessToken",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
             "name": "endpointAddress",
             "in": "query",
             "required": false,
