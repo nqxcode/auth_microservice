@@ -20,7 +20,7 @@ type service struct {
 	producerService          def.ProducerService
 	asyncRunner              async.Runner
 	authConfig               config.AuthConfig
-	accessibleRoles          map[string]string
+	accessibleRoles          map[string]map[string]struct{}
 }
 
 // NewService new auth service
@@ -47,6 +47,5 @@ func NewService(
 		producerService:          producerService,
 		asyncRunner:              asyncRunner,
 		authConfig:               authConfig,
-		accessibleRoles:          make(map[string]string),
 	}
 }

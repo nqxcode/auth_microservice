@@ -42,26 +42,26 @@ func (s *service) Check(ctx context.Context, endpointAddress string) (bool, erro
 		return false, errors.New("user not found")
 	}
 
-	accessibleMap, err := s.getAccessibleRoles(ctx)
+	accessibleRoleMap, err := s.getAccessibleRoles(ctx)
 	if err != nil {
 		return false, errors.New("failed to get accessible roles")
 	}
 
-	role, ok := accessibleMap[endpointAddress]
+	roleMap, ok := accessibleRoleMap[endpointAddress]
 	if !ok {
-		return false, nil
+		return false, errors.New("endpoint not found")
 	}
 
-	if role == claims.Role {
-		return false, nil
+	if _, ok = roleMap[claims.Role]; ok {
+		return true, nil
 	}
 
 	return false, errors.New("access denied")
 }
 
-func (s *service) getAccessibleRoles(ctx context.Context) (map[string]string, error) {
+func (s *service) getAccessibleRoles(ctx context.Context) (map[string]map[string]struct{}, error) {
 	if s.accessibleRoles == nil {
-		s.accessibleRoles = make(map[string]string)
+		s.accessibleRoles = make(map[string]map[string]struct{})
 
 		roles, err := s.accessibleRoleRepository.GetList(ctx)
 		if err != nil {
@@ -69,7 +69,10 @@ func (s *service) getAccessibleRoles(ctx context.Context) (map[string]string, er
 		}
 
 		for _, role := range roles {
-			s.accessibleRoles[role.EndpointAddress] = role.Role
+			if _, ok := s.accessibleRoles[role.EndpointAddress]; !ok {
+				s.accessibleRoles[role.EndpointAddress] = make(map[string]struct{})
+			}
+			s.accessibleRoles[role.EndpointAddress][role.Role] = struct{}{}
 		}
 	}
 
