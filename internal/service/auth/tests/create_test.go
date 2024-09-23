@@ -157,6 +157,10 @@ func TestCreate(t *testing.T) {
 				mock.CreateMock.Expect(ctx, &model.User{Info: info, Password: passwordHash}).Return(0, repoErr)
 				return mock
 			},
+			accessibleRoleRepositoryMock: func(mc *minimock.Controller) repository.AccessibleRoleRepository {
+				mock := repoMocks.NewAccessibleRoleRepositoryMock(mc)
+				return mock
+			},
 			logServiceMock: func(mc *minimock.Controller) service.AuditLogService {
 				mock := serviceMocks.NewAuditLogServiceMock(mc)
 				return mock
