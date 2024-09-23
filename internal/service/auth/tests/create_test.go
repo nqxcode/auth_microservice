@@ -29,6 +29,7 @@ func TestCreate(t *testing.T) {
 	t.Parallel()
 
 	type userRepositoryMock func(mc *minimock.Controller) repository.UserRepository
+	type accessibleRoleRepositoryMock func(mc *minimock.Controller) repository.AccessibleRoleRepository
 	type logServiceMock func(mc *minimock.Controller) service.AuditLogService
 	type hashServiceMock func(mc *minimock.Controller) service.HashService
 	type cacheUserServiceMock func(mc *minimock.Controller) service.CacheUserService
@@ -69,18 +70,19 @@ func TestCreate(t *testing.T) {
 	}
 
 	cases := []struct {
-		name                 string
-		input                input
-		expected             expected
-		userRepositoryMock   userRepositoryMock
-		logServiceMock       logServiceMock
-		hashServiceMock      hashServiceMock
-		cacheUserServiceMock cacheUserServiceMock
-		validatorServiceMock validatorServiceMock
-		producerServiceMock  producerServiceMock
-		txManagerFake        db.TxManager
-		asyncRunnerFake      async.Runner
-		authConfig           config.AuthConfig
+		name                         string
+		input                        input
+		expected                     expected
+		userRepositoryMock           userRepositoryMock
+		accessibleRoleRepositoryMock accessibleRoleRepositoryMock
+		logServiceMock               logServiceMock
+		hashServiceMock              hashServiceMock
+		cacheUserServiceMock         cacheUserServiceMock
+		validatorServiceMock         validatorServiceMock
+		producerServiceMock          producerServiceMock
+		txManagerFake                db.TxManager
+		asyncRunnerFake              async.Runner
+		authConfig                   config.AuthConfig
 	}{
 		{
 			name: "success case",
@@ -98,6 +100,10 @@ func TestCreate(t *testing.T) {
 				mock := repoMocks.NewUserRepositoryMock(mc)
 				mock.CreateMock.Expect(ctx, &model.User{Info: info, Password: passwordHash}).Return(id, nil)
 				mock.GetMock.Expect(ctx, id).Return(&model.User{ID: id, Info: info, Password: passwordHash}, nil)
+				return mock
+			},
+			accessibleRoleRepositoryMock: func(mc *minimock.Controller) repository.AccessibleRoleRepository {
+				mock := repoMocks.NewAccessibleRoleRepositoryMock(mc)
 				return mock
 			},
 			logServiceMock: func(mc *minimock.Controller) service.AuditLogService {
@@ -187,6 +193,7 @@ func TestCreate(t *testing.T) {
 			t.Parallel()
 
 			userRepoMock := tt.userRepositoryMock(mc)
+			accessibleRoleRepoMock := tt.accessibleRoleRepositoryMock(mc)
 			validatorSrvMock := tt.validatorServiceMock(mc)
 			logSrvMock := tt.logServiceMock(mc)
 			hashSrvMock := tt.hashServiceMock(mc)
@@ -196,7 +203,7 @@ func TestCreate(t *testing.T) {
 			asyncRunnerFake := tt.asyncRunnerFake
 			authConfig := tt.authConfig
 
-			srv := auth.NewService(userRepoMock, validatorSrvMock, logSrvMock, hashSrvMock, cacheSrvMock, txMngFake, producerSrv, asyncRunnerFake, authConfig)
+			srv := auth.NewService(userRepoMock, accessibleRoleRepoMock, validatorSrvMock, logSrvMock, hashSrvMock, cacheSrvMock, txMngFake, producerSrv, asyncRunnerFake, authConfig)
 
 			ar, err := srv.Create(tt.input.ctx, tt.input.info, tt.input.password, tt.input.passwordConfirm)
 			require.Equal(t, tt.expected.err, err)

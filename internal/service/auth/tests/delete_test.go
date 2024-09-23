@@ -27,6 +27,7 @@ func TestDelete(t *testing.T) {
 	t.Parallel()
 
 	type userRepositoryMock func(mc *minimock.Controller) repository.UserRepository
+	type accessibleRoleRepositoryMock func(mc *minimock.Controller) repository.AccessibleRoleRepository
 	type validatorServiceMock func(mc *minimock.Controller) service.ValidatorService
 	type logServiceMock func(mc *minimock.Controller) service.AuditLogService
 	type hashServiceMock func(mc *minimock.Controller) service.HashService
@@ -53,18 +54,19 @@ func TestDelete(t *testing.T) {
 	)
 
 	cases := []struct {
-		name                 string
-		input                input
-		expected             expected
-		userRepositoryMock   userRepositoryMock
-		validatorServiceMock validatorServiceMock
-		logServiceMock       logServiceMock
-		hashServiceMock      hashServiceMock
-		cacheUserServiceMock cacheUserServiceMock
-		producerServiceMock  producerServiceMock
-		txManagerFake        db.TxManager
-		asyncRunnerFake      async.Runner
-		authConfig           config.AuthConfig
+		name                         string
+		input                        input
+		expected                     expected
+		userRepositoryMock           userRepositoryMock
+		accessibleRoleRepositoryMock accessibleRoleRepositoryMock
+		validatorServiceMock         validatorServiceMock
+		logServiceMock               logServiceMock
+		hashServiceMock              hashServiceMock
+		cacheUserServiceMock         cacheUserServiceMock
+		producerServiceMock          producerServiceMock
+		txManagerFake                db.TxManager
+		asyncRunnerFake              async.Runner
+		authConfig                   config.AuthConfig
 	}{
 		{
 			name: "success case",
@@ -79,6 +81,10 @@ func TestDelete(t *testing.T) {
 			userRepositoryMock: func(mc *minimock.Controller) repository.UserRepository {
 				mock := repoMocks.NewUserRepositoryMock(mc)
 				mock.DeleteMock.Expect(ctx, id).Return(nil)
+				return mock
+			},
+			accessibleRoleRepositoryMock: func(mc *minimock.Controller) repository.AccessibleRoleRepository {
+				mock := repoMocks.NewAccessibleRoleRepositoryMock(mc)
 				return mock
 			},
 			logServiceMock: func(mc *minimock.Controller) service.AuditLogService {
@@ -128,6 +134,10 @@ func TestDelete(t *testing.T) {
 				mock.DeleteMock.Expect(ctx, id).Return(repoErr)
 				return mock
 			},
+			accessibleRoleRepositoryMock: func(mc *minimock.Controller) repository.AccessibleRoleRepository {
+				mock := repoMocks.NewAccessibleRoleRepositoryMock(mc)
+				return mock
+			},
 			logServiceMock: func(mc *minimock.Controller) service.AuditLogService {
 				mock := serviceMocks.NewAuditLogServiceMock(mc)
 				return mock
@@ -162,6 +172,7 @@ func TestDelete(t *testing.T) {
 			t.Parallel()
 
 			userRepoMock := tt.userRepositoryMock(mc)
+			accessibleRoleRepoMock := tt.accessibleRoleRepositoryMock(mc)
 			validatorSrvMock := tt.validatorServiceMock(mc)
 			logSrvMock := tt.logServiceMock(mc)
 			hashSrvMock := tt.hashServiceMock(mc)
@@ -171,7 +182,7 @@ func TestDelete(t *testing.T) {
 			asyncRunnerFake := tt.asyncRunnerFake
 			authConfig := tt.authConfig
 
-			srv := auth.NewService(userRepoMock, validatorSrvMock, logSrvMock, hashSrvMock, cacheSrvMock, txMngFake, producerSrv, asyncRunnerFake, authConfig)
+			srv := auth.NewService(userRepoMock, accessibleRoleRepoMock, validatorSrvMock, logSrvMock, hashSrvMock, cacheSrvMock, txMngFake, producerSrv, asyncRunnerFake, authConfig)
 
 			err := srv.Delete(tt.input.ctx, tt.input.userID)
 			require.Equal(t, tt.expected.err, err)
