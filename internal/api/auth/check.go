@@ -2,11 +2,12 @@ package auth
 
 import (
 	"context"
+	"log"
+
 	"github.com/golang/protobuf/ptypes/empty"
 	desc "github.com/nqxcode/auth_microservice/pkg/auth_v1"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"log"
 )
 
 // Check user

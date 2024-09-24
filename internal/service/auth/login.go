@@ -19,7 +19,7 @@ func (s *service) Login(ctx context.Context, email, password string) (string, er
 	}
 
 	checked := s.hashService.Check(ctx, password, user.Password)
-	if checked == false {
+	if !checked {
 		return "", errors.New("password is incorrect")
 	}
 

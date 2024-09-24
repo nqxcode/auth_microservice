@@ -1,10 +1,11 @@
 package config
 
 import (
-	"github.com/pkg/errors"
 	"os"
 	"strconv"
 	"time"
+
+	"github.com/pkg/errors"
 )
 
 const (
@@ -34,6 +35,7 @@ type authConfig struct {
 	accessTokenExpiration  time.Duration
 }
 
+// NewAuthConfig new auth config
 func NewAuthConfig() (AuthConfig, error) {
 	refreshTokenSecretKey := os.Getenv(authRefreshTokenSecretKeyEnvName)
 	if len(refreshTokenSecretKey) == 0 {

@@ -1,27 +1,29 @@
 package converter
 
 const (
-	UNKNOWN = "unknown"
-	ADMIN   = "admin"
-	USER    = "user"
+	unknown = "unknown"
+	admin   = "admin"
+	user    = "user"
 )
 
+// ToRoleString to role string
 func ToRoleString(role int32) string {
 	switch role {
 	case 1:
-		return ADMIN
+		return admin
 	case 2:
-		return USER
+		return user
 	default:
-		return UNKNOWN
+		return unknown
 	}
 }
 
+// ToRole to role
 func ToRole(role string) int32 {
 	switch role {
-	case ADMIN:
+	case admin:
 		return 1
-	case USER:
+	case user:
 		return 2
 	default:
 		return 0

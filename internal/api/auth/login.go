@@ -2,10 +2,11 @@ package auth
 
 import (
 	"context"
+	"log"
+
 	desc "github.com/nqxcode/auth_microservice/pkg/auth_v1"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"log"
 )
 
 // Login user

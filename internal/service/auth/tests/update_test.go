@@ -3,10 +3,11 @@ package tests
 import (
 	"context"
 	"fmt"
-	"github.com/nqxcode/auth_microservice/internal/config"
-	configMocks "github.com/nqxcode/auth_microservice/internal/config/mocks"
 	"math/rand/v2"
 	"testing"
+
+	"github.com/nqxcode/auth_microservice/internal/config"
+	configMocks "github.com/nqxcode/auth_microservice/internal/config/mocks"
 
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/gojuno/minimock/v3"

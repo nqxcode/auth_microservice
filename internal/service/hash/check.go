@@ -2,6 +2,7 @@ package hash
 
 import (
 	"context"
+
 	"github.com/nqxcode/auth_microservice/internal/utils"
 )
 

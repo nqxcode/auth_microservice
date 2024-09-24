@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+
 	"github.com/nqxcode/auth_microservice/internal/converter"
 	"github.com/nqxcode/auth_microservice/internal/model"
 	"github.com/nqxcode/auth_microservice/internal/utils"

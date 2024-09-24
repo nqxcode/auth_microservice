@@ -1,15 +1,16 @@
 package utils
 
 import (
-	"github.com/nqxcode/auth_microservice/internal/converter"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/pkg/errors"
 
+	"github.com/nqxcode/auth_microservice/internal/converter"
 	"github.com/nqxcode/auth_microservice/internal/model"
 )
 
+// GenerateToken generate token
 func GenerateToken(info model.UserInfo, secretKey []byte, duration time.Duration) (string, error) {
 	claims := model.UserClaims{
 		StandardClaims: jwt.StandardClaims{
@@ -25,6 +26,7 @@ func GenerateToken(info model.UserInfo, secretKey []byte, duration time.Duration
 	return token.SignedString(secretKey)
 }
 
+// VerifyToken verify token
 func VerifyToken(tokenStr string, secretKey []byte) (*model.UserClaims, error) {
 	token, err := jwt.ParseWithClaims(
 		tokenStr,

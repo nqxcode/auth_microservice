@@ -3,13 +3,13 @@ package log
 import (
 	"context"
 	"fmt"
-	"github.com/nqxcode/auth_microservice/internal/repository/accessible_role/converter"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/nqxcode/platform_common/client/db"
 
 	"github.com/nqxcode/auth_microservice/internal/model"
 	"github.com/nqxcode/auth_microservice/internal/repository"
+	"github.com/nqxcode/auth_microservice/internal/repository/accessible_role/converter"
 	modelRepo "github.com/nqxcode/auth_microservice/internal/repository/accessible_role/model"
 )
 

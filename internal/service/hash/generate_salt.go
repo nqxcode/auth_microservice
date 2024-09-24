@@ -3,6 +3,7 @@ package hash
 import (
 	"context"
 	"fmt"
+
 	"github.com/nqxcode/auth_microservice/internal/utils"
 )
 

@@ -131,7 +131,7 @@ func (r repo) Get(ctx context.Context, id int64) (*model.User, error) {
 }
 
 // GetByEmail get user by email
-func (r repo) GetByEmail(ctx context.Context, email string) (*model.User, error) {
+func (r repo) GetByEmail(_ context.Context, _ string) (*model.User, error) {
 	panic("implement me")
 }
 

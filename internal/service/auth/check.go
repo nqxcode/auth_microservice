@@ -2,12 +2,13 @@ package auth
 
 import (
 	"context"
+	"strings"
+
 	"github.com/nqxcode/auth_microservice/internal/utils"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
-	"strings"
 )
 
 const authPrefix = "Bearer "
