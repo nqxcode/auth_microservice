@@ -6,5 +6,5 @@ import (
 )
 
 func (s *service) Check(ctx context.Context, password, hash string) bool {
-	return utils.CheckPasswordHashWithSalt(ctx, password, s.salt, hash)
+	return utils.VerifyPassword(ctx, password, s.salt, hash)
 }

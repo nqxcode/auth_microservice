@@ -19,8 +19,8 @@ func GenerateSalt(_ context.Context) (string, error) {
 	return hex.EncodeToString(salt), nil
 }
 
-// HashPasswordWithSalt calculate hash for password with salt
-func HashPasswordWithSalt(_ context.Context, password, salt string) (string, error) {
+// HashPassword calculate hash for password with salt
+func HashPassword(_ context.Context, password, salt string) (string, error) {
 	saltedPassword := password + salt
 	hash := sha256.Sum256([]byte(saltedPassword))
 	hashedPassword, err := bcrypt.GenerateFromPassword(hash[:], bcrypt.DefaultCost)
@@ -30,8 +30,8 @@ func HashPasswordWithSalt(_ context.Context, password, salt string) (string, err
 	return string(hashedPassword), nil
 }
 
-// CheckPasswordHashWithSalt check password with hash
-func CheckPasswordHashWithSalt(_ context.Context, password, salt, hash string) bool {
+// VerifyPassword check password with hash
+func VerifyPassword(_ context.Context, password, salt, hash string) bool {
 	saltedPassword := password + salt
 	hashToCheck := sha256.Sum256([]byte(saltedPassword))
 	err := bcrypt.CompareHashAndPassword([]byte(hash), hashToCheck[:])

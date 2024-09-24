@@ -8,7 +8,7 @@ import (
 
 // Hash get hash for password
 func (s *service) Hash(ctx context.Context, password string) (string, error) {
-	hash, err := utils.HashPasswordWithSalt(ctx, password, s.salt)
+	hash, err := utils.HashPassword(ctx, password, s.salt)
 	if err != nil {
 		return "", fmt.Errorf("failed to hash password: %v", err)
 	}
