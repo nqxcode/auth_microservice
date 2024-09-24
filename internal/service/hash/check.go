@@ -2,9 +2,9 @@ package hash
 
 import (
 	"context"
-	"github.com/nqxcode/auth_microservice/pkg/hashing"
+	"github.com/nqxcode/auth_microservice/internal/utils"
 )
 
 func (s *service) Check(ctx context.Context, password, hash string) bool {
-	return hashing.CheckPasswordHashWithSalt(password, s.salt, hash)
+	return utils.CheckPasswordHashWithSalt(ctx, password, s.salt, hash)
 }
