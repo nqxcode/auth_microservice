@@ -10,6 +10,7 @@ import (
 type generator struct {
 }
 
+// NewGenerator token generator
 func NewGenerator() *generator {
 	return &generator{}
 }

@@ -59,6 +59,7 @@ type ProducerService interface {
 	SendMessage(ctx context.Context, message model.LogMessage) error
 }
 
+// TokenGenerator token generator
 type TokenGenerator interface {
 	GenerateToken(info model.UserInfo, secretKey []byte, duration time.Duration) (string, error)
 }

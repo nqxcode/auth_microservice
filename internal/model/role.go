@@ -1,7 +1,10 @@
 package model
 
 const (
+	// UnknownRole unknown role
 	UnknownRole = "UnknownRole"
-	AdminRole   = "AdminRole"
-	UserRole    = "UserRole"
+	// AdminRole admin role
+	AdminRole = "AdminRole"
+	// UserRole user role
+	UserRole = "UserRole"
 )

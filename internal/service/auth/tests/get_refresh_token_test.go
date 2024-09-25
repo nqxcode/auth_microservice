@@ -66,7 +66,7 @@ func TestGetRefreshToken(t *testing.T) {
 		repoErr = fmt.Errorf("repo error")
 	)
 
-	secretKey := "secret-key"
+	secretKey := "secret-key" // nolint: goconst
 	refreshToken, err := utils.GenerateToken(model.UserInfo{
 		Name:  name,
 		Email: email,
@@ -234,7 +234,6 @@ func TestGetRefreshToken(t *testing.T) {
 			srv := auth.NewService(userRepoMock, accessibleRoleRepoMock, validatorSrvMock, logSrvMock, hashSrvMock, cacheUserSrvMock, txMngFake, producerSrv, asyncRunnerFake, tokenGenerator, authConfig)
 
 			ar, checkErr := srv.GetRefreshToken(tt.input.ctx, tt.input.refreshToken)
-			fmt.Printf(ar)
 
 			if checkErr != nil {
 				require.Equal(t, tt.expected.err.Error(), checkErr.Error())

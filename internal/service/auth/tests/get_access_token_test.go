@@ -235,8 +235,6 @@ func TestGetAccessToken(t *testing.T) {
 			srv := auth.NewService(userRepoMock, accessibleRoleRepoMock, validatorSrvMock, logSrvMock, hashSrvMock, cacheUserSrvMock, txMngFake, producerSrv, asyncRunnerFake, tokenGenerator, authConfig)
 
 			ar, checkErr := srv.GetAccessToken(tt.input.ctx, tt.input.refreshToken)
-			fmt.Printf(ar)
-
 			if checkErr != nil {
 				require.Equal(t, tt.expected.err.Error(), checkErr.Error())
 			} else {
