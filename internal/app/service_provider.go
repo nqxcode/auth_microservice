@@ -2,6 +2,8 @@ package app
 
 import (
 	"context"
+	"github.com/nqxcode/auth_microservice/internal/metric"
+	"github.com/nqxcode/auth_microservice/internal/tracing"
 	"log"
 	"os"
 
@@ -52,6 +54,7 @@ type serviceProvider struct {
 	kafkaProducerConfig kafka.ProducerConfig
 	authConfig          config.AuthConfig
 	loggerConfig        config.LoggerConfig
+	appConfig           config.AppConfig
 
 	dbClient  db.Client
 	txManager db.TxManager
@@ -87,7 +90,7 @@ func newServiceProvider() *serviceProvider {
 }
 
 // InitLogger init logger
-func (s *serviceProvider) InitLogger() {
+func (s *serviceProvider) InitLogger(_ context.Context) {
 	cnf := s.NewLoggerConfig()
 
 	logLevel := cnf.GetLogLevel()
@@ -125,6 +128,19 @@ func (s *serviceProvider) InitLogger() {
 	)
 
 	logger.Init(core)
+}
+
+// InitMetric init metric
+func (s *serviceProvider) InitMetric(ctx context.Context) {
+	err := metric.Init(ctx)
+	if err != nil {
+		log.Fatalf("failed to init metrics: %v", err)
+	}
+}
+
+// InitTracing init tracing
+func (s *serviceProvider) InitTracing(_ context.Context) {
+	tracing.Init(logger.Logger(), s.NewAppConfig().GetName())
 }
 
 // PGConfig config for pg
@@ -241,7 +257,7 @@ func (s *serviceProvider) KafkaProducerConfig() kafka.ProducerConfig {
 
 // NewAuthConfig config for auth
 func (s *serviceProvider) NewAuthConfig() config.AuthConfig {
-	if s.kafkaConsumerConfig == nil {
+	if s.authConfig == nil {
 		cfg, err := config.NewAuthConfig()
 		if err != nil {
 			log.Fatalf("failed to get auth config: %s", err.Error())
@@ -251,6 +267,19 @@ func (s *serviceProvider) NewAuthConfig() config.AuthConfig {
 	}
 
 	return s.authConfig
+}
+
+func (s *serviceProvider) NewAppConfig() config.AppConfig {
+	if s.appConfig == nil {
+		cfg, err := config.NewAppConfig()
+		if err != nil {
+			log.Fatalf("failed to get app config: %s", err.Error())
+		}
+
+		s.appConfig = cfg
+	}
+
+	return s.appConfig
 }
 
 // NewLoggerConfig config for logger
