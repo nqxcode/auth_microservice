@@ -18,6 +18,7 @@ import (
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/nqxcode/auth_microservice/internal/logger"
 	"github.com/nqxcode/platform_common/closer"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rakyll/statik/fs"
 	"github.com/rs/cors"
 	"go.uber.org/multierr"
@@ -41,10 +42,11 @@ func init() {
 
 // App application
 type App struct {
-	serviceProvider *serviceProvider
-	grpcServer      *grpc.Server
-	httpServer      *http.Server
-	swaggerServer   *http.Server
+	serviceProvider  *serviceProvider
+	grpcServer       *grpc.Server
+	httpServer       *http.Server
+	swaggerServer    *http.Server
+	prometheusServer *http.Server
 }
 
 // NewApp new application
@@ -108,6 +110,18 @@ func (a *App) Run(ctx context.Context) error {
 		err := a.serviceProvider.ConsumerService(ctx).RunConsumer(ctx)
 		if err != nil {
 			errChan <- fmt.Errorf("failed to run consumer: %s", err.Error())
+		}
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+
+		err := a.runPrometheus(ctx)
+		if err != nil {
+			if err != nil {
+				errChan <- fmt.Errorf("failed to run prometheus server: %s", err.Error())
+			}
 		}
 	}()
 
@@ -356,6 +370,39 @@ func serveSwaggerFile(path string) http.HandlerFunc {
 
 		logger.Info("Served swagger file", zap.String("path", path))
 	}
+}
+
+func (a *App) runPrometheus(ctx context.Context) error {
+	cfg := a.serviceProvider.NewPrometheusConfig()
+
+	mux := http.NewServeMux()
+	mux.Handle(cfg.MetricsPath(), promhttp.Handler())
+
+	a.prometheusServer = &http.Server{
+		Addr:    cfg.Address(),
+		Handler: mux,
+	}
+
+	logger.Info(fmt.Sprintf("Prometheus server is running on %s", cfg.Address()))
+
+	go func() {
+		<-ctx.Done()
+		if shutdownErr := a.prometheusServer.Shutdown(ctx); shutdownErr != nil {
+			logger.Info("Swagger server shutdown err", zap.Error(shutdownErr))
+			if closeErr := a.prometheusServer.Close(); shutdownErr != nil {
+				logger.Info("Swagger server close err", zap.Error(closeErr))
+			}
+		} else {
+			logger.Info("Swagger server gracefully stopped")
+		}
+	}()
+
+	err := a.prometheusServer.ListenAndServe()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func gracefulShutdown(ctx context.Context, cancel context.CancelFunc, wg *sync.WaitGroup) {
