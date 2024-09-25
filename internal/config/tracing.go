@@ -1,9 +1,10 @@
 package config
 
 import (
-	"github.com/pkg/errors"
 	"net"
 	"os"
+
+	"github.com/pkg/errors"
 )
 
 const (

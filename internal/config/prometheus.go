@@ -1,12 +1,12 @@
 package config
 
 import (
-	"github.com/pkg/errors"
 	"net"
 	"os"
 	"time"
 
 	"github.com/nqxcode/auth_microservice/internal/utils"
+	"github.com/pkg/errors"
 )
 
 const (
