@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"github.com/nqxcode/auth_microservice/internal/tracing"
 	"os"
 	"testing"
 
@@ -17,6 +18,7 @@ func TestMain(m *testing.M) {
 
 func setup() {
 	logger.InitNoop()
+	tracing.InitNoop()
 }
 
 func teardown() {

@@ -2,9 +2,8 @@ package auth
 
 import (
 	"context"
-	"github.com/opentracing/opentracing-go"
-
 	"github.com/nqxcode/auth_microservice/internal/logger"
+	"github.com/nqxcode/auth_microservice/internal/tracing"
 	"go.uber.org/zap"
 
 	"github.com/golang/protobuf/ptypes/empty"
@@ -15,8 +14,10 @@ import (
 
 // Check user
 func (s *Implementation) Check(ctx context.Context, req *desc.CheckRequest) (*empty.Empty, error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "Check")
-	defer span.Finish()
+	span, ctx := tracing.StartSpanFromContext(ctx, "Check")
+	if span != nil {
+		defer span.Finish()
+	}
 
 	logger.Info("check access token and endpoint address: %s", zap.String("endpointAddress", req.GetEndpointAddress()))
 
