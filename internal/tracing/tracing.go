@@ -6,14 +6,14 @@ import (
 )
 
 // Init initializes tracing
-func Init(logger *zap.Logger, serviceName string) {
+func Init(logger *zap.Logger, serviceName, localAgentHostPort string) {
 	cfg := config.Configuration{
 		Sampler: &config.SamplerConfig{
 			Type:  "const",
 			Param: 1,
 		},
 		Reporter: &config.ReporterConfig{
-			LocalAgentHostPort: "localhost:6831",
+			LocalAgentHostPort: localAgentHostPort,
 		},
 	}
 
