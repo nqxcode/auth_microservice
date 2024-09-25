@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"github.com/opentracing/opentracing-go"
 
 	"github.com/nqxcode/auth_microservice/internal/logger"
 	"go.uber.org/zap"
@@ -14,6 +15,9 @@ import (
 
 // Get user by id
 func (s *Implementation) Get(ctx context.Context, req *desc.GetRequest) (*desc.GetResponse, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "Get")
+	defer span.Finish()
+
 	logger.Info("Get user", zap.Any("id", req.GetId()))
 
 	user, err := s.authService.Get(ctx, req.GetId())

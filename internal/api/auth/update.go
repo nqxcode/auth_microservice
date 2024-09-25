@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"github.com/opentracing/opentracing-go"
 
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/nqxcode/auth_microservice/internal/logger"
@@ -15,6 +16,9 @@ import (
 
 // Update user by id
 func (s *Implementation) Update(ctx context.Context, req *desc.UpdateRequest) (*empty.Empty, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "Update")
+	defer span.Finish()
+
 	logger.Info("Update user info", zap.Any("info", req.GetInfo()))
 
 	err := s.authService.Update(ctx, req.GetId(), converter.ToUpdateUserInfoFromDesc(req.GetInfo()))
