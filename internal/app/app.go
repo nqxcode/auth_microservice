@@ -179,7 +179,7 @@ func (a *App) initTracing(ctx context.Context) error {
 func (a *App) initConfig(_ context.Context) error {
 	err := config.Load(configPath)
 	if err != nil {
-		log.Printf("No config file found, using environment variables, path: %v", configPath)
+		log.Printf("No %s file found, using environment variables: %v", configPath, err)
 	}
 
 	return nil
