@@ -5,27 +5,30 @@ import (
 	"fmt"
 	"math/rand/v2"
 	"testing"
+	"time"
 
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/gojuno/minimock/v3"
-	"github.com/nqxcode/platform_common/client/db"
+	"github.com/pkg/errors"
 	"github.com/stretchr/testify/require"
 
 	"github.com/nqxcode/auth_microservice/internal/config"
 	configMocks "github.com/nqxcode/auth_microservice/internal/config/mocks"
+	"github.com/nqxcode/auth_microservice/internal/converter"
 	"github.com/nqxcode/auth_microservice/internal/model"
 	"github.com/nqxcode/auth_microservice/internal/repository"
 	repoMocks "github.com/nqxcode/auth_microservice/internal/repository/mocks"
 	"github.com/nqxcode/auth_microservice/internal/service"
 	"github.com/nqxcode/auth_microservice/internal/service/async"
-	"github.com/nqxcode/auth_microservice/internal/service/audit_log/constants"
 	"github.com/nqxcode/auth_microservice/internal/service/auth"
 	serviceSupport "github.com/nqxcode/auth_microservice/internal/service/auth/tests/support"
 	serviceMocks "github.com/nqxcode/auth_microservice/internal/service/mocks"
+	"github.com/nqxcode/auth_microservice/internal/utils"
 	desc "github.com/nqxcode/auth_microservice/pkg/auth_v1"
+	"github.com/nqxcode/platform_common/client/db"
 )
 
-func TestUpdate(t *testing.T) {
+func TestGetAccessToken(t *testing.T) {
 	t.Parallel()
 
 	type userRepositoryMock func(mc *minimock.Controller) repository.UserRepository
@@ -39,30 +42,54 @@ func TestUpdate(t *testing.T) {
 	type authConfigMock func(mc *minimock.Controller) config.AuthConfig
 
 	type input struct {
-		ctx    context.Context
-		userID int64
-		info   *model.UpdateUserInfo
+		ctx          context.Context
+		refreshToken string
 	}
 
 	type expected struct {
-		err error
+		resp string
+		err  error
 	}
 
 	var (
 		ctx = context.Background()
 		mc  = minimock.NewController(t)
 
-		id    = gofakeit.Int64()
-		name  = gofakeit.Name()
-		roles = []desc.Role{desc.Role_ADMIN, desc.Role_USER}
-		role  = int32(roles[rand.Int32N(int32(len(roles))-1)]) // nolint: gosec
+		id           = gofakeit.Int64()
+		name         = gofakeit.Name()
+		email        = gofakeit.Email()
+		roles        = []desc.Role{desc.Role_ADMIN, desc.Role_USER}
+		role         = int32(roles[rand.Int32N(int32(len(roles))-1)]) // nolint: gosec
+		passwordHash = "HASH123"
+		createdAt    = gofakeit.Date()
 
 		repoErr = fmt.Errorf("repo error")
 	)
 
-	info := &model.UpdateUserInfo{
-		Name: &name,
-		Role: &role,
+	secretKey := "secret-key"
+	refreshToken, err := utils.GenerateToken(model.UserInfo{
+		Name:  name,
+		Email: email,
+		Role:  converter.ToRole(model.AdminRole),
+	},
+		[]byte(secretKey),
+		time.Duration(1)*time.Minute,
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	info := model.UserInfo{
+		Name:  name,
+		Email: email,
+		Role:  role,
+	}
+
+	user := &model.User{
+		ID:        id,
+		Info:      info,
+		Password:  passwordHash,
+		CreatedAt: createdAt,
 	}
 
 	cases := []struct {
@@ -84,16 +111,16 @@ func TestUpdate(t *testing.T) {
 		{
 			name: "success case",
 			input: input{
-				ctx:    ctx,
-				userID: id,
-				info:   info,
+				ctx:          ctx,
+				refreshToken: refreshToken,
 			},
 			expected: expected{
-				err: nil,
+				err:  nil,
+				resp: "token",
 			},
 			userRepositoryMock: func(mc *minimock.Controller) repository.UserRepository {
 				mock := repoMocks.NewUserRepositoryMock(mc)
-				mock.UpdateMock.Expect(ctx, id, info).Return(nil)
+				mock.GetByEmailMock.Expect(ctx, email).Return(user, nil)
 				return mock
 			},
 			accessibleRoleRepositoryMock: func(mc *minimock.Controller) repository.AccessibleRoleRepository {
@@ -102,10 +129,6 @@ func TestUpdate(t *testing.T) {
 			},
 			logServiceMock: func(mc *minimock.Controller) service.AuditLogService {
 				mock := serviceMocks.NewAuditLogServiceMock(mc)
-				mock.CreateMock.Expect(ctx, &model.Log{
-					Message: constants.UserUpdated,
-					Payload: auth.MakeAuditUpdatePayload(id, info),
-				}).Return(nil)
 				return mock
 			},
 			hashServiceMock: func(mc *minimock.Controller) service.HashService {
@@ -114,12 +137,10 @@ func TestUpdate(t *testing.T) {
 			},
 			cacheUserServiceMock: func(mc *minimock.Controller) service.CacheUserService {
 				mock := serviceMocks.NewCacheUserServiceMock(mc)
-				mock.SetPartialMock.Expect(ctx, id, &model.UpdateUserInfo{Name: &name, Role: &role}).Return(nil)
 				return mock
 			},
 			producerServiceMock: func(mc *minimock.Controller) service.ProducerService {
 				mock := serviceMocks.NewProducerServiceMock(mc)
-				mock.SendMessageMock.Expect(ctx, model.LogMessage{Message: constants.UserUpdated, Payload: auth.MakeAuditUpdatePayload(id, info)}).Return(nil)
 				return mock
 			},
 			txManagerFake:   serviceSupport.NewTxManagerFake(),
@@ -130,25 +151,30 @@ func TestUpdate(t *testing.T) {
 			},
 			tokenGeneratorServiceMock: func(mc *minimock.Controller) service.TokenGenerator {
 				mock := serviceMocks.NewTokenGeneratorMock(mc)
+				mock.GenerateTokenMock.Return("token", nil)
 				return mock
 			},
 			authConfigMock: func(mc *minimock.Controller) config.AuthConfig {
-				return configMocks.NewAuthConfigMock(mc)
+				mock := configMocks.NewAuthConfigMock(mc)
+				mock.RefreshTokenSecretKeyMock.Return(secretKey)
+				mock.AccessTokenSecretKeyMock.Return(secretKey)
+				mock.AccessTokenExpirationMock.Return(time.Duration(1) * time.Minute)
+				return mock
 			},
 		},
 		{
 			name: "service error case",
 			input: input{
-				ctx:    ctx,
-				userID: id,
-				info:   info,
+				ctx:          ctx,
+				refreshToken: refreshToken,
 			},
 			expected: expected{
-				err: repoErr,
+				err:  errors.Errorf("failed to get user by email: %v", repoErr),
+				resp: "",
 			},
 			userRepositoryMock: func(mc *minimock.Controller) repository.UserRepository {
 				mock := repoMocks.NewUserRepositoryMock(mc)
-				mock.UpdateMock.Expect(ctx, id, info).Return(repoErr)
+				mock.GetByEmailMock.Expect(ctx, email).Return(nil, repoErr)
 				return mock
 			},
 			accessibleRoleRepositoryMock: func(mc *minimock.Controller) repository.AccessibleRoleRepository {
@@ -159,12 +185,12 @@ func TestUpdate(t *testing.T) {
 				mock := serviceMocks.NewAuditLogServiceMock(mc)
 				return mock
 			},
-			cacheUserServiceMock: func(mc *minimock.Controller) service.CacheUserService {
-				mock := serviceMocks.NewCacheUserServiceMock(mc)
-				return mock
-			},
 			hashServiceMock: func(mc *minimock.Controller) service.HashService {
 				mock := serviceMocks.NewHashServiceMock(mc)
+				return mock
+			},
+			cacheUserServiceMock: func(mc *minimock.Controller) service.CacheUserService {
+				mock := serviceMocks.NewCacheUserServiceMock(mc)
 				return mock
 			},
 			producerServiceMock: func(mc *minimock.Controller) service.ProducerService {
@@ -182,7 +208,9 @@ func TestUpdate(t *testing.T) {
 				return mock
 			},
 			authConfigMock: func(mc *minimock.Controller) config.AuthConfig {
-				return configMocks.NewAuthConfigMock(mc)
+				mock := configMocks.NewAuthConfigMock(mc)
+				mock.RefreshTokenSecretKeyMock.Return(secretKey)
+				return mock
 			},
 		},
 	}
@@ -201,13 +229,20 @@ func TestUpdate(t *testing.T) {
 			txMngFake := tt.txManagerFake
 			producerSrv := tt.producerServiceMock(mc)
 			asyncRunnerFake := tt.asyncRunnerFake
-			authConfig := tt.authConfigMock(mc)
 			tokenGenerator := tt.tokenGeneratorServiceMock(mc)
+			authConfig := tt.authConfigMock(mc)
 
 			srv := auth.NewService(userRepoMock, accessibleRoleRepoMock, validatorSrvMock, logSrvMock, hashSrvMock, cacheUserSrvMock, txMngFake, producerSrv, asyncRunnerFake, tokenGenerator, authConfig)
 
-			err := srv.Update(tt.input.ctx, tt.input.userID, tt.input.info)
-			require.Equal(t, tt.expected.err, err)
+			ar, checkErr := srv.GetAccessToken(tt.input.ctx, tt.input.refreshToken)
+			fmt.Printf(ar)
+
+			if checkErr != nil {
+				require.Equal(t, tt.expected.err.Error(), checkErr.Error())
+			} else {
+				require.Equal(t, nil, checkErr)
+				require.Equal(t, tt.expected.resp, ar)
+			}
 		})
 	}
 }

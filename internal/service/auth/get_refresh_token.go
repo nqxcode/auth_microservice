@@ -25,7 +25,7 @@ func (s *service) GetRefreshToken(ctx context.Context, refreshToken string) (str
 		return "", errors.New("user not found")
 	}
 
-	refreshToken, err = utils.GenerateToken(model.UserInfo{
+	refreshToken, err = s.tokenGeneratorService.GenerateToken(model.UserInfo{
 		Name:  claims.Username,
 		Email: claims.Email,
 		Role:  converter.ToRole(claims.Role),

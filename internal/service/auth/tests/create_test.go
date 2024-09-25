@@ -6,13 +6,12 @@ import (
 	"math/rand/v2"
 	"testing"
 
-	"github.com/nqxcode/auth_microservice/internal/config"
-
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/gojuno/minimock/v3"
 	"github.com/nqxcode/platform_common/client/db"
 	"github.com/stretchr/testify/require"
 
+	"github.com/nqxcode/auth_microservice/internal/config"
 	configMocks "github.com/nqxcode/auth_microservice/internal/config/mocks"
 	"github.com/nqxcode/auth_microservice/internal/model"
 	"github.com/nqxcode/auth_microservice/internal/repository"
@@ -36,6 +35,8 @@ func TestCreate(t *testing.T) {
 	type cacheUserServiceMock func(mc *minimock.Controller) service.CacheUserService
 	type validatorServiceMock func(mc *minimock.Controller) service.ValidatorService
 	type producerServiceMock func(mc *minimock.Controller) service.ProducerService
+	type tokenGeneratorServiceMock func(mc *minimock.Controller) service.TokenGenerator
+	type authConfigMock func(mc *minimock.Controller) config.AuthConfig
 
 	type input struct {
 		ctx             context.Context
@@ -83,7 +84,8 @@ func TestCreate(t *testing.T) {
 		producerServiceMock          producerServiceMock
 		txManagerFake                db.TxManager
 		asyncRunnerFake              async.Runner
-		authConfig                   config.AuthConfig
+		tokenGeneratorServiceMock    tokenGeneratorServiceMock
+		authConfigMock               authConfigMock
 	}{
 		{
 			name: "success case",
@@ -137,9 +139,13 @@ func TestCreate(t *testing.T) {
 				mock.ValidateUserMock.Expect(ctx, info, password, password).Return(nil)
 				return mock
 			},
-			authConfig: func() config.AuthConfig {
+			authConfigMock: func(mc *minimock.Controller) config.AuthConfig {
 				return configMocks.NewAuthConfigMock(mc)
-			}(),
+			},
+			tokenGeneratorServiceMock: func(mc *minimock.Controller) service.TokenGenerator {
+				mock := serviceMocks.NewTokenGeneratorMock(mc)
+				return mock
+			},
 		},
 		{
 			name: "service error case",
@@ -186,9 +192,13 @@ func TestCreate(t *testing.T) {
 				mock.ValidateUserMock.Expect(ctx, info, password, password).Return(nil)
 				return mock
 			},
-			authConfig: func() config.AuthConfig {
+			authConfigMock: func(mc *minimock.Controller) config.AuthConfig {
 				return configMocks.NewAuthConfigMock(mc)
-			}(),
+			},
+			tokenGeneratorServiceMock: func(mc *minimock.Controller) service.TokenGenerator {
+				mock := serviceMocks.NewTokenGeneratorMock(mc)
+				return mock
+			},
 		},
 	}
 
@@ -206,9 +216,10 @@ func TestCreate(t *testing.T) {
 			txMngFake := tt.txManagerFake
 			producerSrv := tt.producerServiceMock(mc)
 			asyncRunnerFake := tt.asyncRunnerFake
-			authConfig := tt.authConfig
+			authConfig := tt.authConfigMock(mc)
+			tokenGenerator := tt.tokenGeneratorServiceMock(mc)
 
-			srv := auth.NewService(userRepoMock, accessibleRoleRepoMock, validatorSrvMock, logSrvMock, hashSrvMock, cacheSrvMock, txMngFake, producerSrv, asyncRunnerFake, authConfig)
+			srv := auth.NewService(userRepoMock, accessibleRoleRepoMock, validatorSrvMock, logSrvMock, hashSrvMock, cacheSrvMock, txMngFake, producerSrv, asyncRunnerFake, tokenGenerator, authConfig)
 
 			ar, err := srv.Create(tt.input.ctx, tt.input.info, tt.input.password, tt.input.passwordConfirm)
 			require.Equal(t, tt.expected.err, err)

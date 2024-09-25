@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"time"
 
 	"github.com/nqxcode/auth_microservice/internal/model"
 
@@ -56,4 +57,8 @@ type ConsumerService interface {
 // ProducerService producer service
 type ProducerService interface {
 	SendMessage(ctx context.Context, message model.LogMessage) error
+}
+
+type TokenGenerator interface {
+	GenerateToken(info model.UserInfo, secretKey []byte, duration time.Duration) (string, error)
 }

@@ -2,6 +2,8 @@ package tests
 
 import (
 	"context"
+	"testing"
+
 	"github.com/gojuno/minimock/v3"
 	"github.com/nqxcode/auth_microservice/internal/api/auth"
 	"github.com/nqxcode/auth_microservice/internal/service"
@@ -11,7 +13,6 @@ import (
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"testing"
 )
 
 func TestLogin(t *testing.T) {

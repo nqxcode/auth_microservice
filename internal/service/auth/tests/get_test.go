@@ -3,17 +3,16 @@ package tests
 import (
 	"context"
 	"fmt"
+	configMocks "github.com/nqxcode/auth_microservice/internal/config/mocks"
 	"math/rand/v2"
 	"testing"
-
-	"github.com/nqxcode/auth_microservice/internal/config"
-	serviceMocks "github.com/nqxcode/auth_microservice/internal/service/mocks"
 
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/gojuno/minimock/v3"
 	"github.com/nqxcode/platform_common/client/db"
 	"github.com/stretchr/testify/require"
 
+	"github.com/nqxcode/auth_microservice/internal/config"
 	"github.com/nqxcode/auth_microservice/internal/model"
 	"github.com/nqxcode/auth_microservice/internal/repository"
 	repoMocks "github.com/nqxcode/auth_microservice/internal/repository/mocks"
@@ -22,6 +21,7 @@ import (
 	"github.com/nqxcode/auth_microservice/internal/service/audit_log/constants"
 	"github.com/nqxcode/auth_microservice/internal/service/auth"
 	serviceSupport "github.com/nqxcode/auth_microservice/internal/service/auth/tests/support"
+	serviceMocks "github.com/nqxcode/auth_microservice/internal/service/mocks"
 	desc "github.com/nqxcode/auth_microservice/pkg/auth_v1"
 )
 
@@ -35,6 +35,8 @@ func TestGet(t *testing.T) {
 	type hashServiceMock func(mc *minimock.Controller) service.HashService
 	type cacheUserServiceMock func(mc *minimock.Controller) service.CacheUserService
 	type producerServiceMock func(mc *minimock.Controller) service.ProducerService
+	type tokenGeneratorServiceMock func(mc *minimock.Controller) service.TokenGenerator
+	type authConfigMock func(mc *minimock.Controller) config.AuthConfig
 
 	type input struct {
 		ctx    context.Context
@@ -87,7 +89,8 @@ func TestGet(t *testing.T) {
 		producerServiceMock          producerServiceMock
 		txManagerFake                db.TxManager
 		asyncRunnerFake              async.Runner
-		authConfig                   config.AuthConfig
+		tokenGeneratorServiceMock    tokenGeneratorServiceMock
+		authConfigMock               authConfigMock
 	}{
 		{
 			name: "success case",
@@ -136,6 +139,13 @@ func TestGet(t *testing.T) {
 				mock := serviceMocks.NewValidatorServiceMock(mc)
 				return mock
 			},
+			tokenGeneratorServiceMock: func(mc *minimock.Controller) service.TokenGenerator {
+				mock := serviceMocks.NewTokenGeneratorMock(mc)
+				return mock
+			},
+			authConfigMock: func(mc *minimock.Controller) config.AuthConfig {
+				return configMocks.NewAuthConfigMock(mc)
+			},
 		},
 		{
 			name: "service error case",
@@ -179,6 +189,13 @@ func TestGet(t *testing.T) {
 				mock := serviceMocks.NewValidatorServiceMock(mc)
 				return mock
 			},
+			tokenGeneratorServiceMock: func(mc *minimock.Controller) service.TokenGenerator {
+				mock := serviceMocks.NewTokenGeneratorMock(mc)
+				return mock
+			},
+			authConfigMock: func(mc *minimock.Controller) config.AuthConfig {
+				return configMocks.NewAuthConfigMock(mc)
+			},
 		},
 	}
 
@@ -196,9 +213,10 @@ func TestGet(t *testing.T) {
 			txMngFake := tt.txManagerFake
 			producerSrv := tt.producerServiceMock(mc)
 			asyncRunnerFake := tt.asyncRunnerFake
-			authConfig := tt.authConfig
+			authConfig := tt.authConfigMock(mc)
+			tokenGenerator := tt.tokenGeneratorServiceMock(mc)
 
-			srv := auth.NewService(userRepoMock, accessibleRoleRepoMock, validatorSrvMock, logSrvMock, hashSrvMock, cacheUserSrvMock, txMngFake, producerSrv, asyncRunnerFake, authConfig)
+			srv := auth.NewService(userRepoMock, accessibleRoleRepoMock, validatorSrvMock, logSrvMock, hashSrvMock, cacheUserSrvMock, txMngFake, producerSrv, asyncRunnerFake, tokenGenerator, authConfig)
 
 			ar, err := srv.Get(tt.input.ctx, tt.input.userID)
 			require.Equal(t, tt.expected.err, err)

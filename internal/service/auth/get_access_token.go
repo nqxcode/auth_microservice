@@ -25,7 +25,7 @@ func (s *service) GetAccessToken(ctx context.Context, refreshToken string) (stri
 		return "", errors.New("user not found")
 	}
 
-	accessToken, err := utils.GenerateToken(model.UserInfo{
+	accessToken, err := s.tokenGeneratorService.GenerateToken(model.UserInfo{
 		Name:  claims.Username,
 		Email: claims.Email,
 		Role:  converter.ToRole(claims.Role),

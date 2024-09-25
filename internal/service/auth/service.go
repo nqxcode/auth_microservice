@@ -5,7 +5,6 @@ import (
 	"github.com/nqxcode/auth_microservice/internal/repository"
 	def "github.com/nqxcode/auth_microservice/internal/service"
 	"github.com/nqxcode/auth_microservice/internal/service/async"
-
 	"github.com/nqxcode/platform_common/client/db"
 )
 
@@ -19,6 +18,7 @@ type service struct {
 	txManager                db.TxManager
 	producerService          def.ProducerService
 	asyncRunner              async.Runner
+	tokenGeneratorService    def.TokenGenerator
 	authConfig               config.AuthConfig
 	accessibleRoles          map[string]map[string]struct{}
 }
@@ -34,6 +34,7 @@ func NewService(
 	txManager db.TxManager,
 	producerService def.ProducerService,
 	asyncRunner async.Runner,
+	tokenGeneratorService def.TokenGenerator,
 	authConfig config.AuthConfig,
 ) def.AuthService {
 	return &service{
@@ -46,6 +47,7 @@ func NewService(
 		txManager:                txManager,
 		producerService:          producerService,
 		asyncRunner:              asyncRunner,
+		tokenGeneratorService:    tokenGeneratorService,
 		authConfig:               authConfig,
 	}
 }

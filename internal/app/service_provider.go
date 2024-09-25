@@ -4,6 +4,8 @@ import (
 	"context"
 	"log"
 
+	"github.com/nqxcode/auth_microservice/internal/service/token"
+
 	"github.com/IBM/sarama"
 	redigo "github.com/gomodule/redigo/redis"
 	"github.com/nqxcode/platform_common/client/broker/kafka"
@@ -272,6 +274,12 @@ func (s *serviceProvider) AsyncRunner() async.Runner {
 	return s.asyncRunner
 }
 
+// NewTokenGenerator
+
+func (s *serviceProvider) NewTokenGenerator() service.TokenGenerator {
+	return token.NewGenerator()
+}
+
 // UserRepository user repository
 func (s *serviceProvider) UserRepository(ctx context.Context) repository.UserRepository {
 	if s.userRepository == nil {
@@ -343,6 +351,7 @@ func (s *serviceProvider) AuthService(ctx context.Context) service.AuthService {
 			s.TxManager(ctx),
 			s.ProducerService(),
 			s.AsyncRunner(),
+			s.NewTokenGenerator(),
 			s.NewAuthConfig(),
 		)
 	}

@@ -5,14 +5,13 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/nqxcode/auth_microservice/internal/config"
-	configMocks "github.com/nqxcode/auth_microservice/internal/config/mocks"
-
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/gojuno/minimock/v3"
 	"github.com/nqxcode/platform_common/client/db"
 	"github.com/stretchr/testify/require"
 
+	"github.com/nqxcode/auth_microservice/internal/config"
+	configMocks "github.com/nqxcode/auth_microservice/internal/config/mocks"
 	"github.com/nqxcode/auth_microservice/internal/model"
 	"github.com/nqxcode/auth_microservice/internal/repository"
 	repoMocks "github.com/nqxcode/auth_microservice/internal/repository/mocks"
@@ -34,6 +33,8 @@ func TestDelete(t *testing.T) {
 	type hashServiceMock func(mc *minimock.Controller) service.HashService
 	type cacheUserServiceMock func(mc *minimock.Controller) service.CacheUserService
 	type producerServiceMock func(mc *minimock.Controller) service.ProducerService
+	type tokenGeneratorServiceMock func(mc *minimock.Controller) service.TokenGenerator
+	type authConfigMock func(mc *minimock.Controller) config.AuthConfig
 
 	type input struct {
 		ctx    context.Context
@@ -67,7 +68,8 @@ func TestDelete(t *testing.T) {
 		producerServiceMock          producerServiceMock
 		txManagerFake                db.TxManager
 		asyncRunnerFake              async.Runner
-		authConfig                   config.AuthConfig
+		tokenGeneratorServiceMock    tokenGeneratorServiceMock
+		authConfigMock               authConfigMock
 	}{
 		{
 			name: "success case",
@@ -116,9 +118,14 @@ func TestDelete(t *testing.T) {
 				mock := serviceMocks.NewValidatorServiceMock(mc)
 				return mock
 			},
-			authConfig: func() config.AuthConfig {
-				return configMocks.NewAuthConfigMock(mc)
-			}(),
+			tokenGeneratorServiceMock: func(mc *minimock.Controller) service.TokenGenerator {
+				mock := serviceMocks.NewTokenGeneratorMock(mc)
+				return mock
+			},
+			authConfigMock: func(mc *minimock.Controller) config.AuthConfig {
+				mock := configMocks.NewAuthConfigMock(mc)
+				return mock
+			},
 		},
 		{
 			name: "service error case",
@@ -161,9 +168,14 @@ func TestDelete(t *testing.T) {
 				mock := serviceMocks.NewValidatorServiceMock(mc)
 				return mock
 			},
-			authConfig: func() config.AuthConfig {
-				return configMocks.NewAuthConfigMock(mc)
-			}(),
+			authConfigMock: func(mc *minimock.Controller) config.AuthConfig {
+				mock := configMocks.NewAuthConfigMock(mc)
+				return mock
+			},
+			tokenGeneratorServiceMock: func(mc *minimock.Controller) service.TokenGenerator {
+				mock := serviceMocks.NewTokenGeneratorMock(mc)
+				return mock
+			},
 		},
 	}
 
@@ -181,9 +193,10 @@ func TestDelete(t *testing.T) {
 			txMngFake := tt.txManagerFake
 			producerSrv := tt.producerServiceMock(mc)
 			asyncRunnerFake := tt.asyncRunnerFake
-			authConfig := tt.authConfig
+			authConfig := tt.authConfigMock(mc)
+			tokenGenerator := tt.tokenGeneratorServiceMock(mc)
 
-			srv := auth.NewService(userRepoMock, accessibleRoleRepoMock, validatorSrvMock, logSrvMock, hashSrvMock, cacheSrvMock, txMngFake, producerSrv, asyncRunnerFake, authConfig)
+			srv := auth.NewService(userRepoMock, accessibleRoleRepoMock, validatorSrvMock, logSrvMock, hashSrvMock, cacheSrvMock, txMngFake, producerSrv, asyncRunnerFake, tokenGenerator, authConfig)
 
 			err := srv.Delete(tt.input.ctx, tt.input.userID)
 			require.Equal(t, tt.expected.err, err)

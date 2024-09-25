@@ -56,14 +56,14 @@ type AuthServiceMock struct {
 	beforeGetListCounter uint64
 	GetListMock          mAuthServiceMockGetList
 
-	funcGetRefreshToken          func(ctx context.Context, oldRefreshToken string) (s1 string, err error)
-	inspectFuncGetRefreshToken   func(ctx context.Context, oldRefreshToken string)
+	funcGetRefreshToken          func(ctx context.Context, refreshToken string) (s1 string, err error)
+	inspectFuncGetRefreshToken   func(ctx context.Context, refreshToken string)
 	afterGetRefreshTokenCounter  uint64
 	beforeGetRefreshTokenCounter uint64
 	GetRefreshTokenMock          mAuthServiceMockGetRefreshToken
 
-	funcLogin          func(ctx context.Context, username string, password string) (s1 string, err error)
-	inspectFuncLogin   func(ctx context.Context, username string, password string)
+	funcLogin          func(ctx context.Context, email string, password string) (s1 string, err error)
+	inspectFuncLogin   func(ctx context.Context, email string, password string)
 	afterLoginCounter  uint64
 	beforeLoginCounter uint64
 	LoginMock          mAuthServiceMockLogin
@@ -2119,14 +2119,14 @@ type AuthServiceMockGetRefreshTokenExpectation struct {
 
 // AuthServiceMockGetRefreshTokenParams contains parameters of the AuthService.GetRefreshToken
 type AuthServiceMockGetRefreshTokenParams struct {
-	ctx             context.Context
-	oldRefreshToken string
+	ctx          context.Context
+	refreshToken string
 }
 
 // AuthServiceMockGetRefreshTokenParamPtrs contains pointers to parameters of the AuthService.GetRefreshToken
 type AuthServiceMockGetRefreshTokenParamPtrs struct {
-	ctx             *context.Context
-	oldRefreshToken *string
+	ctx          *context.Context
+	refreshToken *string
 }
 
 // AuthServiceMockGetRefreshTokenResults contains results of the AuthService.GetRefreshToken
@@ -2146,7 +2146,7 @@ func (mmGetRefreshToken *mAuthServiceMockGetRefreshToken) Optional() *mAuthServi
 }
 
 // Expect sets up expected params for AuthService.GetRefreshToken
-func (mmGetRefreshToken *mAuthServiceMockGetRefreshToken) Expect(ctx context.Context, oldRefreshToken string) *mAuthServiceMockGetRefreshToken {
+func (mmGetRefreshToken *mAuthServiceMockGetRefreshToken) Expect(ctx context.Context, refreshToken string) *mAuthServiceMockGetRefreshToken {
 	if mmGetRefreshToken.mock.funcGetRefreshToken != nil {
 		mmGetRefreshToken.mock.t.Fatalf("AuthServiceMock.GetRefreshToken mock is already set by Set")
 	}
@@ -2159,7 +2159,7 @@ func (mmGetRefreshToken *mAuthServiceMockGetRefreshToken) Expect(ctx context.Con
 		mmGetRefreshToken.mock.t.Fatalf("AuthServiceMock.GetRefreshToken mock is already set by ExpectParams functions")
 	}
 
-	mmGetRefreshToken.defaultExpectation.params = &AuthServiceMockGetRefreshTokenParams{ctx, oldRefreshToken}
+	mmGetRefreshToken.defaultExpectation.params = &AuthServiceMockGetRefreshTokenParams{ctx, refreshToken}
 	for _, e := range mmGetRefreshToken.expectations {
 		if minimock.Equal(e.params, mmGetRefreshToken.defaultExpectation.params) {
 			mmGetRefreshToken.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmGetRefreshToken.defaultExpectation.params)
@@ -2191,8 +2191,8 @@ func (mmGetRefreshToken *mAuthServiceMockGetRefreshToken) ExpectCtxParam1(ctx co
 	return mmGetRefreshToken
 }
 
-// ExpectOldRefreshTokenParam2 sets up expected param oldRefreshToken for AuthService.GetRefreshToken
-func (mmGetRefreshToken *mAuthServiceMockGetRefreshToken) ExpectOldRefreshTokenParam2(oldRefreshToken string) *mAuthServiceMockGetRefreshToken {
+// ExpectRefreshTokenParam2 sets up expected param refreshToken for AuthService.GetRefreshToken
+func (mmGetRefreshToken *mAuthServiceMockGetRefreshToken) ExpectRefreshTokenParam2(refreshToken string) *mAuthServiceMockGetRefreshToken {
 	if mmGetRefreshToken.mock.funcGetRefreshToken != nil {
 		mmGetRefreshToken.mock.t.Fatalf("AuthServiceMock.GetRefreshToken mock is already set by Set")
 	}
@@ -2208,13 +2208,13 @@ func (mmGetRefreshToken *mAuthServiceMockGetRefreshToken) ExpectOldRefreshTokenP
 	if mmGetRefreshToken.defaultExpectation.paramPtrs == nil {
 		mmGetRefreshToken.defaultExpectation.paramPtrs = &AuthServiceMockGetRefreshTokenParamPtrs{}
 	}
-	mmGetRefreshToken.defaultExpectation.paramPtrs.oldRefreshToken = &oldRefreshToken
+	mmGetRefreshToken.defaultExpectation.paramPtrs.refreshToken = &refreshToken
 
 	return mmGetRefreshToken
 }
 
 // Inspect accepts an inspector function that has same arguments as the AuthService.GetRefreshToken
-func (mmGetRefreshToken *mAuthServiceMockGetRefreshToken) Inspect(f func(ctx context.Context, oldRefreshToken string)) *mAuthServiceMockGetRefreshToken {
+func (mmGetRefreshToken *mAuthServiceMockGetRefreshToken) Inspect(f func(ctx context.Context, refreshToken string)) *mAuthServiceMockGetRefreshToken {
 	if mmGetRefreshToken.mock.inspectFuncGetRefreshToken != nil {
 		mmGetRefreshToken.mock.t.Fatalf("Inspect function is already set for AuthServiceMock.GetRefreshToken")
 	}
@@ -2238,7 +2238,7 @@ func (mmGetRefreshToken *mAuthServiceMockGetRefreshToken) Return(s1 string, err 
 }
 
 // Set uses given function f to mock the AuthService.GetRefreshToken method
-func (mmGetRefreshToken *mAuthServiceMockGetRefreshToken) Set(f func(ctx context.Context, oldRefreshToken string) (s1 string, err error)) *AuthServiceMock {
+func (mmGetRefreshToken *mAuthServiceMockGetRefreshToken) Set(f func(ctx context.Context, refreshToken string) (s1 string, err error)) *AuthServiceMock {
 	if mmGetRefreshToken.defaultExpectation != nil {
 		mmGetRefreshToken.mock.t.Fatalf("Default expectation is already set for the AuthService.GetRefreshToken method")
 	}
@@ -2253,14 +2253,14 @@ func (mmGetRefreshToken *mAuthServiceMockGetRefreshToken) Set(f func(ctx context
 
 // When sets expectation for the AuthService.GetRefreshToken which will trigger the result defined by the following
 // Then helper
-func (mmGetRefreshToken *mAuthServiceMockGetRefreshToken) When(ctx context.Context, oldRefreshToken string) *AuthServiceMockGetRefreshTokenExpectation {
+func (mmGetRefreshToken *mAuthServiceMockGetRefreshToken) When(ctx context.Context, refreshToken string) *AuthServiceMockGetRefreshTokenExpectation {
 	if mmGetRefreshToken.mock.funcGetRefreshToken != nil {
 		mmGetRefreshToken.mock.t.Fatalf("AuthServiceMock.GetRefreshToken mock is already set by Set")
 	}
 
 	expectation := &AuthServiceMockGetRefreshTokenExpectation{
 		mock:   mmGetRefreshToken.mock,
-		params: &AuthServiceMockGetRefreshTokenParams{ctx, oldRefreshToken},
+		params: &AuthServiceMockGetRefreshTokenParams{ctx, refreshToken},
 	}
 	mmGetRefreshToken.expectations = append(mmGetRefreshToken.expectations, expectation)
 	return expectation
@@ -2293,15 +2293,15 @@ func (mmGetRefreshToken *mAuthServiceMockGetRefreshToken) invocationsDone() bool
 }
 
 // GetRefreshToken implements service.AuthService
-func (mmGetRefreshToken *AuthServiceMock) GetRefreshToken(ctx context.Context, oldRefreshToken string) (s1 string, err error) {
+func (mmGetRefreshToken *AuthServiceMock) GetRefreshToken(ctx context.Context, refreshToken string) (s1 string, err error) {
 	mm_atomic.AddUint64(&mmGetRefreshToken.beforeGetRefreshTokenCounter, 1)
 	defer mm_atomic.AddUint64(&mmGetRefreshToken.afterGetRefreshTokenCounter, 1)
 
 	if mmGetRefreshToken.inspectFuncGetRefreshToken != nil {
-		mmGetRefreshToken.inspectFuncGetRefreshToken(ctx, oldRefreshToken)
+		mmGetRefreshToken.inspectFuncGetRefreshToken(ctx, refreshToken)
 	}
 
-	mm_params := AuthServiceMockGetRefreshTokenParams{ctx, oldRefreshToken}
+	mm_params := AuthServiceMockGetRefreshTokenParams{ctx, refreshToken}
 
 	// Record call args
 	mmGetRefreshToken.GetRefreshTokenMock.mutex.Lock()
@@ -2320,7 +2320,7 @@ func (mmGetRefreshToken *AuthServiceMock) GetRefreshToken(ctx context.Context, o
 		mm_want := mmGetRefreshToken.GetRefreshTokenMock.defaultExpectation.params
 		mm_want_ptrs := mmGetRefreshToken.GetRefreshTokenMock.defaultExpectation.paramPtrs
 
-		mm_got := AuthServiceMockGetRefreshTokenParams{ctx, oldRefreshToken}
+		mm_got := AuthServiceMockGetRefreshTokenParams{ctx, refreshToken}
 
 		if mm_want_ptrs != nil {
 
@@ -2328,8 +2328,8 @@ func (mmGetRefreshToken *AuthServiceMock) GetRefreshToken(ctx context.Context, o
 				mmGetRefreshToken.t.Errorf("AuthServiceMock.GetRefreshToken got unexpected parameter ctx, want: %#v, got: %#v%s\n", *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
 			}
 
-			if mm_want_ptrs.oldRefreshToken != nil && !minimock.Equal(*mm_want_ptrs.oldRefreshToken, mm_got.oldRefreshToken) {
-				mmGetRefreshToken.t.Errorf("AuthServiceMock.GetRefreshToken got unexpected parameter oldRefreshToken, want: %#v, got: %#v%s\n", *mm_want_ptrs.oldRefreshToken, mm_got.oldRefreshToken, minimock.Diff(*mm_want_ptrs.oldRefreshToken, mm_got.oldRefreshToken))
+			if mm_want_ptrs.refreshToken != nil && !minimock.Equal(*mm_want_ptrs.refreshToken, mm_got.refreshToken) {
+				mmGetRefreshToken.t.Errorf("AuthServiceMock.GetRefreshToken got unexpected parameter refreshToken, want: %#v, got: %#v%s\n", *mm_want_ptrs.refreshToken, mm_got.refreshToken, minimock.Diff(*mm_want_ptrs.refreshToken, mm_got.refreshToken))
 			}
 
 		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
@@ -2343,9 +2343,9 @@ func (mmGetRefreshToken *AuthServiceMock) GetRefreshToken(ctx context.Context, o
 		return (*mm_results).s1, (*mm_results).err
 	}
 	if mmGetRefreshToken.funcGetRefreshToken != nil {
-		return mmGetRefreshToken.funcGetRefreshToken(ctx, oldRefreshToken)
+		return mmGetRefreshToken.funcGetRefreshToken(ctx, refreshToken)
 	}
-	mmGetRefreshToken.t.Fatalf("Unexpected call to AuthServiceMock.GetRefreshToken. %v %v", ctx, oldRefreshToken)
+	mmGetRefreshToken.t.Fatalf("Unexpected call to AuthServiceMock.GetRefreshToken. %v %v", ctx, refreshToken)
 	return
 }
 
@@ -2441,14 +2441,14 @@ type AuthServiceMockLoginExpectation struct {
 // AuthServiceMockLoginParams contains parameters of the AuthService.Login
 type AuthServiceMockLoginParams struct {
 	ctx      context.Context
-	username string
+	email    string
 	password string
 }
 
 // AuthServiceMockLoginParamPtrs contains pointers to parameters of the AuthService.Login
 type AuthServiceMockLoginParamPtrs struct {
 	ctx      *context.Context
-	username *string
+	email    *string
 	password *string
 }
 
@@ -2469,7 +2469,7 @@ func (mmLogin *mAuthServiceMockLogin) Optional() *mAuthServiceMockLogin {
 }
 
 // Expect sets up expected params for AuthService.Login
-func (mmLogin *mAuthServiceMockLogin) Expect(ctx context.Context, username string, password string) *mAuthServiceMockLogin {
+func (mmLogin *mAuthServiceMockLogin) Expect(ctx context.Context, email string, password string) *mAuthServiceMockLogin {
 	if mmLogin.mock.funcLogin != nil {
 		mmLogin.mock.t.Fatalf("AuthServiceMock.Login mock is already set by Set")
 	}
@@ -2482,7 +2482,7 @@ func (mmLogin *mAuthServiceMockLogin) Expect(ctx context.Context, username strin
 		mmLogin.mock.t.Fatalf("AuthServiceMock.Login mock is already set by ExpectParams functions")
 	}
 
-	mmLogin.defaultExpectation.params = &AuthServiceMockLoginParams{ctx, username, password}
+	mmLogin.defaultExpectation.params = &AuthServiceMockLoginParams{ctx, email, password}
 	for _, e := range mmLogin.expectations {
 		if minimock.Equal(e.params, mmLogin.defaultExpectation.params) {
 			mmLogin.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmLogin.defaultExpectation.params)
@@ -2514,8 +2514,8 @@ func (mmLogin *mAuthServiceMockLogin) ExpectCtxParam1(ctx context.Context) *mAut
 	return mmLogin
 }
 
-// ExpectUsernameParam2 sets up expected param username for AuthService.Login
-func (mmLogin *mAuthServiceMockLogin) ExpectUsernameParam2(username string) *mAuthServiceMockLogin {
+// ExpectEmailParam2 sets up expected param email for AuthService.Login
+func (mmLogin *mAuthServiceMockLogin) ExpectEmailParam2(email string) *mAuthServiceMockLogin {
 	if mmLogin.mock.funcLogin != nil {
 		mmLogin.mock.t.Fatalf("AuthServiceMock.Login mock is already set by Set")
 	}
@@ -2531,7 +2531,7 @@ func (mmLogin *mAuthServiceMockLogin) ExpectUsernameParam2(username string) *mAu
 	if mmLogin.defaultExpectation.paramPtrs == nil {
 		mmLogin.defaultExpectation.paramPtrs = &AuthServiceMockLoginParamPtrs{}
 	}
-	mmLogin.defaultExpectation.paramPtrs.username = &username
+	mmLogin.defaultExpectation.paramPtrs.email = &email
 
 	return mmLogin
 }
@@ -2559,7 +2559,7 @@ func (mmLogin *mAuthServiceMockLogin) ExpectPasswordParam3(password string) *mAu
 }
 
 // Inspect accepts an inspector function that has same arguments as the AuthService.Login
-func (mmLogin *mAuthServiceMockLogin) Inspect(f func(ctx context.Context, username string, password string)) *mAuthServiceMockLogin {
+func (mmLogin *mAuthServiceMockLogin) Inspect(f func(ctx context.Context, email string, password string)) *mAuthServiceMockLogin {
 	if mmLogin.mock.inspectFuncLogin != nil {
 		mmLogin.mock.t.Fatalf("Inspect function is already set for AuthServiceMock.Login")
 	}
@@ -2583,7 +2583,7 @@ func (mmLogin *mAuthServiceMockLogin) Return(s1 string, err error) *AuthServiceM
 }
 
 // Set uses given function f to mock the AuthService.Login method
-func (mmLogin *mAuthServiceMockLogin) Set(f func(ctx context.Context, username string, password string) (s1 string, err error)) *AuthServiceMock {
+func (mmLogin *mAuthServiceMockLogin) Set(f func(ctx context.Context, email string, password string) (s1 string, err error)) *AuthServiceMock {
 	if mmLogin.defaultExpectation != nil {
 		mmLogin.mock.t.Fatalf("Default expectation is already set for the AuthService.Login method")
 	}
@@ -2598,14 +2598,14 @@ func (mmLogin *mAuthServiceMockLogin) Set(f func(ctx context.Context, username s
 
 // When sets expectation for the AuthService.Login which will trigger the result defined by the following
 // Then helper
-func (mmLogin *mAuthServiceMockLogin) When(ctx context.Context, username string, password string) *AuthServiceMockLoginExpectation {
+func (mmLogin *mAuthServiceMockLogin) When(ctx context.Context, email string, password string) *AuthServiceMockLoginExpectation {
 	if mmLogin.mock.funcLogin != nil {
 		mmLogin.mock.t.Fatalf("AuthServiceMock.Login mock is already set by Set")
 	}
 
 	expectation := &AuthServiceMockLoginExpectation{
 		mock:   mmLogin.mock,
-		params: &AuthServiceMockLoginParams{ctx, username, password},
+		params: &AuthServiceMockLoginParams{ctx, email, password},
 	}
 	mmLogin.expectations = append(mmLogin.expectations, expectation)
 	return expectation
@@ -2638,15 +2638,15 @@ func (mmLogin *mAuthServiceMockLogin) invocationsDone() bool {
 }
 
 // Login implements service.AuthService
-func (mmLogin *AuthServiceMock) Login(ctx context.Context, username string, password string) (s1 string, err error) {
+func (mmLogin *AuthServiceMock) Login(ctx context.Context, email string, password string) (s1 string, err error) {
 	mm_atomic.AddUint64(&mmLogin.beforeLoginCounter, 1)
 	defer mm_atomic.AddUint64(&mmLogin.afterLoginCounter, 1)
 
 	if mmLogin.inspectFuncLogin != nil {
-		mmLogin.inspectFuncLogin(ctx, username, password)
+		mmLogin.inspectFuncLogin(ctx, email, password)
 	}
 
-	mm_params := AuthServiceMockLoginParams{ctx, username, password}
+	mm_params := AuthServiceMockLoginParams{ctx, email, password}
 
 	// Record call args
 	mmLogin.LoginMock.mutex.Lock()
@@ -2665,7 +2665,7 @@ func (mmLogin *AuthServiceMock) Login(ctx context.Context, username string, pass
 		mm_want := mmLogin.LoginMock.defaultExpectation.params
 		mm_want_ptrs := mmLogin.LoginMock.defaultExpectation.paramPtrs
 
-		mm_got := AuthServiceMockLoginParams{ctx, username, password}
+		mm_got := AuthServiceMockLoginParams{ctx, email, password}
 
 		if mm_want_ptrs != nil {
 
@@ -2673,8 +2673,8 @@ func (mmLogin *AuthServiceMock) Login(ctx context.Context, username string, pass
 				mmLogin.t.Errorf("AuthServiceMock.Login got unexpected parameter ctx, want: %#v, got: %#v%s\n", *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
 			}
 
-			if mm_want_ptrs.username != nil && !minimock.Equal(*mm_want_ptrs.username, mm_got.username) {
-				mmLogin.t.Errorf("AuthServiceMock.Login got unexpected parameter username, want: %#v, got: %#v%s\n", *mm_want_ptrs.username, mm_got.username, minimock.Diff(*mm_want_ptrs.username, mm_got.username))
+			if mm_want_ptrs.email != nil && !minimock.Equal(*mm_want_ptrs.email, mm_got.email) {
+				mmLogin.t.Errorf("AuthServiceMock.Login got unexpected parameter email, want: %#v, got: %#v%s\n", *mm_want_ptrs.email, mm_got.email, minimock.Diff(*mm_want_ptrs.email, mm_got.email))
 			}
 
 			if mm_want_ptrs.password != nil && !minimock.Equal(*mm_want_ptrs.password, mm_got.password) {
@@ -2692,9 +2692,9 @@ func (mmLogin *AuthServiceMock) Login(ctx context.Context, username string, pass
 		return (*mm_results).s1, (*mm_results).err
 	}
 	if mmLogin.funcLogin != nil {
-		return mmLogin.funcLogin(ctx, username, password)
+		return mmLogin.funcLogin(ctx, email, password)
 	}
-	mmLogin.t.Fatalf("Unexpected call to AuthServiceMock.Login. %v %v %v", ctx, username, password)
+	mmLogin.t.Fatalf("Unexpected call to AuthServiceMock.Login. %v %v %v", ctx, email, password)
 	return
 }
 
