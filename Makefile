@@ -150,8 +150,8 @@ grpc-load-test:
 
 grpc-error-load-test:
 	ghz \
-		--proto api/note_v1/note.proto \
-		--call note_v1.NoteV1.Get \
+		--proto api/auth_v1/auth.proto vendor.protogen/validate/validate.proto  \
+		--call auth_v1.AuthV1/Get \
 		--data '{"id": 0}' \
 		--rps 100 \
 		--total 3000 \
