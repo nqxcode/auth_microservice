@@ -2,8 +2,8 @@ package auth
 
 import (
 	"context"
-	"log"
-
+	"github.com/nqxcode/auth_microservice/internal/logger"
+	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -13,7 +13,7 @@ import (
 
 // GetList users by limit
 func (s *Implementation) GetList(ctx context.Context, req *desc.GetListRequest) (*desc.GetListResponse, error) {
-	log.Printf("Get limit: %#v", req.GetLimit())
+	logger.Info("Get limit", zap.Any("limit", req.GetLimit()))
 
 	users, err := s.authService.GetList(ctx, converter.ToLimitFromDesc(req.GetLimit()))
 	if err != nil {

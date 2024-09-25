@@ -2,16 +2,16 @@ package auth
 
 import (
 	"context"
-	"log"
-
+	"github.com/nqxcode/auth_microservice/internal/logger"
 	desc "github.com/nqxcode/auth_microservice/pkg/auth_v1"
+	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
 // GetAccessToken get access token
 func (s *Implementation) GetAccessToken(ctx context.Context, req *desc.GetAccessTokenRequest) (*desc.GetAccessTokenResponse, error) {
-	log.Printf("Get access token: %#v", req.GetRefreshToken())
+	logger.Info("Get access token", zap.Any("refreshToken", req.GetRefreshToken))
 
 	accessToken, err := s.authService.GetAccessToken(ctx, req.GetRefreshToken())
 	if err != nil {

@@ -3,9 +3,10 @@ package user_saver
 import (
 	"context"
 	"encoding/json"
-	"log"
-
+	"fmt"
 	"github.com/IBM/sarama"
+	"github.com/nqxcode/auth_microservice/internal/logger"
+	"go.uber.org/zap"
 
 	"github.com/nqxcode/auth_microservice/internal/converter"
 	"github.com/nqxcode/auth_microservice/internal/model"
@@ -20,9 +21,9 @@ func (s *service) UserSaveHandler(ctx context.Context, msg *sarama.ConsumerMessa
 
 	id, err := s.authService.Create(ctx, converter.ToUserInfoFromMessage(&userMessage.Info), userMessage.Password, userMessage.PasswordConfirm)
 	if err != nil {
-		log.Printf("Error creating user: %v", err)
+		logger.Info("Error creating user", zap.Error(err))
 	} else {
-		log.Printf("User with id %d created\n", id)
+		logger.Info(fmt.Sprintf("User with id %d created", id), zap.Error(err))
 	}
 
 	return nil

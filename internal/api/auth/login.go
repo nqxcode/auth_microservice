@@ -2,16 +2,16 @@ package auth
 
 import (
 	"context"
-	"log"
-
+	"github.com/nqxcode/auth_microservice/internal/logger"
 	desc "github.com/nqxcode/auth_microservice/pkg/auth_v1"
+	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
 // Login user
 func (s *Implementation) Login(ctx context.Context, req *desc.LoginRequest) (*desc.LoginResponse, error) {
-	log.Printf("Login user: %+v", req.GetEmail())
+	logger.Info("Login user", zap.Any("email", req.GetEmail()))
 
 	refreshToken, err := s.authService.Login(ctx, req.GetEmail(), req.GetPassword())
 	if err != nil {

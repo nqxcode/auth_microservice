@@ -2,9 +2,13 @@ package app
 
 import (
 	"context"
-	"log"
-
+	"github.com/natefinch/lumberjack"
+	"github.com/nqxcode/auth_microservice/internal/logger"
 	"github.com/nqxcode/auth_microservice/internal/service/token"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
+	"log"
+	"os"
 
 	"github.com/IBM/sarama"
 	redigo "github.com/gomodule/redigo/redis"
@@ -46,6 +50,7 @@ type serviceProvider struct {
 	kafkaConsumerConfig kafka.ConsumerConfig
 	kafkaProducerConfig kafka.ProducerConfig
 	authConfig          config.AuthConfig
+	loggerConfig        config.LoggerConfig
 
 	dbClient  db.Client
 	txManager db.TxManager
@@ -78,6 +83,47 @@ type serviceProvider struct {
 
 func newServiceProvider() *serviceProvider {
 	return &serviceProvider{}
+}
+
+// InitLogger init logger
+func (s *serviceProvider) InitLogger() {
+	cnf := s.NewLoggerConfig()
+
+	logLevel := cnf.GetLogLevel()
+	rollingConfig := cnf.GetRollingConfig()
+
+	stdout := zapcore.AddSync(os.Stdout)
+
+	var level zapcore.Level
+	if err := level.Set(logLevel); err != nil {
+		log.Fatalf("failed to set log level: %v", err)
+	}
+
+	atomicLevel := zap.NewAtomicLevelAt(level)
+
+	file := zapcore.AddSync(&lumberjack.Logger{
+		Filename:   rollingConfig.Filename,
+		MaxSize:    rollingConfig.MaxSizeInMegabytes,
+		MaxBackups: rollingConfig.MaxBackups,
+		MaxAge:     rollingConfig.MaxAgeInDays,
+	})
+
+	productionCfg := zap.NewProductionEncoderConfig()
+	productionCfg.TimeKey = "timestamp"
+	productionCfg.EncodeTime = zapcore.ISO8601TimeEncoder
+
+	developmentCfg := zap.NewDevelopmentEncoderConfig()
+	developmentCfg.EncodeLevel = zapcore.CapitalColorLevelEncoder
+
+	consoleEncoder := zapcore.NewConsoleEncoder(developmentCfg)
+	fileEncoder := zapcore.NewJSONEncoder(productionCfg)
+
+	core := zapcore.NewTee(
+		zapcore.NewCore(consoleEncoder, stdout, atomicLevel),
+		zapcore.NewCore(fileEncoder, file, atomicLevel),
+	)
+
+	logger.Init(core)
 }
 
 // PGConfig config for pg
@@ -206,6 +252,17 @@ func (s *serviceProvider) NewAuthConfig() config.AuthConfig {
 	return s.authConfig
 }
 
+// NewLoggerConfig config for logger
+func (s *serviceProvider) NewLoggerConfig() config.LoggerConfig {
+	if s.loggerConfig == nil {
+		cfg := config.NewLoggerConfig()
+
+		s.loggerConfig = cfg
+	}
+
+	return s.loggerConfig
+}
+
 // DBClient client for pg database
 func (s *serviceProvider) DBClient(ctx context.Context) db.Client {
 	if s.dbClient == nil {
@@ -274,8 +331,7 @@ func (s *serviceProvider) AsyncRunner() async.Runner {
 	return s.asyncRunner
 }
 
-// NewTokenGenerator
-
+// NewTokenGenerator token generator
 func (s *serviceProvider) NewTokenGenerator() service.TokenGenerator {
 	return token.NewGenerator()
 }
