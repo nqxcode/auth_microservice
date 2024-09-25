@@ -27,6 +27,7 @@ type prometheusConfig struct {
 	readHeaderTimeout time.Duration
 }
 
+// NewPrometheusConfig new prometheus config
 func NewPrometheusConfig() (PrometheusConfig, error) {
 	return &prometheusConfig{
 		host:              utils.GetEnv(prometheusHostEnvName, "localhost"),

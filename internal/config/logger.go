@@ -31,6 +31,7 @@ type RollingConfig struct {
 	MaxAgeInDays       int
 }
 
+// NewLoggerConfig new logger config
 func NewLoggerConfig() *loggerConfig {
 	return &loggerConfig{
 		LogLevel: utils.GetEnv(loggerLogLevelEnvName, "info"),
