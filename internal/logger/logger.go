@@ -12,6 +12,11 @@ func Init(core zapcore.Core, options ...zap.Option) {
 	globalLogger = zap.New(core, options...)
 }
 
+// InitNoop initializes the global logger with a no-op logger.
+func InitNoop() {
+	globalLogger = zap.NewNop()
+}
+
 // Logger returns the global logger.
 func Logger() *zap.Logger {
 	return globalLogger
