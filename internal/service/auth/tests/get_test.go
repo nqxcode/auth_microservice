@@ -3,7 +3,6 @@ package tests
 import (
 	"context"
 	"fmt"
-	configMocks "github.com/nqxcode/auth_microservice/internal/config/mocks"
 	"math/rand/v2"
 	"testing"
 
@@ -13,6 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/nqxcode/auth_microservice/internal/config"
+	configMocks "github.com/nqxcode/auth_microservice/internal/config/mocks"
 	"github.com/nqxcode/auth_microservice/internal/model"
 	"github.com/nqxcode/auth_microservice/internal/repository"
 	repoMocks "github.com/nqxcode/auth_microservice/internal/repository/mocks"
