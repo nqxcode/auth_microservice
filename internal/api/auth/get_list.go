@@ -2,21 +2,23 @@ package auth
 
 import (
 	"context"
-	"github.com/opentracing/opentracing-go"
 
-	"github.com/nqxcode/auth_microservice/internal/logger"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
 	"github.com/nqxcode/auth_microservice/internal/converter"
+	"github.com/nqxcode/auth_microservice/internal/logger"
+	"github.com/nqxcode/auth_microservice/internal/tracing"
 	desc "github.com/nqxcode/auth_microservice/pkg/auth_v1"
 )
 
 // GetList users by limit
 func (s *Implementation) GetList(ctx context.Context, req *desc.GetListRequest) (*desc.GetListResponse, error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "GetList")
-	defer span.Finish()
+	span, ctx := tracing.StartSpanFromContext(ctx, "GetList")
+	if span != nil {
+		defer span.Finish()
+	}
 
 	logger.Info("Get limit", zap.Any("limit", req.GetLimit()))
 

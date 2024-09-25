@@ -2,19 +2,20 @@ package auth
 
 import (
 	"context"
-	"github.com/opentracing/opentracing-go"
-
 	"go.uber.org/zap"
 
 	"github.com/nqxcode/auth_microservice/internal/converter"
 	"github.com/nqxcode/auth_microservice/internal/logger"
+	"github.com/nqxcode/auth_microservice/internal/tracing"
 	desc "github.com/nqxcode/auth_microservice/pkg/auth_v1"
 )
 
 // Create user
 func (s *Implementation) Create(ctx context.Context, req *desc.CreateRequest) (*desc.CreateResponse, error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "Create")
-	defer span.Finish()
+	span, ctx := tracing.StartSpanFromContext(ctx, "Create")
+	if span != nil {
+		defer span.Finish()
+	}
 
 	logger.Info("Create user", zap.Any("info", req.GetInfo()))
 

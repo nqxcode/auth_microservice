@@ -2,19 +2,22 @@ package auth
 
 import (
 	"context"
-	"github.com/opentracing/opentracing-go"
 
-	"github.com/nqxcode/auth_microservice/internal/logger"
-	desc "github.com/nqxcode/auth_microservice/pkg/auth_v1"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	"github.com/nqxcode/auth_microservice/internal/logger"
+	"github.com/nqxcode/auth_microservice/internal/tracing"
+	desc "github.com/nqxcode/auth_microservice/pkg/auth_v1"
 )
 
 // GetAccessToken get access token
 func (s *Implementation) GetAccessToken(ctx context.Context, req *desc.GetAccessTokenRequest) (*desc.GetAccessTokenResponse, error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "GetAccessToken")
-	defer span.Finish()
+	span, ctx := tracing.StartSpanFromContext(ctx, "GetAccessToken")
+	if span != nil {
+		defer span.Finish()
+	}
 
 	logger.Info("Get access token", zap.Any("refreshToken", req.GetRefreshToken))
 
