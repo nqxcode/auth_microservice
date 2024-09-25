@@ -1,7 +1,9 @@
 package config
 
 import (
+	"github.com/pkg/errors"
 	"net"
+	"os"
 	"time"
 
 	"github.com/nqxcode/auth_microservice/internal/utils"
@@ -12,6 +14,10 @@ const (
 	prometheusPortEnvName        = "PROMETHEUS_PORT"
 	prometheusMetricsPathEnvName = "PROMETHEUS_METRICS_PATH"
 	prometheusReadHeaderTimeout  = "PROMETHEUS_READ_HEADER_TIMEOUT"
+)
+
+const (
+	defaultMetricsPath = "/metrics"
 )
 
 // PrometheusConfig swagger config
@@ -30,10 +36,20 @@ type prometheusConfig struct {
 
 // NewPrometheusConfig new prometheus config
 func NewPrometheusConfig() (PrometheusConfig, error) {
+	host := os.Getenv(prometheusHostEnvName)
+	if len(host) == 0 {
+		return nil, errors.New("prometheus host not found")
+	}
+
+	port := os.Getenv(prometheusPortEnvName)
+	if len(port) == 0 {
+		return nil, errors.New("prometheus port not found")
+	}
+
 	return &prometheusConfig{
-		host:              utils.GetEnv(prometheusHostEnvName, "localhost"),
-		port:              utils.GetEnv(prometheusPortEnvName, "2112"),
-		metricsPath:       utils.GetEnv(prometheusMetricsPathEnvName, "/metrics"),
+		host:              host,
+		port:              port,
+		metricsPath:       utils.GetEnv(prometheusMetricsPathEnvName, defaultMetricsPath),
 		readHeaderTimeout: utils.GetEnvDuration(prometheusReadHeaderTimeout, 10*time.Second),
 	}, nil
 }

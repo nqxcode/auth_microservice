@@ -56,6 +56,7 @@ type serviceProvider struct {
 	authConfig          config.AuthConfig
 	loggerConfig        config.LoggerConfig
 	prometheusConfig    config.PrometheusConfig
+	tracingConfig       config.TracingConfig
 	appConfig           config.AppConfig
 
 	dbClient  db.Client
@@ -142,7 +143,7 @@ func (s *serviceProvider) InitMetric(ctx context.Context) {
 
 // InitTracing init tracing
 func (s *serviceProvider) InitTracing(_ context.Context) {
-	tracing.Init(logger.Logger(), s.NewAppConfig().GetName())
+	tracing.Init(logger.Logger(), s.NewAppConfig().GetName(), s.NewTracingConfig().Address())
 }
 
 // PGConfig config for pg
@@ -307,6 +308,20 @@ func (s *serviceProvider) NewPrometheusConfig() config.PrometheusConfig {
 	}
 
 	return s.prometheusConfig
+}
+
+// NewTracingConfig config for tracing
+func (s *serviceProvider) NewTracingConfig() config.TracingConfig {
+	if s.tracingConfig == nil {
+		cfg, err := config.NewTracingConfig()
+		if err != nil {
+			log.Fatalf("failed to get tracing config: %s", err.Error())
+		}
+
+		s.tracingConfig = cfg
+	}
+
+	return s.tracingConfig
 }
 
 // DBClient client for pg database
