@@ -1,29 +1,25 @@
 package converter
 
-const (
-	unknown = "unknown"
-	admin   = "admin"
-	user    = "user"
-)
+import "github.com/nqxcode/auth_microservice/internal/model"
 
 // ToRoleString to role string
 func ToRoleString(role int32) string {
 	switch role {
 	case 1:
-		return admin
+		return model.AdminRole
 	case 2:
-		return user
+		return model.UserRole
 	default:
-		return unknown
+		return model.UnknownRole
 	}
 }
 
 // ToRole to role
 func ToRole(role string) int32 {
 	switch role {
-	case admin:
+	case model.AdminRole:
 		return 1
-	case user:
+	case model.UserRole:
 		return 2
 	default:
 		return 0
