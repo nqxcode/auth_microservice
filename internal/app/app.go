@@ -374,18 +374,16 @@ func serveSwaggerFile(path string) http.HandlerFunc {
 }
 
 func (a *App) runPrometheus(ctx context.Context) error {
-	cfg := a.serviceProvider.NewPrometheusConfig()
-
 	mux := http.NewServeMux()
-	mux.Handle(cfg.MetricsPath(), promhttp.Handler())
+	mux.Handle(a.serviceProvider.NewPrometheusConfig().MetricsPath(), promhttp.Handler())
 
 	a.prometheusServer = &http.Server{
-		Addr:              cfg.Address(),
+		Addr:              a.serviceProvider.NewPrometheusConfig().Address(),
 		Handler:           mux,
-		ReadHeaderTimeout: cfg.ReadHeaderTimeout(),
+		ReadHeaderTimeout: a.serviceProvider.NewPrometheusConfig().ReadHeaderTimeout(),
 	}
 
-	logger.Info(fmt.Sprintf("Prometheus server is running on %s", cfg.Address()))
+	logger.Info(fmt.Sprintf("Prometheus server is running on %s", a.serviceProvider.NewPrometheusConfig().Address()))
 
 	go func() {
 		<-ctx.Done()
