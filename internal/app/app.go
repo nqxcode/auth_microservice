@@ -379,8 +379,9 @@ func (a *App) runPrometheus(ctx context.Context) error {
 	mux.Handle(cfg.MetricsPath(), promhttp.Handler())
 
 	a.prometheusServer = &http.Server{
-		Addr:    cfg.Address(),
-		Handler: mux,
+		Addr:              cfg.Address(),
+		Handler:           mux,
+		ReadHeaderTimeout: cfg.ReadHeaderTimeout(),
 	}
 
 	logger.Info(fmt.Sprintf("Prometheus server is running on %s", cfg.Address()))
