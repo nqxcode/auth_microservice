@@ -1,8 +1,7 @@
 package config
 
 import (
-	"os"
-	"strconv"
+	"github.com/nqxcode/auth_microservice/internal/utils"
 )
 
 const (
@@ -34,12 +33,12 @@ type RollingConfig struct {
 
 func NewLoggerConfig() *loggerConfig {
 	return &loggerConfig{
-		LogLevel: getEnv(loggerLogLevelEnvName, "info"),
+		LogLevel: utils.GetEnv(loggerLogLevelEnvName, "info"),
 		Rolling: RollingConfig{
-			Filename:           getEnv(loggerRollingFilenameEnvName, "logs/app.log"),
-			MaxSizeInMegabytes: getEnvInt(loggerRollingMaxSizeEnvName, 10),
-			MaxBackups:         getEnvInt(loggerRollingMaxBackupsEnvName, 3),
-			MaxAgeInDays:       getEnvInt(loggerRollingMaxAgeEnvName, 7),
+			Filename:           utils.GetEnv(loggerRollingFilenameEnvName, "logs/app.log"),
+			MaxSizeInMegabytes: utils.GetEnvInt(loggerRollingMaxSizeEnvName, 10),
+			MaxBackups:         utils.GetEnvInt(loggerRollingMaxBackupsEnvName, 3),
+			MaxAgeInDays:       utils.GetEnvInt(loggerRollingMaxAgeEnvName, 7),
 		},
 	}
 }
@@ -50,27 +49,4 @@ func (c *loggerConfig) GetLogLevel() string {
 
 func (c *loggerConfig) GetRollingConfig() RollingConfig {
 	return c.Rolling
-}
-
-func getEnv(key, defaultValue string) string {
-	value := os.Getenv(key)
-	if value == "" {
-		return defaultValue
-	}
-
-	return value
-}
-
-func getEnvInt(key string, defaultValue int) int {
-	value := os.Getenv(key)
-	if value == "" {
-		return defaultValue
-	}
-
-	intValue, err := strconv.Atoi(value)
-	if err != nil {
-		return defaultValue
-	}
-
-	return intValue
 }

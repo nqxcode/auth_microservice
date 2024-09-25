@@ -9,6 +9,7 @@ import (
 	"github.com/nqxcode/auth_microservice/internal/metric"
 )
 
+// MetricsInterceptor metrics interceptor
 func MetricsInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 	metric.IncRequestCounter()
 

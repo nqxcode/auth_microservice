@@ -1,50 +1,38 @@
 package config
 
 import (
+	"github.com/nqxcode/auth_microservice/internal/utils"
 	"net"
-	"os"
-
-	"github.com/pkg/errors"
+	"time"
 )
 
 const (
 	prometheusHostEnvName        = "PROMETHEUS_HOST"
 	prometheusPortEnvName        = "PROMETHEUS_PORT"
 	prometheusMetricsPathEnvName = "PROMETHEUS_METRICS_PATH"
+	prometheusReadHeaderTimeout  = "PROMETHEUS_READ_HEADER_TIMEOUT"
 )
 
 // PrometheusConfig swagger config
 type PrometheusConfig interface {
 	Address() string
 	MetricsPath() string
+	ReadHeaderTimeout() time.Duration
 }
 
 type prometheusConfig struct {
-	host        string
-	port        string
-	metricsPath string
+	host              string
+	port              string
+	metricsPath       string
+	readHeaderTimeout time.Duration
 }
 
 func NewPrometheusConfig() (PrometheusConfig, error) {
-	host := os.Getenv(prometheusHostEnvName)
-	if len(host) == 0 {
-		return nil, errors.New("swagger host not found")
-	}
-
-	port := os.Getenv(prometheusPortEnvName)
-	if len(port) == 0 {
-		return nil, errors.New("swagger port not found")
-	}
-
-	metricsPath := os.Getenv(prometheusMetricsPathEnvName)
-	if len(metricsPath) == 0 {
-		return nil, errors.New("prometheus metrics path not found")
-	}
-
 	return &prometheusConfig{
-		host:        host,
-		port:        port,
-		metricsPath: metricsPath,
+		host:              utils.GetEnv(prometheusHostEnvName, "localhost"),
+		port:              utils.GetEnv(prometheusPortEnvName, "2112"),
+		metricsPath:       utils.GetEnv(prometheusMetricsPathEnvName, "/metrics"),
+		readHeaderTimeout: utils.GetEnvDuration(prometheusReadHeaderTimeout, 10*time.Second),
 	}, nil
 }
 
@@ -54,4 +42,8 @@ func (cfg *prometheusConfig) Address() string {
 
 func (cfg *prometheusConfig) MetricsPath() string {
 	return cfg.metricsPath
+}
+
+func (cfg *prometheusConfig) ReadHeaderTimeout() time.Duration {
+	return cfg.readHeaderTimeout
 }

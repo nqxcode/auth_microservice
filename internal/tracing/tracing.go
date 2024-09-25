@@ -5,6 +5,7 @@ import (
 	"go.uber.org/zap"
 )
 
+// Init initializes tracing
 func Init(logger *zap.Logger, serviceName string) {
 	cfg := config.Configuration{
 		Sampler: &config.SamplerConfig{
