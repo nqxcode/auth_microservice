@@ -297,12 +297,16 @@ func (s *serviceProvider) NewLoggerConfig() config.LoggerConfig {
 
 // NewPrometheusConfig config for prometheus
 func (s *serviceProvider) NewPrometheusConfig() config.PrometheusConfig {
-	cfg, err := config.NewPrometheusConfig()
-	if err != nil {
-		log.Fatalf("failed to get prometheus config: %s", err.Error())
+	if s.prometheusConfig == nil {
+		cfg, err := config.NewPrometheusConfig()
+		if err != nil {
+			log.Fatalf("failed to get prometheus config: %s", err.Error())
+		}
+
+		s.prometheusConfig = cfg
 	}
 
-	return cfg
+	return s.prometheusConfig
 }
 
 // DBClient client for pg database

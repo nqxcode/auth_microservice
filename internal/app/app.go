@@ -144,7 +144,7 @@ func (a *App) initDeps(ctx context.Context) error {
 		a.initServiceProvider,
 		a.initLogger,
 		a.initMetrics,
-		a.InitTracing,
+		a.initTracing,
 		a.initGRPCServer,
 		a.initHTTPServer,
 		a.initSwaggerServer,
@@ -170,7 +170,8 @@ func (a *App) initMetrics(ctx context.Context) error {
 	return nil
 }
 
-func (a *App) InitTracing(ctx context.Context) error {
+// initTracing initializes tracing
+func (a *App) initTracing(ctx context.Context) error {
 	a.serviceProvider.InitTracing(ctx)
 	return nil
 }
