@@ -69,7 +69,7 @@ func TestCheck(t *testing.T) {
 		endpointAddress = "endpoint-address"
 	)
 
-	secretKey := "secret-key"
+	secretKey := "secret-key" // nolint: goconst
 	accessToken, err := utils.GenerateToken(model.UserInfo{
 		Name:  name,
 		Email: email,

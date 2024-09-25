@@ -66,7 +66,7 @@ func TestGetAccessToken(t *testing.T) {
 		repoErr = fmt.Errorf("repo error")
 	)
 
-	secretKey := "secret-key"
+	secretKey := "secret-key" // nolint: goconst
 	refreshToken, err := utils.GenerateToken(model.UserInfo{
 		Name:  name,
 		Email: email,
