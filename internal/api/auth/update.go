@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/nqxcode/auth_microservice/internal/logger"
 	"go.uber.org/zap"

@@ -2,13 +2,14 @@ package app
 
 import (
 	"context"
+	"log"
+	"os"
+
 	"github.com/natefinch/lumberjack"
 	"github.com/nqxcode/auth_microservice/internal/logger"
 	"github.com/nqxcode/auth_microservice/internal/service/token"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
-	"log"
-	"os"
 
 	"github.com/IBM/sarama"
 	redigo "github.com/gomodule/redigo/redis"
