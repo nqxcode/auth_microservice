@@ -13,6 +13,7 @@ const (
 	loggerRollingMaxAgeEnvName     = "LOGGER_ROLLING_FILE_MAX_AGE"
 )
 
+// LoggerConfig logger config
 type LoggerConfig interface {
 	GetLogLevel() string
 	GetRollingConfig() RollingConfig
@@ -23,6 +24,7 @@ type loggerConfig struct {
 	Rolling  RollingConfig
 }
 
+// RollingConfig rolling config
 type RollingConfig struct {
 	Filename           string
 	MaxSizeInMegabytes int

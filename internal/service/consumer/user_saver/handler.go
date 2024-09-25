@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+
 	"github.com/IBM/sarama"
 	"github.com/nqxcode/auth_microservice/internal/logger"
 	"go.uber.org/zap"

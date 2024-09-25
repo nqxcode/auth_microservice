@@ -10,6 +10,7 @@ import (
 	"github.com/nqxcode/auth_microservice/internal/logger"
 )
 
+// LogInterceptor log interceptor
 func LogInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 	now := time.Now()
 
