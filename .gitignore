@@ -11,3 +11,5 @@
 /service.key
 /service.pem
 /logs/app.log
+/client.key
+/client.crt
