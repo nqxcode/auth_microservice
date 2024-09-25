@@ -10,3 +10,4 @@
 /service.csr
 /service.key
 /service.pem
+/logs/app.log

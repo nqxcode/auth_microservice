@@ -2,8 +2,8 @@ package auth
 
 import (
 	"context"
-	"log"
-
+	"github.com/nqxcode/auth_microservice/internal/logger"
+	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -13,7 +13,7 @@ import (
 
 // Get user by id
 func (s *Implementation) Get(ctx context.Context, req *desc.GetRequest) (*desc.GetResponse, error) {
-	log.Printf("Get user: %d", req.GetId())
+	logger.Info("Get user", zap.Any("id", req.GetId()))
 
 	user, err := s.authService.Get(ctx, req.GetId())
 	if err != nil {

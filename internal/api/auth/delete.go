@@ -2,8 +2,8 @@ package auth
 
 import (
 	"context"
-	"log"
-
+	"github.com/nqxcode/auth_microservice/internal/logger"
+	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -13,7 +13,7 @@ import (
 
 // Delete user by id
 func (s *Implementation) Delete(ctx context.Context, req *desc.DeleteRequest) (*empty.Empty, error) {
-	log.Printf("Delete user: %+v", req.GetId())
+	logger.Info("Delete user", zap.Any("id", req.GetId()))
 
 	err := s.authService.Delete(ctx, req.GetId())
 	if err != nil {
