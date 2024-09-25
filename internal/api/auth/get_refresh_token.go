@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"github.com/opentracing/opentracing-go"
 
 	"github.com/nqxcode/auth_microservice/internal/logger"
 	desc "github.com/nqxcode/auth_microservice/pkg/auth_v1"
@@ -12,6 +13,9 @@ import (
 
 // GetRefreshToken get refresh token
 func (s *Implementation) GetRefreshToken(ctx context.Context, req *desc.GetRefreshTokenRequest) (*desc.GetRefreshTokenResponse, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "GetRefreshToken")
+	defer span.Finish()
+
 	logger.Info("Get refresh token", zap.Any("oldRefreshToken", req.GetOldRefreshToken()))
 
 	refreshToken, err := s.authService.GetRefreshToken(ctx, req.GetOldRefreshToken())

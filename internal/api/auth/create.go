@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"github.com/opentracing/opentracing-go"
 
 	"go.uber.org/zap"
 
@@ -12,6 +13,9 @@ import (
 
 // Create user
 func (s *Implementation) Create(ctx context.Context, req *desc.CreateRequest) (*desc.CreateResponse, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "Create")
+	defer span.Finish()
+
 	logger.Info("Create user", zap.Any("info", req.GetInfo()))
 
 	userID, err := s.authService.Create(ctx, converter.ToUserInfoFromDesc(req.GetInfo()), req.GetPassword(), req.GetPasswordConfirm())

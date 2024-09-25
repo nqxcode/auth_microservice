@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"github.com/opentracing/opentracing-go"
 
 	"github.com/nqxcode/auth_microservice/internal/logger"
 	"go.uber.org/zap"
@@ -14,6 +15,9 @@ import (
 
 // GetList users by limit
 func (s *Implementation) GetList(ctx context.Context, req *desc.GetListRequest) (*desc.GetListResponse, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "GetList")
+	defer span.Finish()
+
 	logger.Info("Get limit", zap.Any("limit", req.GetLimit()))
 
 	users, err := s.authService.GetList(ctx, converter.ToLimitFromDesc(req.GetLimit()))
