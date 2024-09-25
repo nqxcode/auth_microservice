@@ -32,10 +32,6 @@ func ServerTracingInterceptor(ctx context.Context, req interface{}, info *grpc.U
 	if err != nil {
 		ext.Error.Set(span, true)
 		span.SetTag("err", err.Error())
-	} else {
-		// Ответ может быть большим, поэтому не стоит добавлять его в теги
-		// Здесь это лишь пример, как можно добавить ответ в тег
-		span.SetTag("res", res)
 	}
 
 	return res, err
