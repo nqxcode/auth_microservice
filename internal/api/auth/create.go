@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+
 	"go.uber.org/zap"
 
 	"github.com/nqxcode/auth_microservice/internal/converter"
