@@ -2,10 +2,11 @@ package app
 
 import (
 	"context"
-	"github.com/nqxcode/auth_microservice/internal/metric"
-	"github.com/nqxcode/auth_microservice/internal/tracing"
 	"log"
 	"os"
+
+	"github.com/nqxcode/auth_microservice/internal/metric"
+	"github.com/nqxcode/auth_microservice/internal/tracing"
 
 	"github.com/natefinch/lumberjack"
 	"github.com/nqxcode/auth_microservice/internal/logger"
@@ -54,6 +55,7 @@ type serviceProvider struct {
 	kafkaProducerConfig kafka.ProducerConfig
 	authConfig          config.AuthConfig
 	loggerConfig        config.LoggerConfig
+	prometheusConfig    config.PrometheusConfig
 	appConfig           config.AppConfig
 
 	dbClient  db.Client
@@ -291,6 +293,16 @@ func (s *serviceProvider) NewLoggerConfig() config.LoggerConfig {
 	}
 
 	return s.loggerConfig
+}
+
+// NewPrometheusConfig config for prometheus
+func (s *serviceProvider) NewPrometheusConfig() config.PrometheusConfig {
+	cfg, err := config.NewPrometheusConfig()
+	if err != nil {
+		log.Fatalf("failed to get prometheus config: %s", err.Error())
+	}
+
+	return cfg
 }
 
 // DBClient client for pg database
