@@ -1,9 +1,10 @@
 package tests
 
 import (
-	"github.com/nqxcode/auth_microservice/internal/logger"
 	"os"
 	"testing"
+
+	"github.com/nqxcode/auth_microservice/internal/logger"
 )
 
 func TestMain(m *testing.M) {
