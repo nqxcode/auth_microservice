@@ -2,6 +2,7 @@ package tests
 
 import (
 	"context"
+	"fmt"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/gojuno/minimock/v3"
 	"github.com/nqxcode/auth_microservice/internal/config"
@@ -59,12 +60,12 @@ func TestCheck(t *testing.T) {
 		passwordHash = "HASH123"
 		createdAt    = gofakeit.Date()
 
-		//repoErr = fmt.Errorf("repo error")
+		repoErr = fmt.Errorf("repo error")
 
 		endpointAddress = "endpoint-address"
 	)
 
-	secretKey := "W4/X+LLjehdxptt4YgGFCvMpq5ewptpZZYRHY6A72g0="
+	secretKey := "secret-key"
 	accessToken, err := utils.GenerateToken(model.UserInfo{
 		Name:  name,
 		Email: email,
@@ -78,8 +79,6 @@ func TestCheck(t *testing.T) {
 	}
 
 	incomingContext := metadata.NewIncomingContext(ctx, metadata.Pairs("authorization", "Bearer "+accessToken))
-
-	repoErr := errors.New("repo error")
 
 	info := model.UserInfo{
 		Name:  name,
