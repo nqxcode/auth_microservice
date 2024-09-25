@@ -129,6 +129,8 @@ func (a *App) initDeps(ctx context.Context) error {
 		a.initConfig,
 		a.initServiceProvider,
 		a.initLogger,
+		a.initMetrics,
+		a.InitTracing,
 		a.initGRPCServer,
 		a.initHTTPServer,
 		a.initSwaggerServer,
@@ -144,8 +146,18 @@ func (a *App) initDeps(ctx context.Context) error {
 	return nil
 }
 
-func (a *App) initLogger(_ context.Context) error {
-	a.serviceProvider.InitLogger()
+func (a *App) initLogger(ctx context.Context) error {
+	a.serviceProvider.InitLogger(ctx)
+	return nil
+}
+
+func (a *App) initMetrics(ctx context.Context) error {
+	a.serviceProvider.InitMetric(ctx)
+	return nil
+}
+
+func (a *App) InitTracing(ctx context.Context) error {
+	a.serviceProvider.InitTracing(ctx)
 	return nil
 }
 
@@ -173,6 +185,8 @@ func (a *App) initGRPCServer(ctx context.Context) error {
 
 	a.grpcServer = grpc.NewServer(grpc.Creds(creds), grpc.UnaryInterceptor(
 		grpcMiddleware.ChainUnaryServer(
+			interceptor.MetricsInterceptor,
+			interceptor.ServerTracingInterceptor,
 			interceptor.LogInterceptor,
 			interceptor.ValidateInterceptor,
 		),
