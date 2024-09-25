@@ -1,9 +1,10 @@
 package config
 
 import (
-	"github.com/nqxcode/auth_microservice/internal/utils"
 	"net"
 	"time"
+
+	"github.com/nqxcode/auth_microservice/internal/utils"
 )
 
 const (
