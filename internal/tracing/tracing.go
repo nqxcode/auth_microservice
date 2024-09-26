@@ -8,7 +8,7 @@ import (
 	"go.uber.org/zap"
 )
 
-var globalEnabled bool
+var globalInit bool
 
 // Init initializes tracing
 func Init(logger *zap.Logger, serviceName, localAgentHostPort string) {
@@ -27,17 +27,17 @@ func Init(logger *zap.Logger, serviceName, localAgentHostPort string) {
 		logger.Fatal("failed to init tracing", zap.Error(err))
 	}
 
-	globalEnabled = true
+	globalInit = true
 }
 
 // InitNoop initializes noop tracer
 func InitNoop() {
-	globalEnabled = false
+	globalInit = false
 }
 
 // StartSpanFromContext starts a new span with opentracing.StartSpanFromContext
 func StartSpanFromContext(ctx context.Context, operationName string) (opentracing.Span, context.Context) {
-	if !globalEnabled {
+	if !globalInit {
 		return nil, ctx
 	}
 
