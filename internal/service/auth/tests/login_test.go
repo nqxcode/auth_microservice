@@ -66,8 +66,9 @@ func TestLogin(t *testing.T) {
 	)
 
 	secretKey := "secret-key" // nolint: goconst
-	refreshToken := "token"
-	accessToken := "token"
+	fakeToken := "token"
+	refreshToken := fakeToken
+	accessToken := fakeToken
 
 	info := model.UserInfo{
 		Name:  name,

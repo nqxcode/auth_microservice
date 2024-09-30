@@ -2,9 +2,9 @@ package auth
 
 import (
 	"context"
-	"github.com/nqxcode/auth_microservice/internal/model"
 	"strings"
 
+	"github.com/nqxcode/auth_microservice/internal/model"
 	"github.com/nqxcode/auth_microservice/internal/utils"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc/codes"
