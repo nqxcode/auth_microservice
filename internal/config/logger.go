@@ -12,6 +12,13 @@ const (
 	loggerRollingMaxAgeEnvName     = "LOGGER_ROLLING_FILE_MAX_AGE"
 )
 
+const (
+	defaultLoggerRollingFilename   = "logs/app.log"
+	defaultLoggerRollingMaxSize    = 10
+	defaultLoggerRollingMaxBackups = 3
+	defaultLoggerRollingMaxAge     = 7
+)
+
 // LoggerConfig logger config
 type LoggerConfig interface {
 	GetLogLevel() string
@@ -36,10 +43,10 @@ func NewLoggerConfig() *loggerConfig {
 	return &loggerConfig{
 		LogLevel: utils.GetEnv(loggerLogLevelEnvName, "info"),
 		Rolling: RollingConfig{
-			Filename:           utils.GetEnv(loggerRollingFilenameEnvName, "logs/app.log"),
-			MaxSizeInMegabytes: utils.GetEnvInt(loggerRollingMaxSizeEnvName, 10),
-			MaxBackups:         utils.GetEnvInt(loggerRollingMaxBackupsEnvName, 3),
-			MaxAgeInDays:       utils.GetEnvInt(loggerRollingMaxAgeEnvName, 7),
+			Filename:           utils.GetEnv(loggerRollingFilenameEnvName, defaultLoggerRollingFilename),
+			MaxSizeInMegabytes: utils.GetEnvInt(loggerRollingMaxSizeEnvName, defaultLoggerRollingMaxSize),
+			MaxBackups:         utils.GetEnvInt(loggerRollingMaxBackupsEnvName, defaultLoggerRollingMaxBackups),
+			MaxAgeInDays:       utils.GetEnvInt(loggerRollingMaxAgeEnvName, defaultLoggerRollingMaxAge),
 		},
 	}
 }
