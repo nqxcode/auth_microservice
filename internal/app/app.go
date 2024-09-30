@@ -2,7 +2,9 @@ package app
 
 import (
 	"context"
+	"crypto/tls"
 	"flag"
+	"fmt"
 	"io"
 	"log"
 	"net"
@@ -16,7 +18,9 @@ import (
 	"github.com/nqxcode/platform_common/closer"
 	"github.com/rakyll/statik/fs"
 	"github.com/rs/cors"
+	"go.uber.org/multierr"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
 
@@ -62,46 +66,59 @@ func (a *App) Run(ctx context.Context) error {
 	ctx, cancel := context.WithCancel(ctx)
 
 	wg := &sync.WaitGroup{}
-	wg.Add(3)
+	errChan := make(chan error, 4)
 
+	wg.Add(1)
 	go func() {
 		defer wg.Done()
 
-		err := a.runGRPCServer()
+		err := a.runGRPCServer(ctx)
 		if err != nil {
-			log.Fatalf("failed to run GRPC server: %v", err)
+			errChan <- fmt.Errorf("failed to run GRPC server: %v", err)
 		}
 	}()
 
+	wg.Add(1)
 	go func() {
 		defer wg.Done()
 
-		err := a.runHTTPServer()
+		err := a.runHTTPServer(ctx)
 		if err != nil {
-			log.Fatalf("failed to run HTTP server: %v", err)
+			errChan <- fmt.Errorf("failed to run HTTP server: %v", err)
 		}
 	}()
 
+	wg.Add(1)
 	go func() {
 		defer wg.Done()
 
-		err := a.runSwaggerServer()
+		err := a.runSwaggerServer(ctx)
 		if err != nil {
-			log.Fatalf("failed to run Swagger server: %v", err)
+			errChan <- fmt.Errorf("failed to run Swagger server: %v", err)
 		}
 	}()
 
+	wg.Add(1)
 	go func() {
 		defer wg.Done()
+
 		err := a.serviceProvider.ConsumerService(ctx).RunConsumer(ctx)
 		if err != nil {
-			log.Printf("failed to run consumer: %s", err.Error())
+			errChan <- fmt.Errorf("failed to run consumer: %s", err.Error())
 		}
 	}()
 
 	gracefulShutdown(ctx, cancel, wg)
 
-	return nil
+	errs := make([]error, 0, len(errChan))
+	for i := 0; i < len(errChan); i++ {
+		err := <-errChan
+		if err != nil {
+			errs = append(errs, err)
+		}
+	}
+
+	return multierr.Combine(errs...)
 }
 
 func (a *App) initDeps(ctx context.Context) error {
@@ -138,7 +155,14 @@ func (a *App) initServiceProvider(_ context.Context) error {
 }
 
 func (a *App) initGRPCServer(ctx context.Context) error {
-	a.grpcServer = grpc.NewServer(grpc.Creds(insecure.NewCredentials()), grpc.UnaryInterceptor(interceptor.ValidateInterceptor))
+	tlsCert, err := tls.X509KeyPair(a.serviceProvider.GRPCConfig().Cert(), a.serviceProvider.GRPCConfig().Key())
+	if err != nil {
+		return err
+	}
+
+	creds := credentials.NewServerTLSFromCert(&tlsCert)
+
+	a.grpcServer = grpc.NewServer(grpc.Creds(creds), grpc.UnaryInterceptor(interceptor.ValidateInterceptor))
 
 	reflection.Register(a.grpcServer)
 
@@ -198,8 +222,14 @@ func (a *App) initSwaggerServer(_ context.Context) error {
 	return nil
 }
 
-func (a *App) runGRPCServer() error {
+func (a *App) runGRPCServer(ctx context.Context) error {
 	log.Printf("GRPC server is running on %s", a.serviceProvider.GRPCConfig().Address())
+
+	go func() {
+		<-ctx.Done()
+		a.grpcServer.GracefulStop()
+		log.Printf("GRPC server gracefully stopped")
+	}()
 
 	listener, err := net.Listen("tcp", a.serviceProvider.GRPCConfig().Address())
 	if err != nil {
@@ -214,8 +244,20 @@ func (a *App) runGRPCServer() error {
 	return nil
 }
 
-func (a *App) runHTTPServer() error {
+func (a *App) runHTTPServer(ctx context.Context) error {
 	log.Printf("HTTP server is running on %s", a.serviceProvider.HTTPConfig().Address())
+
+	go func() {
+		<-ctx.Done()
+		if shutdownErr := a.httpServer.Shutdown(ctx); shutdownErr != nil {
+			log.Printf("HTTP server shutdown err: %s", shutdownErr)
+			if closeErr := a.httpServer.Close(); shutdownErr != nil {
+				log.Printf("HTTP server close err: %s", closeErr)
+			}
+		} else {
+			log.Printf("HTTP server gracefully stopped")
+		}
+	}()
 
 	err := a.httpServer.ListenAndServe()
 	if err != nil {
@@ -225,8 +267,20 @@ func (a *App) runHTTPServer() error {
 	return nil
 }
 
-func (a *App) runSwaggerServer() error {
+func (a *App) runSwaggerServer(ctx context.Context) error {
 	log.Printf("Swagger server is running on %s", a.serviceProvider.SwaggerConfig().Address())
+
+	go func() {
+		<-ctx.Done()
+		if shutdownErr := a.swaggerServer.Shutdown(ctx); shutdownErr != nil {
+			log.Printf("Swagger server shutdown err: %s", shutdownErr)
+			if closeErr := a.swaggerServer.Close(); shutdownErr != nil {
+				log.Printf("Swagger server close err: %s", closeErr)
+			}
+		} else {
+			log.Printf("Swagger server gracefully stopped")
+		}
+	}()
 
 	err := a.swaggerServer.ListenAndServe()
 	if err != nil {

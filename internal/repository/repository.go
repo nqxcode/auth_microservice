@@ -14,6 +14,7 @@ type UserRepository interface {
 	Update(ctx context.Context, id int64, info *model.UpdateUserInfo) error
 	Delete(ctx context.Context, id int64) error
 	Get(ctx context.Context, id int64) (*model.User, error)
+	GetByEmail(ctx context.Context, email string) (*model.User, error)
 	GetByIDs(ctx context.Context, id []int64) ([]model.User, error)
 	GetList(ctx context.Context, limit pagination.Limit) ([]model.User, error)
 	ExistsWithEmail(ctx context.Context, email string) (bool, error)
@@ -22,4 +23,9 @@ type UserRepository interface {
 // LogRepository log repository
 type LogRepository interface {
 	Create(ctx context.Context, model *model.Log) error
+}
+
+// AccessibleRoleRepository accessible role repository
+type AccessibleRoleRepository interface {
+	GetList(ctx context.Context) ([]model.AccessibleRole, error)
 }
