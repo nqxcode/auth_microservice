@@ -13,6 +13,7 @@ const (
 )
 
 const (
+	defaultLoggerLogLevel          = "info"
 	defaultLoggerRollingFilename   = "logs/app.log"
 	defaultLoggerRollingMaxSize    = 10
 	defaultLoggerRollingMaxBackups = 3
@@ -41,7 +42,7 @@ type RollingConfig struct {
 // NewLoggerConfig new logger config
 func NewLoggerConfig() *loggerConfig {
 	return &loggerConfig{
-		LogLevel: utils.GetEnv(loggerLogLevelEnvName, "info"),
+		LogLevel: utils.GetEnv(loggerLogLevelEnvName, defaultLoggerLogLevel),
 		Rolling: RollingConfig{
 			Filename:           utils.GetEnv(loggerRollingFilenameEnvName, defaultLoggerRollingFilename),
 			MaxSizeInMegabytes: utils.GetEnvInt(loggerRollingMaxSizeEnvName, defaultLoggerRollingMaxSize),
