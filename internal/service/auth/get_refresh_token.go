@@ -11,6 +11,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+// GetRefreshToken get refresh token by refresh token
 func (s *service) GetRefreshToken(ctx context.Context, refreshToken string) (string, error) {
 	claims, err := utils.VerifyToken(refreshToken, []byte(s.authConfig.RefreshTokenSecretKey()))
 	if err != nil {

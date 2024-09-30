@@ -7,6 +7,7 @@ import (
 	"github.com/nqxcode/auth_microservice/internal/model"
 )
 
+// Login user
 func (s *service) Login(ctx context.Context, email, password string) (*model.TokenPair, error) {
 	user, err := s.userRepository.GetByEmail(ctx, email)
 	if err != nil {
