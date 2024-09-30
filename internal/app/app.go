@@ -14,11 +14,15 @@ import (
 	"sync"
 	"syscall"
 
+	grpcMiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"github.com/nqxcode/auth_microservice/internal/logger"
 	"github.com/nqxcode/platform_common/closer"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rakyll/statik/fs"
 	"github.com/rs/cors"
 	"go.uber.org/multierr"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
@@ -38,10 +42,11 @@ func init() {
 
 // App application
 type App struct {
-	serviceProvider *serviceProvider
-	grpcServer      *grpc.Server
-	httpServer      *http.Server
-	swaggerServer   *http.Server
+	serviceProvider  *serviceProvider
+	grpcServer       *grpc.Server
+	httpServer       *http.Server
+	swaggerServer    *http.Server
+	prometheusServer *http.Server
 }
 
 // NewApp new application
@@ -108,6 +113,18 @@ func (a *App) Run(ctx context.Context) error {
 		}
 	}()
 
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+
+		err := a.runPrometheus(ctx)
+		if err != nil {
+			if err != nil {
+				errChan <- fmt.Errorf("failed to run prometheus server: %s", err.Error())
+			}
+		}
+	}()
+
 	gracefulShutdown(ctx, cancel, wg)
 
 	errs := make([]error, 0, len(errChan))
@@ -125,6 +142,9 @@ func (a *App) initDeps(ctx context.Context) error {
 	inits := []func(context.Context) error{
 		a.initConfig,
 		a.initServiceProvider,
+		a.initLogger,
+		a.initMetrics,
+		a.initTracing,
 		a.initGRPCServer,
 		a.initHTTPServer,
 		a.initSwaggerServer,
@@ -137,6 +157,22 @@ func (a *App) initDeps(ctx context.Context) error {
 		}
 	}
 
+	return nil
+}
+
+func (a *App) initLogger(ctx context.Context) error {
+	a.serviceProvider.InitLogger(ctx)
+	return nil
+}
+
+func (a *App) initMetrics(ctx context.Context) error {
+	a.serviceProvider.InitMetric(ctx)
+	return nil
+}
+
+// initTracing initializes tracing
+func (a *App) initTracing(ctx context.Context) error {
+	a.serviceProvider.InitTracing(ctx)
 	return nil
 }
 
@@ -162,7 +198,14 @@ func (a *App) initGRPCServer(ctx context.Context) error {
 
 	creds := credentials.NewServerTLSFromCert(&tlsCert)
 
-	a.grpcServer = grpc.NewServer(grpc.Creds(creds), grpc.UnaryInterceptor(interceptor.ValidateInterceptor))
+	a.grpcServer = grpc.NewServer(grpc.Creds(creds), grpc.UnaryInterceptor(
+		grpcMiddleware.ChainUnaryServer(
+			interceptor.MetricsInterceptor,
+			interceptor.ServerTracingInterceptor,
+			interceptor.LogInterceptor,
+			interceptor.ValidateInterceptor,
+		),
+	))
 
 	reflection.Register(a.grpcServer)
 
@@ -223,12 +266,12 @@ func (a *App) initSwaggerServer(_ context.Context) error {
 }
 
 func (a *App) runGRPCServer(ctx context.Context) error {
-	log.Printf("GRPC server is running on %s", a.serviceProvider.GRPCConfig().Address())
+	logger.Info("GRPC server is running", zap.String("address", a.serviceProvider.GRPCConfig().Address()))
 
 	go func() {
 		<-ctx.Done()
 		a.grpcServer.GracefulStop()
-		log.Printf("GRPC server gracefully stopped")
+		logger.Info("GRPC server gracefully stopped")
 	}()
 
 	listener, err := net.Listen("tcp", a.serviceProvider.GRPCConfig().Address())
@@ -245,17 +288,17 @@ func (a *App) runGRPCServer(ctx context.Context) error {
 }
 
 func (a *App) runHTTPServer(ctx context.Context) error {
-	log.Printf("HTTP server is running on %s", a.serviceProvider.HTTPConfig().Address())
+	logger.Info("HTTP server is running", zap.String("address", a.serviceProvider.HTTPConfig().Address()))
 
 	go func() {
 		<-ctx.Done()
 		if shutdownErr := a.httpServer.Shutdown(ctx); shutdownErr != nil {
-			log.Printf("HTTP server shutdown err: %s", shutdownErr)
+			logger.Info("HTTP server shutdown err", zap.Error(shutdownErr))
 			if closeErr := a.httpServer.Close(); shutdownErr != nil {
-				log.Printf("HTTP server close err: %s", closeErr)
+				logger.Info("HTTP server close err", zap.Error(closeErr))
 			}
 		} else {
-			log.Printf("HTTP server gracefully stopped")
+			logger.Info("HTTP server gracefully stopped")
 		}
 	}()
 
@@ -268,17 +311,17 @@ func (a *App) runHTTPServer(ctx context.Context) error {
 }
 
 func (a *App) runSwaggerServer(ctx context.Context) error {
-	log.Printf("Swagger server is running on %s", a.serviceProvider.SwaggerConfig().Address())
+	logger.Info("Swagger server is running", zap.String("address", a.serviceProvider.SwaggerConfig().Address()))
 
 	go func() {
 		<-ctx.Done()
 		if shutdownErr := a.swaggerServer.Shutdown(ctx); shutdownErr != nil {
-			log.Printf("Swagger server shutdown err: %s", shutdownErr)
+			logger.Info("Swagger server shutdown err", zap.Error(shutdownErr))
 			if closeErr := a.swaggerServer.Close(); shutdownErr != nil {
-				log.Printf("Swagger server close err: %s", closeErr)
+				logger.Info("Swagger server close err", zap.Error(closeErr))
 			}
 		} else {
-			log.Printf("Swagger server gracefully stopped")
+			logger.Info("Swagger server gracefully stopped")
 		}
 	}()
 
@@ -292,7 +335,7 @@ func (a *App) runSwaggerServer(ctx context.Context) error {
 
 func serveSwaggerFile(path string) http.HandlerFunc {
 	return func(w http.ResponseWriter, _ *http.Request) {
-		log.Printf("Serving swagger file: %s", path)
+		logger.Info("Serving swagger file", zap.String("path", path))
 
 		statikFs, err := fs.New()
 		if err != nil {
@@ -300,7 +343,7 @@ func serveSwaggerFile(path string) http.HandlerFunc {
 			return
 		}
 
-		log.Printf("Open swagger file: %s", path)
+		logger.Info("Open swagger file", zap.String("path", path))
 
 		file, err := statikFs.Open(path)
 		if err != nil {
@@ -309,7 +352,7 @@ func serveSwaggerFile(path string) http.HandlerFunc {
 		}
 		defer file.Close() // nolint: errcheck
 
-		log.Printf("Read swagger file: %s", path)
+		logger.Info("Read swagger file", zap.String("path", path))
 
 		content, err := io.ReadAll(file)
 		if err != nil {
@@ -317,7 +360,7 @@ func serveSwaggerFile(path string) http.HandlerFunc {
 			return
 		}
 
-		log.Printf("Write swagger file: %s", path)
+		logger.Info("Write swagger file", zap.String("path", path))
 
 		w.Header().Set("Content-Type", "application/json")
 		_, err = w.Write(content)
@@ -326,8 +369,40 @@ func serveSwaggerFile(path string) http.HandlerFunc {
 			return
 		}
 
-		log.Printf("Served swagger file: %s", path)
+		logger.Info("Served swagger file", zap.String("path", path))
 	}
+}
+
+func (a *App) runPrometheus(ctx context.Context) error {
+	mux := http.NewServeMux()
+	mux.Handle(a.serviceProvider.NewPrometheusConfig().MetricsPath(), promhttp.Handler())
+
+	a.prometheusServer = &http.Server{
+		Addr:              a.serviceProvider.NewPrometheusConfig().Address(),
+		Handler:           mux,
+		ReadHeaderTimeout: a.serviceProvider.NewPrometheusConfig().ReadHeaderTimeout(),
+	}
+
+	logger.Info(fmt.Sprintf("Prometheus server is running on %s", a.serviceProvider.NewPrometheusConfig().Address()))
+
+	go func() {
+		<-ctx.Done()
+		if shutdownErr := a.prometheusServer.Shutdown(ctx); shutdownErr != nil {
+			logger.Info("Swagger server shutdown err", zap.Error(shutdownErr))
+			if closeErr := a.prometheusServer.Close(); shutdownErr != nil {
+				logger.Info("Swagger server close err", zap.Error(closeErr))
+			}
+		} else {
+			logger.Info("Swagger server gracefully stopped")
+		}
+	}()
+
+	err := a.prometheusServer.ListenAndServe()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func gracefulShutdown(ctx context.Context, cancel context.CancelFunc, wg *sync.WaitGroup) {

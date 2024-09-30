@@ -3,8 +3,16 @@ package app
 import (
 	"context"
 	"log"
+	"os"
 
+	"github.com/nqxcode/auth_microservice/internal/metric"
+	"github.com/nqxcode/auth_microservice/internal/tracing"
+
+	"github.com/natefinch/lumberjack"
+	"github.com/nqxcode/auth_microservice/internal/logger"
 	"github.com/nqxcode/auth_microservice/internal/service/token"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 
 	"github.com/IBM/sarama"
 	redigo "github.com/gomodule/redigo/redis"
@@ -46,6 +54,10 @@ type serviceProvider struct {
 	kafkaConsumerConfig kafka.ConsumerConfig
 	kafkaProducerConfig kafka.ProducerConfig
 	authConfig          config.AuthConfig
+	loggerConfig        config.LoggerConfig
+	prometheusConfig    config.PrometheusConfig
+	tracingConfig       config.TracingConfig
+	appConfig           config.AppConfig
 
 	dbClient  db.Client
 	txManager db.TxManager
@@ -78,6 +90,60 @@ type serviceProvider struct {
 
 func newServiceProvider() *serviceProvider {
 	return &serviceProvider{}
+}
+
+// InitLogger init logger
+func (s *serviceProvider) InitLogger(_ context.Context) {
+	cnf := s.NewLoggerConfig()
+
+	logLevel := cnf.GetLogLevel()
+	rollingConfig := cnf.GetRollingConfig()
+
+	stdout := zapcore.AddSync(os.Stdout)
+
+	var level zapcore.Level
+	if err := level.Set(logLevel); err != nil {
+		log.Fatalf("failed to set log level: %v", err)
+	}
+
+	atomicLevel := zap.NewAtomicLevelAt(level)
+
+	file := zapcore.AddSync(&lumberjack.Logger{
+		Filename:   rollingConfig.Filename,
+		MaxSize:    rollingConfig.MaxSizeInMegabytes,
+		MaxBackups: rollingConfig.MaxBackups,
+		MaxAge:     rollingConfig.MaxAgeInDays,
+	})
+
+	productionCfg := zap.NewProductionEncoderConfig()
+	productionCfg.TimeKey = "timestamp"
+	productionCfg.EncodeTime = zapcore.ISO8601TimeEncoder
+
+	developmentCfg := zap.NewDevelopmentEncoderConfig()
+	developmentCfg.EncodeLevel = zapcore.CapitalColorLevelEncoder
+
+	consoleEncoder := zapcore.NewConsoleEncoder(developmentCfg)
+	fileEncoder := zapcore.NewJSONEncoder(productionCfg)
+
+	core := zapcore.NewTee(
+		zapcore.NewCore(consoleEncoder, stdout, atomicLevel),
+		zapcore.NewCore(fileEncoder, file, atomicLevel),
+	)
+
+	logger.Init(core)
+}
+
+// InitMetric init metric
+func (s *serviceProvider) InitMetric(ctx context.Context) {
+	err := metric.Init(ctx)
+	if err != nil {
+		log.Fatalf("failed to init metrics: %v", err)
+	}
+}
+
+// InitTracing init tracing
+func (s *serviceProvider) InitTracing(_ context.Context) {
+	tracing.Init(logger.Logger(), s.NewAppConfig().GetName(), s.NewTracingConfig().Address())
 }
 
 // PGConfig config for pg
@@ -194,7 +260,7 @@ func (s *serviceProvider) KafkaProducerConfig() kafka.ProducerConfig {
 
 // NewAuthConfig config for auth
 func (s *serviceProvider) NewAuthConfig() config.AuthConfig {
-	if s.kafkaConsumerConfig == nil {
+	if s.authConfig == nil {
 		cfg, err := config.NewAuthConfig()
 		if err != nil {
 			log.Fatalf("failed to get auth config: %s", err.Error())
@@ -204,6 +270,58 @@ func (s *serviceProvider) NewAuthConfig() config.AuthConfig {
 	}
 
 	return s.authConfig
+}
+
+func (s *serviceProvider) NewAppConfig() config.AppConfig {
+	if s.appConfig == nil {
+		cfg, err := config.NewAppConfig()
+		if err != nil {
+			log.Fatalf("failed to get app config: %s", err.Error())
+		}
+
+		s.appConfig = cfg
+	}
+
+	return s.appConfig
+}
+
+// NewLoggerConfig config for logger
+func (s *serviceProvider) NewLoggerConfig() config.LoggerConfig {
+	if s.loggerConfig == nil {
+		cfg := config.NewLoggerConfig()
+
+		s.loggerConfig = cfg
+	}
+
+	return s.loggerConfig
+}
+
+// NewPrometheusConfig config for prometheus
+func (s *serviceProvider) NewPrometheusConfig() config.PrometheusConfig {
+	if s.prometheusConfig == nil {
+		cfg, err := config.NewPrometheusConfig()
+		if err != nil {
+			log.Fatalf("failed to get prometheus config: %s", err.Error())
+		}
+
+		s.prometheusConfig = cfg
+	}
+
+	return s.prometheusConfig
+}
+
+// NewTracingConfig config for tracing
+func (s *serviceProvider) NewTracingConfig() config.TracingConfig {
+	if s.tracingConfig == nil {
+		cfg, err := config.NewTracingConfig()
+		if err != nil {
+			log.Fatalf("failed to get tracing config: %s", err.Error())
+		}
+
+		s.tracingConfig = cfg
+	}
+
+	return s.tracingConfig
 }
 
 // DBClient client for pg database
@@ -274,8 +392,7 @@ func (s *serviceProvider) AsyncRunner() async.Runner {
 	return s.asyncRunner
 }
 
-// NewTokenGenerator
-
+// NewTokenGenerator token generator
 func (s *serviceProvider) NewTokenGenerator() service.TokenGenerator {
 	return token.NewGenerator()
 }

@@ -2,18 +2,25 @@ package auth
 
 import (
 	"context"
-	"log"
 
+	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
 	"github.com/nqxcode/auth_microservice/internal/converter"
+	"github.com/nqxcode/auth_microservice/internal/logger"
+	"github.com/nqxcode/auth_microservice/internal/tracing"
 	desc "github.com/nqxcode/auth_microservice/pkg/auth_v1"
 )
 
 // Get user by id
 func (s *Implementation) Get(ctx context.Context, req *desc.GetRequest) (*desc.GetResponse, error) {
-	log.Printf("Get user: %d", req.GetId())
+	span, ctx := tracing.StartSpanFromContext(ctx, "Get")
+	if span != nil {
+		defer span.Finish()
+	}
+
+	logger.Info("Get user", zap.Any("id", req.GetId()))
 
 	user, err := s.authService.Get(ctx, req.GetId())
 	if err != nil {

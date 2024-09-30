@@ -2,17 +2,25 @@ package auth
 
 import (
 	"context"
-	"log"
 
-	"github.com/golang/protobuf/ptypes/empty"
-	desc "github.com/nqxcode/auth_microservice/pkg/auth_v1"
+	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	"github.com/golang/protobuf/ptypes/empty"
+	"github.com/nqxcode/auth_microservice/internal/logger"
+	"github.com/nqxcode/auth_microservice/internal/tracing"
+	desc "github.com/nqxcode/auth_microservice/pkg/auth_v1"
 )
 
 // Check user
 func (s *Implementation) Check(ctx context.Context, req *desc.CheckRequest) (*empty.Empty, error) {
-	log.Printf("check access token and enpoint address: %s", req.GetEndpointAddress())
+	span, ctx := tracing.StartSpanFromContext(ctx, "Check")
+	if span != nil {
+		defer span.Finish()
+	}
+
+	logger.Info("check access token and endpoint address: %s", zap.String("endpointAddress", req.GetEndpointAddress()))
 
 	checked, err := s.authService.Check(ctx, req.GetEndpointAddress())
 	if err != nil {
