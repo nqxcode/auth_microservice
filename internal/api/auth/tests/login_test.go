@@ -6,9 +6,11 @@ import (
 
 	"github.com/gojuno/minimock/v3"
 	"github.com/nqxcode/auth_microservice/internal/api/auth"
+	"github.com/nqxcode/auth_microservice/internal/model"
 	"github.com/nqxcode/auth_microservice/internal/service"
 	serviceMocks "github.com/nqxcode/auth_microservice/internal/service/mocks"
 	desc "github.com/nqxcode/auth_microservice/pkg/auth_v1"
+
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/codes"
@@ -43,6 +45,7 @@ func TestLogin(t *testing.T) {
 
 		resp = &desc.LoginResponse{
 			RefreshToken: "refresh-token",
+			AccessToken:  "access-token",
 		}
 	)
 
@@ -63,7 +66,7 @@ func TestLogin(t *testing.T) {
 			},
 			authServiceMockFunc: func(mc *minimock.Controller) service.AuthService {
 				mock := serviceMocks.NewAuthServiceMock(mc)
-				mock.LoginMock.Expect(ctx, "test@test.com", "password").Return("refresh-token", nil)
+				mock.LoginMock.Expect(ctx, "test@test.com", "password").Return(&model.TokenPair{RefreshToken: "refresh-token", AccessToken: "access-token"}, nil)
 				return mock
 			},
 		},
@@ -78,7 +81,7 @@ func TestLogin(t *testing.T) {
 			},
 			authServiceMockFunc: func(mc *minimock.Controller) service.AuthService {
 				mock := serviceMocks.NewAuthServiceMock(mc)
-				mock.LoginMock.Expect(ctx, "test@test.com", "password").Return("", serviceErr)
+				mock.LoginMock.Expect(ctx, "test@test.com", "password").Return(nil, serviceErr)
 				return mock
 			},
 		},
@@ -92,8 +95,9 @@ func TestLogin(t *testing.T) {
 			authServiceMock := tt.authServiceMockFunc(mc)
 			api := auth.NewImplementation(authServiceMock)
 
-			_, err := api.Login(tt.input.ctx, tt.input.req)
+			response, err := api.Login(tt.input.ctx, tt.input.req)
 			require.Equal(t, tt.expected.err, err)
+			require.Equal(t, tt.expected.resp, response)
 		})
 	}
 }

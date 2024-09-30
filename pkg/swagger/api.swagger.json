@@ -414,6 +414,9 @@
       "properties": {
         "refreshToken": {
           "type": "string"
+        },
+        "accessToken": {
+          "type": "string"
         }
       }
     },
