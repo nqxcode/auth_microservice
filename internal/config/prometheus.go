@@ -17,7 +17,8 @@ const (
 )
 
 const (
-	defaultMetricsPath = "/metrics"
+	defaultMetricsPath       = "/metrics"
+	defaultReadHeaderTimeout = 10 * time.Second
 )
 
 // PrometheusConfig swagger config
@@ -50,7 +51,7 @@ func NewPrometheusConfig() (PrometheusConfig, error) {
 		host:              host,
 		port:              port,
 		metricsPath:       utils.GetEnv(prometheusMetricsPathEnvName, defaultMetricsPath),
-		readHeaderTimeout: utils.GetEnvDuration(prometheusReadHeaderTimeout, 10*time.Second),
+		readHeaderTimeout: utils.GetEnvDuration(prometheusReadHeaderTimeout, defaultReadHeaderTimeout),
 	}, nil
 }
 
