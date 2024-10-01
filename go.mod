@@ -16,7 +16,7 @@ require (
 	github.com/jackc/pgx/v4 v4.18.3
 	github.com/joho/godotenv v1.5.1
 	github.com/natefinch/lumberjack v2.0.0+incompatible
-	github.com/nqxcode/platform_common v0.0.0-20240831202545-f534480c273b
+	github.com/nqxcode/platform_common v0.0.0-20240926005600-7a1ed2e67a29
 	github.com/opentracing/opentracing-go v1.1.0
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.20.4
