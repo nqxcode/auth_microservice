@@ -219,8 +219,8 @@ github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822/go.mod h1:+n7T8m
 github.com/natefinch/lumberjack v2.0.0+incompatible h1:4QJd3OLAMgj7ph+yZTuX13Ld4UpgHp07nNdFX7mqFfM=
 github.com/natefinch/lumberjack v2.0.0+incompatible/go.mod h1:Wi9p2TTF5DG5oU+6YfsmYQpsTIOm0B1VNzQg9Mw6nPk=
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e/go.mod h1:zD1mROLANZcx1PVRCS0qkT7pwLkGfwJo4zjcN/Tysno=
-github.com/nqxcode/platform_common v0.0.0-20240926005600-7a1ed2e67a29 h1:byxttvv0Gp7n++9j7uSd/zWMe4SA6QlDDvt/O3YNfe0=
-github.com/nqxcode/platform_common v0.0.0-20240926005600-7a1ed2e67a29/go.mod h1:oYrnngWLTj7V7t+H59Tft2sTIL4Xpr5Y0g+cyRfYGNA=
+github.com/nqxcode/platform_common v0.0.0-20241103215649-32fc9fc351d5 h1:VwlfGaOVqSPVI3Q9X2UTrgrkyjpkX0BtygcvFl9TMGE=
+github.com/nqxcode/platform_common v0.0.0-20241103215649-32fc9fc351d5/go.mod h1:oYrnngWLTj7V7t+H59Tft2sTIL4Xpr5Y0g+cyRfYGNA=
 github.com/opentracing/opentracing-go v1.1.0 h1:pWlfV3Bxv7k65HYwkikxat0+s3pV4bsqf19k25Ur8rU=
 github.com/opentracing/opentracing-go v1.1.0/go.mod h1:UkNAQd3GIcIGf0SeVgPpRdFStlNbqXla1AfSYxPUl2o=
 github.com/pierrec/lz4/v4 v4.1.21 h1:yOVMLb6qSIDP67pl/5F7RepeKYu/VmTyEXvuMI5d9mQ=

@@ -10,7 +10,7 @@ import (
 
 const (
 	authRefreshTokenSecretKeyEnvName  = "AUTH_REFRESH_TOKEN_SECRET"     // nolint:gosec
-	authAccessTokenSecretKeyEnvName   = "AUTH_ACCESS_TOKEN"             // nolint:gosec
+	authAccessTokenSecretKeyEnvName   = "AUTH_ACCESS_TOKEN_SECRET"      // nolint:gosec
 	authRefreshTokenExpirationEnvName = "AUTH_REFRESH_TOKEN_EXPIRATION" // nolint:gosec
 	authAccessTokenExpirationEnvName  = "AUTH_ACCESS_TOKEN_EXPIRATION"  // nolint:gosec
 )
